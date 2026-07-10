@@ -2033,483 +2033,19 @@ if (found[FIELDS.password] !== hashedInput) return null;
             container.appendChild(dv);
         }
 
-        // —КОНТЕНТ РАЗДЕЛОВ (без изменений) —
-        const baseThemes = [
-            { id: 'home', label: 'Главная' }, { id: 'about_game', label: 'Об игре' }, { id: 'about', label: 'О нас' },
-            { id: 'dev', label: 'Разработчик' }, { id: 'media', label: 'Медиа' }, { id: 'maps', label: 'Карты' },
-            { id: 'props', label: 'Пропы' }, { id: 'skins', label: 'Скины' }, { id: 'weapons', label: 'Оружие' },
-            { id: 'vehicles', label: 'Транспорт' }, { id: 'clans', label: 'Кланы' }, { id: 'facts', label: 'Факты' },
-            { id: 'versions', label: 'Версии' }, { id: 'cheats', label: 'Читы' }, { id: 'reqs', label: 'Требования' },
-            { id: 'donate', label: 'Донат' }, { id: 'eastereggs', label: 'Пасхалки' }, { id: 'guide', label: 'Руководство' },
-            { id: 'faq', label: 'FAQ' }, { id: 'feedback', label: 'Сообщить об ошибке' }, { id: 'chat', label: 'Общий чат' },
-            { id: 'profile', label: 'Профиль' }, { id: 'join', label: 'Анкета' }
-        ];
+        // —КОНТЕНТ РАЗДЕЛОВ—
+        
+const baseThemes = [
+    { id: 'home', label: 'Главная' }, { id: 'about_game', label: 'Об игре' }, { id: 'about', label: 'О нас' },
+    { id: 'dev', label: 'Разработчик' }, { id: 'media', label: 'Медиа' }, { id: 'maps', label: 'Карты' },
+    { id: 'props', label: 'Пропы' }, { id: 'skins', label: 'Скины' }, { id: 'weapons', label: 'Оружие' },
+    { id: 'vehicles', label: 'Транспорт' }, { id: 'clans', label: 'Кланы' }, { id: 'facts', label: 'Факты' },
+    { id: 'versions', label: 'Версии' }, { id: 'cheats', label: 'Читы' }, { id: 'reqs', label: 'Требования' },
+    { id: 'donate', label: 'Донат' }, { id: 'eastereggs', label: 'Пасхалки' }, { id: 'guide', label: 'Руководство' },
+    { id: 'faq', label: 'FAQ' }, { id: 'feedback', label: 'Сообщить об ошибке' }, { id: 'chat', label: 'Общий чат' },
+    { id: 'profile', label: 'Профиль' }, { id: 'join', label: 'Анкета' }
+];
 
-    const contentGenerators = {
-    home: async () => {
-    let recs = [];
-    try { recs = await getRecommendedPages(); } catch(e) { console.warn('Ошибка получения рекомендаций:', e); }
-    const recHtml = renderRecommendations(recs);
-    
-    let totalUsers = '—';
-    try {
-        const snap = await getDocs(query(collection(db, COLLECTIONS.users), where('registrationType', '==', 'form')));
-        totalUsers = snap.size;
-    } catch(e) { console.warn('Ошибка получения количества пользователей:', e); }
-    
-    return `
-        <h2><i class="fas fa-archive"></i> Архив Simple Sandbox 2</h2>
-        <p>Добро пожаловать в самый полный неофициальный архив по игре Simple Sandbox 2. Мы собрали всю доступную информацию: от истории разработки и списка версий до подробных руководств и пасхалок. Сайт создан командой <strong>Nexus Squad</strong> и продолжает пополняться.</p>
-        <div class="grid-2">
-            <div class="stat"><div id="onlineCount" class="stat-num">—</div><div class="stat-label">онлайн</div></div>
-            <div class="stat"><div id="totalViews" class="stat-num">—</div><div class="stat-label">общее количество просмотров</div></div>
-        </div>
-        <div class="grid-2" style="margin-top:10px;">
-            <div class="stat"><div id="totalVisitors" class="stat-num">—</div><div class="stat-label">всего посетителей</div></div>
-            <div class="stat"><div class="stat-num">${totalUsers}</div><div class="stat-label">всего аккаунтов</div></div>
-        </div>
-        ${recHtml}
-    `;
-},
-            about_game: () => `
-                <h2><i class="fas fa-gamepad"></i> Об игре</h2>
-                <p>Simple Sandbox 2 — вторая часть знаменитой серии мобильных песочниц, разработанная талантливым Игорем Подгайным (Madness Games). Игра увидела свет 22 сентября 2019 года на Android и 13 марта 2021 года на iOS, и с тех пор её скачали более 10 миллионов раз.</p>
-                <div class="grid-2">
-                    <div class="stat"><div class="stat-num">11,932,436</div><div class="stat-label">загрузок +-</div></div>
-                    <div class="stat"><div class="stat-num">3.7★</div><div class="stat-label">Google Play</div></div>
-                    <div class="stat"><div class="stat-num">3.6★</div><div class="stat-label">App Store</div></div>
-                    <div class="stat"><div class="stat-num">Unity</div><div class="stat-label">Движок</div></div>
-                </div>
-                <p>По сравнению с первой частью игра сильно изменилась, хотя многие ветераны до сих пор считают SSB1 лучшей. По сравнению с недавней SSB3, вторая часть пока удерживает лидерство по отзывам.</p>
-                <h3><i class="fas fa-history"></i> История</h3>
-                <p>Разработка стартовала ещё в 2018 году. В 2020 году игру временно удаляли из Play Store по причинам, связанным с авторскими правами, но позже она была восстановлена. Пик популярности пришёлся на 2020–2021 годы. В 2023 году была удалена карта F_RaceMap. Сейчас проект получает редкие, но стабильные обновления, а русскоязычных игроков в нём больше, чем англоговорящих.</p>
-            `,
-            about: () => `
-               <h2><i class="fas fa-users"></i> О нас — Nexus Squad</h2>
-
-<img src="https://s10.iimage.su/s/02/gVzPs6xxLOWLadzl7hCLrAOhMIsKFjzjLqu1rsltT.jpg" alt="Nexus Squad" style="width:100%; border-radius:20px; margin-bottom:16px;">
-
-<p>Добро пожаловать в <strong>Nexus Squad</strong> — команду из <strong>12 энтузиастов</strong>, создающую этот архив.</p>
-
-<div style="display:grid; grid-template-columns:1fr 1fr; gap:4px 20px; margin:12px 0;">
-    <div style="padding:4px 0;">• Ased656</div>
-    <div style="padding:4px 0;">• Kattrap_72</div>
-    <div style="padding:4px 0;">• Итер</div>
-    <div style="padding:4px 0;">• Плеер19445</div>
-    <div style="padding:4px 0;">• Tarak</div>
-    <div style="padding:4px 0;">• Корсар</div>
-    <div style="padding:4px 0;">• Advantage</div>
-    <div style="padding:4px 0;">• Galvatron</div>
-    <div style="padding:4px 0;">• Топ ник</div>
-    <div style="padding:4px 0;">• Rainz</div>
-    <div style="padding:4px 0;">• Forz_58</div>
-    <div style="padding:4px 0;">• firstGam</div>
-</div>
-
-<p style="margin-top:8px;">Хочешь присоединиться? <a href="#" onclick="switchTab('join')" style="color:#1e3a5f; font-weight:600;">Заполни анкету</a>.</p>
-
-<div style="margin-top:20px; padding:16px; background:rgba(30,58,95,0.06); border-radius:16px; text-align:center; border:1px solid rgba(255,255,255,0.2);">
-    <i class="fab fa-telegram" style="font-size:28px; color:#26A5E4; display:block; margin-bottom:8px;"></i>
-    <p style="font-size:15px; color:#1e3a5f; font-weight:600; margin:0 0 4px 0;">Наш Telegram-канал:</p>
-    <p style="font-size:17px; color:#0a1a2b; font-weight:700; margin:0 0 8px 0;">@SSB2ARCHIVES_news</p>
-    <p style="font-size:13px; color:#555; margin:0;">Подписывайтесь, чтобы быть в курсе<br>новостей и обновлений архива!</p>
-</div>
-            `,
-            dev: () => `
-                <h2><i class="fas fa-code"></i> Разработчик</h2>
-                <div style="display:flex;gap:14px;align-items:center;margin-bottom:10px;">
-                    <i class="fas fa-user-astronaut" style="font-size:42px;"></i>
-                    <div><span style="font-weight:700;font-size:20px;">Игорь Подгайный</span><br>Ihor Pidhainyi · Kr3shPro · Madness Games</div>
-                </div>
-                <p>Игорь родился в 1997 году в Херсонской области (Украина). По имеющейся информации сейчас он проживает в ОАЭ. Он женат на Виктории Поляковой. В 2022 году, во время военных действий, он потерял свой дом, что, возможно, повлияло на подход к донату в игре | Но все эти факты могут быть неточными!</p>
-                <h3><i class="fas fa-lightbulb"></i> Интересные факты</h3>
-                <ul style="padding-left:18px;font-size:14px;"><li>В игре присутствует агрессивный NPC, лицо которого скопировано с самого Игоря.</li><li>Скин античита доступен исключительно разработчику.</li><li>Домашние питомцы (собака и кот) — это отсылка к реальным животным Игоря.</li><li>Скин тестера можно получить только после заполнения специальной анкеты.</li></ul>
-                <p style="margin-top:12px;font-style:italic;color:#555;">Точный состав команды Madness Games в открытых источниках не раскрывается.</p>
-            `,
-            media: () => `
-    <h2><i class="fas fa-photo-video"></i> Медиа</h2>
-    
-    <div class="media-category">
-        <h3><i class="fas fa-film"></i> Фильмы и сериалы</h3>
-        <p>Сообщество Simple Sandbox 2 выпустило множество фильмов и сериалов, среди которых можно выделить такие новинки, как «Сила вины», «Интеллигенты», «Эд Гейн — Монстр из Висконсина», «Sandbox Multiverse», «45 — Сорок Пятый», «Конечная» и «Асса 90-х». Особая благодарность SSB FILMS STUDIO, которая занимается продвижением и поддержкой новых кинопроектов внутри игры.</p>
-    </div>
-
-    <div class="media-category">
-        <h3><i class="fas fa-city"></i> RP Проекты</h3>
-        <ul class="media-list">
-            ${['Muhosransk','Syria','Crimson','Kyiv','SCP Secret Box','Kursk','Simferopol','Blopkagrad','День зомби','Zelo','Badlands','Modern conflict','Gotwors','Craft Rp','FANI','GORNY','Europe','Kharkiv','Banden','СВ Карелия','Грузия','FNAF','Nexus','RMRP','Адлерский','Королевство','Fun World','NXgen','Самосбор','NightTown','War SSB2','Dneprodar','MapZone','Р.Ф.Б.А','Припять','Russia RP','Samp RP','Хабаровск','Мини страны','Stalker','Зажопинск','Ссбешеры','Дания','Бомж Сити','RG—Alliance','plants of zombies','Neon rp','sermanfia rp','Бриллиант рп','Калифорния рп'].map(name => 
-                `<li class="media-item">${name}</li>`
-            ).join('')}
-        </ul>
-    </div>
-
-    <div class="media-category">
-        <h3><i class="fab fa-telegram"></i> Telegram-каналы</h3>
-        <div style="text-align:center; margin:10px 0;">
-            <a href="https://iimg.su/i/pkOO4A" target="_blank">
-                <img src="https://s10.iimage.su/s/09/gpkOO4AxQjhVGCIp2amZLNXKPpNuo05XmGnS5AJD6.jpg" style="max-width:100%; border-radius:16px;" loading="lazy" alt="Telegram-каналы сообщества">
-            </a>
-        </div>
-        <ul class="media-list">
-            ${['Kartonovsky','maps for ssb2 by Hofilion','Lyoshka Games','Подвал Симола','Syria_Bolts RP','Kyiv RP','maps for SSB2','Muhosransk RP','Pixel studio','maps for SSB2 by iter','Домик Manola','Ssb2 maps made by URS','Комьюнити тапка','Карты от Крамотск','FOX Project','SCP Secret Box','Кладовка ased','Дефлер simple sandbox','Кладовка Hofilion','Tarak','Minsk RP','ZELO RP','Уголок Kattrap72','Europe RP','ССБешеры FRP','SSB2 build hacks','Freddy','Ссб2 ТГК помидорки','Cool RP Projects','Kraft RP','Project космос ССБ2','Volgograd rp[FRP]','Gotwors RP','Blopkagrad RP ssb2','maps for ssb2 MrEgor','Тавровка RP','2POTA 82часть','Sayex-канал','Moto FRP'].map(name => 
-                `<li class="media-item">${name}</li>`
-            ).join('')}
-        </ul>
-        <p style="margin-top:8px;"><strong>Официальные:</strong> Simple sandbox (канал игры), Gamzee (канал Gamzee).</p>
-    </div>
-
-    <div class="media-category">
-        <h3><i class="fab fa-youtube"></i> YouTube каналы</h3>
-        <div style="text-align:center; margin:10px 0;">
-            <a href="https://iimg.su/i/jJbpWV" target="_blank">
-                <img src="https://s10.iimage.su/s/09/gjJbpWVxLPpjmQdRWDPdQmU97CcjmlVrZpGWtI8k0.jpg" style="max-width:100%; border-radius:16px;" loading="lazy" alt="YouTube каналы сообщества">
-            </a>
-        </div>
-        <ul class="media-list">
-            ${['Madness Games','Neon1','Kartonka what','Shaunee','_Феля_','M royal James King','Mr. Sasiska games','Opal Alien','Cboy YT','Ssb2 discovery','Uur Gaming','SimpleSamYT','Flunokai','Soapie Boi','Kamiflex','Alex wolk','Turbo TV','Melon Gaming','komes* x','Phrobss','морковка','hardmoon','plastinka','the Lunie','Sirius','Lyoshka games','Kattrap_72','Barbie','Powerpixel','Alicovid 19','4ulok','МоРкОВКа','ORBITO4IK','NIK Стритрейсер','Madalink','FuFkeks','Мявский Live','DELMOP','Neyzich','КАША ССБ2','KAPUSTA.','Шифер','8uLka','Деспел','Kartonovsky','popkaogyrcaa','ЈАВА','PAKETIK','Александр Трамваев','HoFiLiOn','sv1st','Sosiska','Kromeshnik','Barbie','Aqueen','Бонни ИТ','Дефлёр','Оклахомашет','Бебьеме','ДариониСигму','Гуманоидный эльф','Apex1115','Лешкины игры','Спокойной ночи','7.500$','Xperia 30','He-a','Masih','Jg','untuk','Lucallm','Джинбо','Ранен656','Халлев SSB2','ПАКЕТ1K SSB²','Simpl_e2','Дикий','Макс SSB2 228','Альфа SSB2','Люцифер YT','RDAS Україн','Тарак','Македонтол','ased','Fabr3N','ПЛЕЕР1944 Ссб2'].map(name => 
-                `<li class="media-item">${name}</li>`
-            ).join('')}
-        </ul>
-    </div>
-`,
-
-            maps: () => `
-                <h2><i class="fas fa-map"></i> Карты</h2>
-                <h3><i class="fas fa-globe"></i> Существующие карты</h3>
-                <p>В игре доступно множество разнообразных карт: от песчаных пляжей (f_Sand) и зелёных лугов (f_Grass) до заброшенных городов (f_Chernobyl, f_Prison) и космических просторов (f_SpaceMap). Всего насчитывается более двух десятков официальных локаций.</p>
-                <div class="quote-block"><div class="quote-item">f_Grass</div><div class="quote-item">f_Sand</div><div class="quote-item">f_AirPort</div><div class="quote-item">f_Port</div><div class="quote-item">f_DesertCity</div><div class="quote-item">f_GoodMap</div><div class="quote-item">f_SnowVillage</div><div class="quote-item">f_BigCity</div><div class="quote-item">f_SpaceMap</div><div class="quote-item">f_Road</div><div class="quote-item">f_Chernobyl</div><div class="quote-item">f_Prison</div><div class="quote-item">f_RussianStreet</div><div class="quote-item">f_SquidMap</div><div class="quote-item">f_Snow</div><div class="quote-item">f_Sand Islands</div><div class="quote-item">gm_Bog</div><div class="quote-item">f_BlackIsland</div><div class="quote-item">f_WorldWar2_Map</div><div class="quote-item">f_LostIsland</div><div class="quote-item">f_BigMountain</div><div class="quote-item">f_Sandpolis_City</div><div class="quote-item">f_WasteLand</div><div class="quote-item">f_Stalker</div></div>
-                <h3><i class="fas fa-trash-alt"></i> Удалённые карты</h3><p>f_RacerMap, f_Nightcircus, f_Farm, f_Scificity</p>
-            `,
-            props: () => `
-                <h2><i class="fas fa-cubes"></i> Пропы</h2>
-                <p><strong>Лимит объектов:</strong> 50 000 в одиночной, 998 в мультиплеере.</p>
-                <h3>Наборы пропов</h3>
-                <div class="list-item"><span class="label">Default</span><span class="value">Roofs, Environment, Icon</span></div>
-                <div class="list-item"><span class="label">Furnitures</span><span class="value">Мебель</span></div>
-                <div class="list-item"><span class="label">City</span><span class="value">Бесплатно / 75💎</span></div>
-                <div class="list-item"><span class="label">Military / WW2</span><span class="value">Ядерная бомба</span></div>
-                <div class="list-item"><span class="label">Space</span><span class="value">65💎</span></div>
-                <div class="list-item"><span class="label">Apocalypse</span><span class="value">Донат</span></div>
-                <div class="list-item"><span class="label">Big City</span><span class="value">200💎</span></div>
-                <p>Для строительства небоскрёбов чаще всего используют набор Space.</p>
-            `,
-            skins: () => `
-              <h2><i class="fas fa-tshirt"></i> Скины</h2>
-<p>Всего скинов 250+, а аксессуаров примерно столько же.</p>
-
-<h3>Интересные скины</h3>
-
-<div class="quote-block">
-    <div class="quote-item">
-        <strong>Звёздный скин</strong><br>
-        <span style="font-size:13px; color:#555;">600 000 кристаллов! Самый дорогой скин в игре.</span><br>
-        <span style="font-size:12px; color:#888;">Можно получить в ежедневных призах или выиграть в ивентах.</span>
-    </div>
-
-    <div class="quote-item">
-        <strong>Скин ютубера</strong><br>
-        <span style="font-size:13px; color:#555;">Выдаётся от 1.3k подписчиков.</span><br>
-        <span style="font-size:12px; color:#888;">Раньше требовалось 3.5k, позже снизили до 1.3k, также был период с 7.5k.</span>
-    </div>
-
-    <div class="quote-item">
-        <strong>Тестер / Античит</strong><br>
-        <span style="font-size:13px; color:#555;">Выдавался участникам тестирования игры.</span><br>
-        <span style="font-size:12px; color:#888;">Эксклюзивный скин, который больше не получить.</span>
-    </div>
-
-    <div class="quote-item">
-        <strong>Дьявол</strong><br>
-        <span style="font-size:13px; color:#555;">Можно было получить в Хэллоуинском паркуре.</span><br>
-        <span style="font-size:12px; color:#888;">Сезонный скин, который появляется только на Хэллоуин.</span>
-    </div>
-</div>
-            `,
-            weapons: () => `<h2><i class="fas fa-gun"></i> Оружие</h2><p>Информация появится позже.</p>`,
-            vehicles: () => `
-             <h2><i class="fas fa-car"></i> Транспорт</h2>
-
-<div class="quote-block">
-    <div class="quote-item">
-        <strong>Наземный транспорт:</strong><br>
-        <span style="font-size:13px; color:#555;">Машины, танки, грузовики, мотоциклы, квадроциклы, скейты, самокаты, велосипеды.</span>
-    </div>
-
-    <div class="quote-item">
-        <strong>Воздушный транспорт:</strong><br>
-        <span style="font-size:13px; color:#555;">Самолёты, вертолёты, космический корабль, летающая машина.</span>
-    </div>
-
-    <div class="quote-item">
-        <strong>Водный транспорт:</strong><br>
-        <span style="font-size:13px; color:#555;">Лодки, Еатера, Яхты</span>
-    </div>
-
-    <div class="quote-item">
-        <strong>Прочий транспорт:</strong><br>
-        <span style="font-size:13px; color:#555;">Роботы,Строительный кран.</span>
-    </div>
-</div>
-<h2><i class="fas fa-wrench"></i> Интересный факт</h2>
-<p>С помощью гаечного ключа можно чинить колёса!</p>   
-            `,
-            clans: () => `
-                <h2><i class="fas fa-fist-raised"></i> Кланы</h2>
-                <p>В Simple Sandbox 2 кланы играли значительную роль, особенно в период активного PvP. Сила кланов определялась численностью, боевыми навыками, политическим влиянием и умением вести длительные конфликты.</p>
-                <h3>Известные кланы</h3>
-                <div class="quote-item"><strong>LFD</strong> — Клан настоящих защитников simple sandbox 2/3 от читеров. К сожалению о них мало что известно</div>
-                <div class="quote-item"><strong>ARES</strong> (ранее ARE) — сильнейший клан по политической власти. Пользовался уважением моддеров (Bombhacker, Lider Turk), тестировщиков и разработчика Игоря Подгайного.</div>
-                <div class="quote-item"><strong>SPRS, DSR, NAR, UNI</strong> — доминировали в раннюю эпоху за счёт численности и слаженности в PvP.</div>
-                <h3>Лидеры кланов</h3>
-                <div class="quote-item"><strong>Шенатор</strong> — занимал 1-е место в RPG. Приобрёл большой боевой опыт в UNI.</div>
-                <div class="quote-item"><strong>Кафка (AFK)</strong> — занимал 1-е место среди снайперов. Развивал навыки в немецком сообществе.</div>
-                <p>Войны кланов часто сводились к испытанию на выносливость, а не к активным боям.</p>
-            `,
-            facts: () => `
-                <h2><i class="fas fa-lightbulb"></i> Факты и баги</h2>
-                <ul style="padding-left:18px;"><li>Русскоязычных больше</li><li>Android получает обновления раньше</li><li>Баг с дверями</li><li>Баг переворота</li><li>Мифы: Крабмен, Статуя, Водомен</li><li>Погода: солнце, снег, дождь, гроза, буря</li><li>Новые механики: барьер, редактор подсветки, пропы ускорения</li><li>Скорость пули с любого оружия около 3000 км/ч</li><li>Скорость снаряда рпг около 170 км/ч</li></ul>
-            `,
-            versions: () => `
-                <h2><i class="fas fa-code-branch"></i> Версии</h2>
-                <p><strong>Ранние версии:</strong> 0.2.1, 0.2.7, 0.3.8, 0.6.4, 0.7.1, 0.7.6, 0.7.8, 0.8.7, 0.9.0, 1.0.0, 1.2.0, 1.6.0, 1.6.4</p>
-                <p><strong>Современные версии:</strong> 1.8.00, 1.8.11, 1.8.20, 1.8.30, 1.9.05, 1.9.06, 1.9.08, 1.9.26, 1.9.30, 1.9.37, 1.9.41, 1.9.45, 1.9.49, 1.9.51</p>
-            `,
-            cheats: () => `
-                <h2><i class="fas fa-skull"></i> Читы</h2>
-                <div class="list-item"><span class="label">Polar Patcher</span><span class="value"></span></div>
-                <div class="list-item"><span class="label">GAZ Mod</span><span class="value"></span></div>
-                <div class="list-item"><span class="label">Epilog</span><span class="value"></span></div>
-                <div class="list-item"><span class="label">Vexor cheats</span><span class="value"></span></div>
-                <h3><i class="fas fa-calendar-alt"></i> Хронология событий (май – июнь 2026)</h3>
-                <p><strong>24 мая 2026 года</strong> — в канале «Vexor cheats» появилось сообщение «ssb2 soon..». Это означало, что читы могут вернуться в SSB2, повторяя ситуацию осени 2024 года (волна от Epilog и Bombhacker). Начали публиковаться спойлеры с новыми командами и функциями. В чате канала, по мнению наблюдателей, присутствовали не вполне адекватные личности.</p>
-                <p><strong>1–2 июня 2026 года</strong> — совершена серия атак на серверы SSB2: их запаролили, игроки не могли зайти. 2 июня в 21:00 по московскому времени в канале появилось фото с надписью «мне пизда», а также скриншот сообщения из другого канала, где говорилось о доксе разработчика читов «Яшки» (кража паспортных данных). После этого на канал посыпались жалобы.</p>
-                <img src="https://s10.iimage.su/s/03/gFX9HX0xfFQsdLqpf3cqGAVTRE6NRiY7i17orYNN9.png" alt="Сообщение Vexor cheats" style="width:100%; border-radius:16px; margin-top:12px;">
-                <p style="font-style:italic; margin-top:4px;">* но информация про докс может оказаться фейком!</p>
-                <p><strong>3 июня 2026 года, 21:15</strong> — сервера SSB2 снова атакованы мощной DDoS-атакой. Бот заходил, паролил сервер и забирал права хоста. Зайти на сервер было невозможно, создавалось ощущение, что сервер заброшен, но на нём якобы играют другие. Атака затронула несколько регионов:</p>
-                <ul style="margin-left: 20px; margin-bottom: 10px;"><li>RU</li><li>USA</li><li>Европа</li><li>Украина</li><li>часть азиатских серверов</li></ul>
-                <p><strong>4 июня 2026 года</strong> — массовая DDoS-атака на серверы игры, приведшая к нестабильности практически во всех регионах. Вечером сервера отпустили, но множество игроков выразило злость на читы — начался бунт в виде серверов с негативными названиями.</p>
-                <div style="margin: 10px 0;"><a href="https://iimg.su/i/g9hrHi" target="_blank"><img src="https://s10.iimage.su/s/09/gg9hrHixHDRAq1VYmL1Z0GdLhHmwajno2kLtZcnzT.jpg" alt="Бунт игроков" style="max-width:100%; border-radius:16px;"></a><p style="font-size:12px; text-align:center; margin-top:4px;">Пример того, как игроки с помощью названия сервера выражали протест</p></div>
-                <p><strong>5 июня 2026 года</strong> — повторные DDoS-атаки, но уже с новым способом: невидимый для списка игроков бот заходил на сервер, спамил в чат рекламой чита, а затем делал всех игроков, заходивших на сервер, «невидимыми». На деле игроки оставались в фазе подключения, их камера смотрела на превью карты, работало только меню. Выйти было невозможно — только перезаход в игру. Произведено 2 атаки. Ожидается скорый выпуск читов.</p>
-                <p><strong>Новая информация про читы!</strong> - слова из телеграм канала читов: Если хотите меньший шанс на бан или что-бы простых игроков банило то вот вам гайд: Скопируйте ******* игрока из плеер листа на сервере (только со включенным A*****n S****f) и вставьте его в *** ***, тогда вы будете играть на его гостевом аккауте.</p>
-                <p style="margin-top:12px; font-style:italic;">Ситуация стремительно развивается. Информация предоставлена командой Nexus Squad. О новых новостях будет сообщено в этом разделе.</p>
-                <h2>Nemises</h2>
-                <p>Скоро новая информация про читы "Nemises"</p>
-            `,
-            reqs: () => `
-                <h2><i class="fas fa-mobile-alt"></i> Требования</h2>
-                <div class="list-item"><span class="label">Android</span><span class="value">5.0+, 2 ГБ ОЗУ</span></div>
-                <div class="list-item"><span class="label">iOS</span><span class="value">11.0+, iPhone 6s+</span></div>
-            `,
-            donate: () => `
-                <h2><i class="fas fa-gem"></i> Донат</h2>
-                <h3>VIP навсегда</h3><div class="quote-item">1 799,00 ₽ — нет рекламы, верёвка, +40 друзей, доход x1.75, макс. 15 игроков, скин Cyber Punks, отключение PvP</div>
-                <h3>Наборы</h3>
-                <div class="quote-item"><strong>Starter Pack</strong> — 349,99 ₽ (Draven, Elara)</div>
-                <div class="quote-item"><strong>Elite Bundle</strong> — 399,00 ₽ (скидка 75%)</div>
-                <div class="quote-item"><strong>Байкерский Пак</strong> — 449,99 ₽</div>
-                <div class="quote-item"><strong>USA ARMY</strong> — 499,00 ₽ (M1 ABRAMS, F-16, MATV)</div>
-                <div class="quote-item"><strong>Армия Германии</strong> — 599,00 ₽</div>
-                <div class="quote-item"><strong>Армия Казахстана</strong> — 599,00 ₽</div>
-                <div class="quote-item"><strong>Японская Армия</strong> — 590,00 ₽</div>
-                <div class="quote-item"><strong>Бразильская армия</strong> — 425,00 ₽ (GUARANI, KC-390)</div>
-                <div class="quote-item"><strong>British Pack</strong> — 349,99 ₽</div>
-                <div class="quote-item"><strong>Racer Pack</strong> — 399,00 ₽</div>
-                <h3>Другие товары</h3>
-                <div class="quote-item"><strong>WW2 Pack</strong> — 799,99 ₽</div>
-                <div class="quote-item"><strong>Apocalypse Pack</strong> — 899,99 ₽</div>
-                <div class="quote-item"><strong>Apocalypse Interiors</strong> — 249,99 ₽</div>
-                <div class="quote-item"><strong>Halloween Skin #1/#2</strong> — 199,99 ₽</div>
-                <div class="quote-item"><strong>HD SKIN</strong> — 249,99 ₽</div>
-                <div class="quote-item"><strong>Mafia Skin</strong> — 225,00 ₽</div>
-                <div class="quote-item"><strong>Creatures Skins</strong> — 149,99 ₽</div>
-                <div class="quote-item"><strong>Robot Pack</strong> — 149,00 ₽</div>
-                <div class="quote-item"><strong>Heli Pack</strong> — 139,00 ₽</div>
-                <div class="quote-item"><strong>Vehicle Pack</strong> — 199,99 ₽</div>
-                <div class="quote-item"><strong>Car#1</strong> — 199,00 ₽</div>
-                <div class="quote-item"><strong>Air Pack</strong> — 299,00 ₽</div>
-                <div class="quote-item"><strong>Retro Pack</strong> — 209,00 ₽</div>
-                <div class="quote-item"><strong>Skins REKT</strong> — 159,00 ₽</div>
-                <div class="quote-item"><strong>Water REKT</strong> — 189,00 ₽</div>
-                <div class="quote-item"><strong>RPG2.0</strong> — 179,00 ₽</div>
-                <div class="quote-item"><strong>Mini-Gun MH1</strong> — 199,00 ₽</div>
-            `,
-            eastereggs: () => `
-                <h2><i class="fas fa-egg"></i> Пасхалки</h2>
-                <p>В игре Simple Sandbox 2 есть несколько пасхалок и секретных элементов, которые можно разблокировать или найти на определённых картах.</p>
-                <div class="quote-item"><strong>Alien Skin (скин пришельца).</strong> Чтобы его получить, нужно играть в игру между 00:00 и 01:00 и зайти на карту Big City (f_BigCity).</div>
-                <div class="quote-item"><strong>Cameraman Skin и NPC Speakerman (скин оператора и NPC диктора).</strong> На карте Island (f_Island) нужно найти скрытый подводный туннель, который ведёт в комнату с камерами наблюдения и шкафчиками. В одном из шкафчиков находится скин и NPC.</div>
-                <div class="quote-item"><strong>Red Cube Guy Skin (скин парня в красном кубе).</strong> Этот скин можно разблокировать в режиме приключения (adventure/story mode).</div>
-                <div class="quote-item"><strong>Penguin Skin (скин пингвина).</strong> Нужно играть на любой карте, зайти в меню реквизита (prop menu), выбрать мини-локацию и разместить ту, где есть igoos. В одном из них будет NPC-пингвин, с которым можно взаимодействовать, чтобы разблокировать скин. После этого скин не появится в меню магазина — чтобы его надеть, нужно разместить предмет одежды и взаимодействовать с ним.</div>
-                <div class="quote-item"><strong>Ghost Girl Skin (скин призрачной девушки).</strong> Находится на карте gmBog (f_gm_Bog).</div>
-                <div class="quote-item"><strong>Two Hat Items (два головных убора).</strong> На карте gmBog (f_gm_Bog) нужно найти дом с компьютером и ввести трёхзначный код.</div>
-                <div class="quote-item"><strong>White and Orange Bag (белая и оранжевая сумка).</strong> Чтобы её получить, нужно зайти на карту f_Space_Map, спуститься по лестнице до второй палубы. В большом пустом коридоре слева будет дверь, которую можно открыть, там и находится сумка.</div>
-                <div class="quote-item"><strong>Blue Car (синяя машина).</strong> Нужно зайти на карту f_RussianStreet и пройти некоторое расстояние в радиоактивной зоне.</div>
-                <div class="quote-item"><strong>Animal Head Thing (предмет в виде головы животного).</strong> На карте f_RussianStreet в конце карты нужно найти дом с ключом, висящим на нём. Возьмите ключ и войдите в дом.</div>
-                <p>Некоторые пасхалки и секреты могут быть связаны с обновлениями игры или багами. Например, в одном из видео упоминались такие элементы, как «откопать могилу» (приз — скин) и «поймать нож на антенне» (приз — нож), но из-за бага могилу на тот момент раскопать было невозможно.</p>
-            `,
-            guide: () => `
-    <h2><i class="fas fa-book-open"></i> Руководство</h2>
-    
-    <div class="quote-item"><strong><i class="fas fa-bug"></i> Как сообщить о баге</strong>
-        <img src="https://s10.iimage.su/s/16/grAPhtqx2hGc1EnQq9tUzzFz7QQI8z9I868LfSi7o.jpg" alt="баг" style="width:100%; border-radius:16px; margin-top:12px;">
-        <br>Снимите баг на видео или сделайте скриншот, максимально подробно опишите, добавьте хэштег #bugs. Отправить можно в <a href="https://t.me/SimpleSandBoxCommunity" target="_blank">@SimpleSandBoxCommunity</a> или <a href="https://t.me/Simplesandbox2reports" target="_blank">@Simplesandbox2reports</a>. Если баг описан правильно и понятно — он будет исправлен. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-download"></i> Установка карты</strong>
-        <img src="https://s10.iimage.su/s/16/gANpBt3xpOmPcI3Ftss4j1qkiIyHb5Whw9eRiJZSd.jpg" alt="Установка карт" style="width:100%; border-radius:16px; margin-top:12px;">
-        <br><u>Способ 1 (Android):</u> Установите файловый менеджер. Для Android 11+ скачайте Shizuku/Cx проводник и запустите отладку по Wi-Fi. Скачайте файл карты (.clm или .clm.msg.gz). Через Telegram: 3 точки → Сохранить в загрузках. Переместите файл в <code>Android/data/com.SimpleSandbox2/
-files/Save Maps/</code>.<br><u>Способ 2 (ПК):</u> Скачайте файл карты. Подключите устройство по USB. На телефоне нажмите «Зарядка устройства через USB» → выберите «Передача файлов». Переместите файл через проводник Windows в <code>Android/data/com.SimpleSandbox2/
-files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-comment"></i> Текст на табличках в мультиплеере</strong>
-        <img src="https://s10.iimage.su/s/16/gBPw5rvxXDvQT453ZeIwi3JBv3vFfkVPJO4cZ1Oqc.jpg" alt="таблички" style="width:100%; border-radius:16px; margin-top:12px;">
-        <br>Пропадает, если сервер создан без «Cache Props» или табличка установлена в мультиплеере. Решение: перед созданием сервера включите Cache Props и используйте карту с готовыми надписями. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-server"></i> Настройка сервера</strong>
-        <img src="https://s10.iimage.su/s/16/gMpxPqBx5Bz1BM8ypGNI0SvI8sC6iEy1vWVZSZrvv.jpg" alt="сервер" style="width:100%; border-radius:16px; margin-top:12px;">
-        <br>Хост может менять правила:<br><u>Players:</u> список игроков, кнопка KICK.<br><u>Gameplay:</u> стрельба (отключение — VIP), строительство, транспорт, агрессивные NPC, двойной прыжок, сохранение карт, вид от первого лица.<br><u>World:</u> остановка времени, тёмная ночь, облака, рекламные предметы, время суток (01:00–24:00, в мультиплеере раз в 30 сек), погода (солнечно, снег, дождь, дождь с грозой, песчаная буря). <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-sliders-h"></i> Игровые настройки</strong>
-        <img src="https://s6.iimage.su/s/09/gCEkZO2x6uzLyUGABlUiVQbD5iqDELbcambZ3UDKO.jpg" alt="Игровые настройки" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br><u>Игра:</u> FPS, подсветка объектов, отображение рук, открыть транспорт чужим, деформация машин, туман, джойстик самолёта, управление машиной (UI Buttons/Accelerometer/Steering Wheel), чувствительность, редактор кнопок.<br><u>Графика:</u> Game Quality, Texture Quality, Shadow, Ultra Water, лимит FPS.<br><u>Аудио:</u> Main Volume, Music Volume, SFX Volume, Siren Volume, Spawn SFX. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-hammer"></i> Функции строительства</strong>
-        <img src="https://s6.iimage.su/s/09/gWMuQ8Nx5f8Lve4m48dRwkNNWzzL7rzDZ2PjtBzIE.jpg" alt="Строительство" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Kinematics — автозаморозка объектов (по умолчанию вкл). Free Build — свободная установка. Free Ground — установка внутрь других пропов. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-ban"></i> Бан за читы</strong>
-        <img src="https://s6.iimage.su/s/09/gQKmbdJx5fKuGq6qlb3PeJLNKtikLKwU4mZyfsKX8.jpg" alt="Бан" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Бан «Cheater | Indefinite» может выдаваться по ошибке. Если вы не использовали читы — бан пропадёт через несколько часов/дней. Никогда не скачивайте читы! <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-gem"></i> Как получить донат</strong>
-        <img src="https://s6.iimage.su/s/10/grQv8Tlx2NlmsaU2WW1gZKkTt24JeWTTT2L8n4iJd.jpg" alt="Донат" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>1. Купить в игре. 2. Через администратора. 3. Участвовать в конкурсах в Telegram-каналах Madness Games (награды ограничены). 4. Промокоды (очень редко, награда непредсказуема). Остальные способы могут привести к блокировке. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-lock"></i> Подключение к серверам в РФ</strong>
-        <img src="https://s6.iimage.su/s/10/gr2d7pTxhDtk5cpAL20RpIfQzi8NweZ4nJKmVHj8X.jpg" alt="Неважно" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>РКН бывает блокирует адреса серверов. Решения (не 100%): VPN, очистка кэша и перезагрузка, отключение прокси, смена интернета, перезаход в аккаунт. Меняйте VPN, если не помогает. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-ad"></i> Не работает реклама</strong>
-        <img src="https://s6.iimage.su/s/10/g98sudmx6fTOMy6dFHbdtYUU4sjOVimS2pvKsaU18.jpg" alt="Неважно" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Решения: очистить кэш игры, сбросить рекламный идентификатор (Настройки → Безопасность → Реклама), включить/отключить VPN, отключить персональный DNS, отключить блокировщик рекламы. <span style="opacity:0.6;">#Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-user-circle"></i> Не подключается аккаунт</strong>
-        <img src="https://s6.iimage.su/s/10/gpNvQwuxnaPc6VXG1u5YYEeOANt2YZL2rCIJtXsiu.jpg" alt="А тут важно" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Решения: перезапустить игру/устройство, очистить кэш, Play Игры → Профиль → 3 точки → Настройки → Очистить историю поиска, включить/отключить VPN, сменить интернет. После каждого действия перезапускайте игру. <span style="opacity:0.6;">#Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-shield-alt"></i> Безопасный режим</strong>
-        <img src="https://s6.iimage.su/s/10/gfnZhMCxCOz3Z96wzzjd3cIQjn3rmROCdWVt4TBs2.jpg" alt="Безопасный режим" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Урон по вам не регистрируется, вы не наносите урон. Над игроком иконка. Включается в меню паузы. После отключения нельзя включить 60 секунд. Не спасает от падения под карту. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-robot"></i> Настройка NPC</strong>
-        <img src="https://s6.iimage.su/s/10/gMimBY7xG1dFZz7y5taB3ymWIlsngH7ZfY6zp6ePW.jpg" alt="Настройка NPC" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Наведите прицел на туловище для смены скина, на голову — для смены анимации. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-draw-polygon"></i> Граунды (Grounds)</strong>
-        <img src="https://s6.iimage.su/s/10/gFT3sKKxGvIAP6DMZ7joRwdMjw47tb60fNOSkHcAA.jpg" alt="Граунды" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Редактируемые пропы из Others. Обычный (9 текстур: 0-Трава, 1-Песок, 2-Камень, 3-Снег, 4-Асфальт, 5-Земля, 6-Стандартные плиты, 7-Чёрные плиты, 8-Серые плиты; лимит 250). Вода (без текстур, лимит 500). Барьер (2 текстуры: 0-Прозрачно-красный, 1-Обыкновенный; лимит 250). <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-wrench"></i> Улучшение транспорта</strong>
-        <img src="https://s6.iimage.su/s/10/gKJ5SeMxusrFevH2ru9O0pAiamzTL8wmwX7vBSkgd.jpg" alt="Тюнинг" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Поставьте спец. проп из Others и заезжайте в зону. Доступно: Neo (цвет подсветки: 0-Ничего, 1-Голубой, 2-Зелёный, 3-Красный) и Wheels (колёса: 0-Стандартные, 1–15 уникальные). Только для транспорта с меткой «E». <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-box-open"></i> Пропажа купленных элементов</strong>
-        <img src="https://s6.iimage.su/s/10/g0hF0naxCkgjMAoGeUIZwj3vYkNwzzZKL2o6EmMOn.jpg" alt="Пропажа покупок" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Обратитесь к администратору, приложите игровой ID в текстовом формате, название доната и чеки. Монеты/кристаллы/ключи/детали не восстанавливаются. Связь: GamzeeChert. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-ticket-alt"></i> Активация промокода</strong>
-        <img src="https://s6.iimage.su/s/10/glNhE8CxLPRj9yqCSaLGhBJuDZBWg6vCqDd3albLY.jpg" alt="Промокод" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Внутриигровой магазин → поле «Введите код...» → ввести промокод. При успехе появится «КУПОН АКТИВИРОВАН». <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-exclamation-triangle"></i> Обнаружение читов</strong>
-        <img src="https://s6.iimage.su/s/10/gpTAobpxIO0iy7r617mCnRDvfn2zzGperck0LGoTs.jpg" alt="Обнаружение читов" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Предупреждение появляется при обнаружении стороннего ПО. Удалите подозрительные файлы из папки «Загрузки»/«Download». Не скачивайте читы! <span style="opacity:0.6;">#Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-sync-alt"></i> Смена Google аккаунта</strong>
-        <img src="https://s6.iimage.su/s/10/gf1xPK2xSUl0wzYDy2tOtGq6gCKmzSjE9suNGof6O.jpg" alt="Смена Google" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>Удерживайте иконку игры → «Профиль» → выберите аккаунт → «Сохранить». Должен быть установлен Play Игры. Проверено на Galaxy S24, Android 16. <span style="opacity:0.6;">#Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-car-crash"></i> Восстановление колёс</strong>
-        <br>Возьмите гаечный ключ (Player/Items/2), наведите на место колеса (возможно, ниже кузова) и чините. Ключ восстанавливает 125 ед., колёса имеют ~200 ед. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-    
-    <div class="quote-item"><strong><i class="fas fa-flag"></i> Жалоба на игрока</strong>
-        <img src="https://s6.iimage.su/s/10/gcRkidfxd8IqOy7ZavIfng0zkbMisWDJ7VqvJblFX.jpg" alt="Жалоба" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br>1. Сделайте 2+ скриншота/видео нарушения. 2. Добавьте нарушителя в друзья. 3. Покиньте сервер, зайдите во вкладку «Друзья», сделайте скриншот с никнеймом. 4. Нажмите на аватар, скопируйте ID и сделайте скриншот. Отправьте в группу в тему «Жалобы на игроков» в формате: Причина | ID (например: Abuse | 1234567890ABCDEF). Без полных доказательств жалоба не принимается. За подделку — наказание. <span style="opacity:0.6;">#IOS #Android</span>
-    </div>
-
-    <div class="quote-item"><strong><i class="fas fa-laptop"></i> VolgaEditor — Редактор сохранений и карт</strong>
-    <img src="https://s6.iimage.su/s/10/g3Xdhdax3hbB34ptzNfqlAkngGVy3OFjOTOBZ5wtl.jpg" alt="VolgaEditor" style="width:100%; border-radius:20px; margin-bottom:16px;">
-        <br><u>Что это:</u> Программа для редактирования сохранений и карт Simple Sandbox 2 на ПК. Позволяет изменять пропы, таблички, граунды и многое другое.
-        <br><br><u>Основные функции:</u>
-        <br>• Редактирование сохранений и карт
-        <br>• Загрузка файла: перенесите сохранение с телефона на ПК (USB или Telegram) и перетащите в окно программы
-        <br>• Редактирование Граундов: размер, тип (Обычный/Вода/Барьер), текстура (0-8)
-        <br>• Редактирование текста на табличках (кроме табличек с "@")
-        <br>• Декомпиляция в .json и компиляция в .gz
-        <br>• Слияние карт, смещение пропов, удаление дубликатов
-        <br>• Клонирование пропов и выгрузка/загрузка построек (.prefab)
-        <br>• Генерация ландшафта с настройками (сид, высота, вода, структуры)
-        <br><br><u>Экспериментальные функции:</u> удаление повторений, клонирование, генерация ландшафта.
-        <br><br><u>Важно:</u>
-        <br>• Программа доступна только для Windows
-        <br>• Приложение неофициальное, антивирусы могут выдавать ложные срабатывания
-        <br>• Не рекомендуется злоупотреблять функциями (правила 2, 10, 11, 14)
-        <br>• Если файл не запускается: правой кнопкой → Свойства → внизу "Разблокировать" → Применить → ОК
-        <br><br><u>Скачать:</u> <a href="https://t.me/RU_Simple_SandBox2/50" target="_blank">https://t.me/RU_Simple_SandBox2/50</a>
-        <br><span style="opacity:0.6;">#Windows #ПК #VolgaEditor</span>
-    </div>
-`,
-            faq: () => {
-                const items = [
-                    { q: "Кто создал сайт?", a: "Команда Nexus Squad." }, { q: "Как связаться?", a: "Telegram @HoFiLiOnclkc или hofilionclkc@gmail.com." }, { q: "Где скачать игру?", a: "Google Play и App Store." }, { q: "Почему возможны неточности?", a: "Информация собирается из открытых источников. Сообщите нам." }, { q: "Будет ли тёмная тема?", a: "Планируется позже." }, { q: "Как часто обновляется архив?", a: "По мере появления новой информации и обновлений игры." }, { q: "Можно ли помочь проекту?", a: "Да, заполните анкету или свяжитесь с нами." }, { q: "Планируется ли мобильное приложение?", a: "Пока что только веб-версия, но вы можете добавить сайт на главный экран." }, { q: "Что такое PvP в SSB2?", a: "Игрок против игрока — сражения на различных картах." }, { q: "Как установить карту?", a: "См. раздел «Руководство» — Установка карты." }, { q: "Где найти пасхалки?", a: "В разделе «Пасхалки» перечислены известные секреты." }, { q: "Есть ли донат?", a: "Да, подробности в разделе «Донат»." }, { q: "Когда будет чат?", a: "Ориентировочно в версиях 1.0.7–1.0.8." }, { q: "Как сообщить о баге?", a: "Опишите баг и отправьте в Telegram-каналы сообщества (см. Руководство)." }, { q: "Что нового в последней версии?", a: "Нажмите на номер версии в шапке сайта." }
-                ];
-                let html = '<h2><i class="fas fa-question-circle"></i> FAQ</h2>';
-                items.forEach(i => html += `<div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-question">${i.q} <i class="fas fa-chevron-down"></i></div><div class="faq-answer">${i.a}</div></div>`);
-                return html;
-            },
-            feedback: () => `
-                <h2><i class="fas fa-envelope"></i> Сообщить об ошибке</h2>
-                <p>Нашли неточность, баг или хотите предложить новую информацию? Заполните форму ниже.</p>
-                <form class="feedback-form" id="feedbackForm">
-                    <select id="feedbackType" required><option value="" disabled selected>Тема</option><option value="Баг">Баг / Ошибка</option><option value="Идея">Предложение</option><option value="Другое">Другое</option></select>
-                    <textarea id="feedbackMessage" placeholder="Опишите проблему или предложение..." required></textarea>
-                    <input type="email" id="feedbackContact" placeholder="Email или Telegram (необязательно)">
-                    <button type="submit"><i class="fas fa-paper-plane"></i> Отправить</button>
-                    <div class="form-message" id="formMessage"></div>
-                </form>
-            `,
-            join: () => getJoinContent(),
-            chat: () => `<h2><i class="fas fa-comments"></i> Общий чат</h2><p>Общий чат появится в версиях <strong>1.0.8</strong>. Следите за обновлениями!</p>`,
-                profile: async () => {
-        const urlParams = new URLSearchParams(window.location.search);
-        const target = urlParams.get('u') || (currentUser ? currentUser[FIELDS.username] : null);
-        if (!target) return await renderProfileContent(null);
-        const content = await renderProfileContent(target);
-        if (currentUser && currentUser[FIELDS.username] !== target) await recordProfileView(target);
-        return content;
-    },
-};
-
-// ===== ФУНКЦИИ ДЛЯ РЕКОМЕНДАЦИЙ =====
 async function getRecommendedPages() {
     try {
         const snap = await getDocs(collection(db, COLLECTIONS.pageViewCounts));
@@ -2555,7 +2091,6 @@ function renderRecommendations(pages) {
     return html;
 }
 
-// ===== ПОДЕЛИТЬСЯ =====
 function sharePage(pageId) {
     const theme = baseThemes.find(t => t.id === pageId);
     if (!theme) return;
@@ -2581,7 +2116,7 @@ function sharePage(pageId) {
     }
 }
 
-// ===== АНКЕТА =====
+// —АНКЕТА—
 const joinSteps = [
     { q: "Готовы заполнить анкету для вступления в Nexus Squad?", type: 'info', btn: 'Начать' },
     { q: "1. Ваш никнейм/имя", type: 'text' },
@@ -2642,317 +2177,734 @@ function refreshJoinPage() {
     }
 }
 
-        // —ОБЩИЕ ФУНКЦИИ—
-        function getFullThemes() {
-            let themes = [...baseThemes];
-            if (isAdmin) themes.push({ id: 'admin', label: 'Админ-панель' });
-            return themes;
+// —ГЕНЕРАТОРЫ КОНТЕНТА—
+const contentGenerators = {
+    home: async () => {
+        let recs = [];
+        try { recs = await getRecommendedPages(); } catch(e) { console.warn('Ошибка получения рекомендаций:', e); }
+        const recHtml = renderRecommendations(recs);
+        let totalUsers = '—';
+        try {
+            const snap = await getDocs(query(collection(db, COLLECTIONS.users), where('registrationType', '==', 'form')));
+            totalUsers = snap.size;
+        } catch(e) { console.warn('Ошибка получения количества пользователей:', e); }
+        return `
+            <h2><i class="fas fa-archive"></i> Архив Simple Sandbox 2</h2>
+            <p>Добро пожаловать в самый полный неофициальный архив по игре Simple Sandbox 2. Мы собрали всю доступную информацию: от истории разработки и списка версий до подробных руководств и пасхалок. Сайт создан командой <strong>Nexus Squad</strong> и продолжает пополняться.</p>
+            <div class="grid-2">
+                <div class="stat"><div id="onlineCount" class="stat-num">—</div><div class="stat-label">онлайн</div></div>
+                <div class="stat"><div id="totalViews" class="stat-num">—</div><div class="stat-label">общее количество просмотров</div></div>
+            </div>
+            <div class="grid-2" style="margin-top:10px;">
+                <div class="stat"><div id="totalVisitors" class="stat-num">—</div><div class="stat-label">всего посетителей</div></div>
+                <div class="stat"><div class="stat-num">${totalUsers}</div><div class="stat-label">всего аккаунтов</div></div>
+            </div>
+            ${recHtml}
+        `;
+    },
+    about_game: () => `
+        <h2><i class="fas fa-gamepad"></i> Об игре</h2>
+        <p>Simple Sandbox 2 — вторая часть знаменитой серии мобильных песочниц, разработанная талантливым Игорем Подгайным (Madness Games). Игра увидела свет 22 сентября 2019 года на Android и 13 марта 2021 года на iOS, и с тех пор её скачали более 10 миллионов раз.</p>
+        <div class="grid-2">
+            <div class="stat"><div class="stat-num">11,932,436</div><div class="stat-label">загрузок +-</div></div>
+            <div class="stat"><div class="stat-num">3.7★</div><div class="stat-label">Google Play</div></div>
+            <div class="stat"><div class="stat-num">3.6★</div><div class="stat-label">App Store</div></div>
+            <div class="stat"><div class="stat-num">Unity</div><div class="stat-label">Движок</div></div>
+        </div>
+        <p>По сравнению с первой частью игра сильно изменилась, хотя многие ветераны до сих пор считают SSB1 лучшей. По сравнению с недавней SSB3, вторая часть пока удерживает лидерство по отзывам.</p>
+        <h3><i class="fas fa-history"></i> История</h3>
+        <p>Разработка стартовала ещё в 2018 году. В 2020 году игру временно удаляли из Play Store по причинам, связанным с авторскими правами, но позже она была восстановлена. Пик популярности пришёлся на 2020–2021 годы. В 2023 году была удалена карта F_RaceMap. Сейчас проект получает редкие, но стабильные обновления, а русскоязычных игроков в нём больше, чем англоговорящих.</p>
+    `,
+    about: () => `
+        <h2><i class="fas fa-users"></i> О нас — Nexus Squad</h2>
+        <img src="https://s10.iimage.su/s/02/gVzPs6xxLOWLadzl7hCLrAOhMIsKFjzjLqu1rsltT.jpg" alt="Nexus Squad" style="width:100%; border-radius:20px; margin-bottom:16px;">
+        <p>Добро пожаловать в <strong>Nexus Squad</strong> — команду из <strong>12 энтузиастов</strong>, создающую этот архив.</p>
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px 20px; margin:12px 0;">
+            <div style="padding:4px 0;">• Ased656</div>
+            <div style="padding:4px 0;">• Kattrap_72</div>
+            <div style="padding:4px 0;">• Итер</div>
+            <div style="padding:4px 0;">• Плеер19445</div>
+            <div style="padding:4px 0;">• Tarak</div>
+            <div style="padding:4px 0;">• Корсар</div>
+            <div style="padding:4px 0;">• Advantage</div>
+            <div style="padding:4px 0;">• Galvatron</div>
+            <div style="padding:4px 0;">• Топ ник</div>
+            <div style="padding:4px 0;">• Rainz</div>
+            <div style="padding:4px 0;">• Forz_58</div>
+            <div style="padding:4px 0;">• firstGam</div>
+        </div>
+        <p style="margin-top:8px;">Хочешь присоединиться? <a href="#" onclick="switchTab('join')" style="color:#1e3a5f; font-weight:600;">Заполни анкету</a>.</p>
+        <div style="margin-top:20px; padding:16px; background:rgba(30,58,95,0.06); border-radius:16px; text-align:center; border:1px solid rgba(255,255,255,0.2);">
+            <i class="fab fa-telegram" style="font-size:28px; color:#26A5E4; display:block; margin-bottom:8px;"></i>
+            <p style="font-size:15px; color:#1e3a5f; font-weight:600; margin:0 0 4px 0;">Наш Telegram-канал:</p>
+            <p style="font-size:17px; color:#0a1a2b; font-weight:700; margin:0 0 8px 0;">@SSB2ARCHIVES_news</p>
+            <p style="font-size:13px; color:#555; margin:0;">Подписывайтесь, чтобы быть в курсе<br>новостей и обновлений архива!</p>
+        </div>
+    `,
+    dev: () => `
+        <h2><i class="fas fa-code"></i> Разработчик</h2>
+        <div style="display:flex;gap:14px;align-items:center;margin-bottom:10px;">
+            <i class="fas fa-user-astronaut" style="font-size:42px;"></i>
+            <div><span style="font-weight:700;font-size:20px;">Игорь Подгайный</span><br>Ihor Pidhainyi · Kr3shPro · Madness Games</div>
+        </div>
+        <p>Игорь родился в 1997 году в Херсонской области (Украина). По имеющейся информации сейчас он проживает в ОАЭ. Он женат на Виктории Поляковой. В 2022 году, во время военных действий, он потерял свой дом, что, возможно, повлияло на подход к донату в игре | Но все эти факты могут быть неточными!</p>
+        <h3><i class="fas fa-lightbulb"></i> Интересные факты</h3>
+        <ul style="padding-left:18px;font-size:14px;"><li>В игре присутствует агрессивный NPC, лицо которого скопировано с самого Игоря.</li><li>Скин античита доступен исключительно разработчику.</li><li>Домашние питомцы (собака и кот) — это отсылка к реальным животным Игоря.</li><li>Скин тестера можно получить только после заполнения специальной анкеты.</li></ul>
+        <p style="margin-top:12px;font-style:italic;color:#555;">Точный состав команды Madness Games в открытых источниках не раскрывается.</p>
+    `,
+    media: () => `
+        <h2><i class="fas fa-photo-video"></i> Медиа</h2>
+        <div class="media-category">
+            <h3><i class="fas fa-film"></i> Фильмы и сериалы</h3>
+            <p>Сообщество Simple Sandbox 2 выпустило множество фильмов и сериалов, среди которых можно выделить такие новинки, как «Сила вины», «Интеллигенты», «Эд Гейн — Монстр из Висконсина», «Sandbox Multiverse», «45 — Сорок Пятый», «Конечная» и «Асса 90-х». Особая благодарность SSB FILMS STUDIO, которая занимается продвижением и поддержкой новых кинопроектов внутри игры.</p>
+        </div>
+        <div class="media-category">
+            <h3><i class="fas fa-city"></i> RP Проекты</h3>
+            <ul class="media-list">
+                ${['Muhosransk','Syria','Crimson','Kyiv','SCP Secret Box','Kursk','Simferopol','Blopkagrad','День зомби','Zelo','Badlands','Modern conflict','Gotwors','Craft Rp','FANI','GORNY','Europe','Kharkiv','Banden','СВ Карелия','Грузия','FNAF','Nexus','RMRP','Адлерский','Королевство','Fun World','NXgen','Самосбор','NightTown','War SSB2','Dneprodar','MapZone','Р.Ф.Б.А','Припять','Russia RP','Samp RP','Хабаровск','Мини страны','Stalker','Зажопинск','Ссбешеры','Дания','Бомж Сити','RG—Alliance','plants of zombies','Neon rp','sermanfia rp','Бриллиант рп','Калифорния рп'].map(name => `<li class="media-item">${name}</li>`).join('')}
+            </ul>
+        </div>
+        <div class="media-category">
+            <h3><i class="fab fa-telegram"></i> Telegram-каналы</h3>
+            <div style="text-align:center; margin:10px 0;">
+                <a href="https://iimg.su/i/pkOO4A" target="_blank">
+                    <img src="https://s10.iimage.su/s/09/gpkOO4AxQjhVGCIp2amZLNXKPpNuo05XmGnS5AJD6.jpg" style="max-width:100%; border-radius:16px;" loading="lazy" alt="Telegram-каналы сообщества">
+                </a>
+            </div>
+            <ul class="media-list">
+                ${['Kartonovsky','maps for ssb2 by Hofilion','Lyoshka Games','Подвал Симола','Syria_Bolts RP','Kyiv RP','maps for SSB2','Muhosransk RP','Pixel studio','maps for SSB2 by iter','Домик Manola','Ssb2 maps made by URS','Комьюнити тапка','Карты от Крамотск','FOX Project','SCP Secret Box','Кладовка ased','Дефлер simple sandbox','Кладовка Hofilion','Tarak','Minsk RP','ZELO RP','Уголок Kattrap72','Europe RP','ССБешеры FRP','SSB2 build hacks','Freddy','Ссб2 ТГК помидорки','Cool RP Projects','Kraft RP','Project космос ССБ2','Volgograd rp[FRP]','Gotwors RP','Blopkagrad RP ssb2','maps for ssb2 MrEgor','Тавровка RP','2POTA 82часть','Sayex-канал','Moto FRP'].map(name => `<li class="media-item">${name}</li>`).join('')}
+            </ul>
+            <p style="margin-top:8px;"><strong>Официальные:</strong> Simple sandbox (канал игры), Gamzee (канал Gamzee).</p>
+        </div>
+        <div class="media-category">
+            <h3><i class="fab fa-youtube"></i> YouTube каналы</h3>
+            <div style="text-align:center; margin:10px 0;">
+                <a href="https://iimg.su/i/jJbpWV" target="_blank">
+                    <img src="https://s10.iimage.su/s/09/gjJbpWVxLPpjmQdRWDPdQmU97CcjmlVrZpGWtI8k0.jpg" style="max-width:100%; border-radius:16px;" loading="lazy" alt="YouTube каналы сообщества">
+                </a>
+            </div>
+            <ul class="media-list">
+                ${['Madness Games','Neon1','Kartonka what','Shaunee','_Феля_','M royal James King','Mr. Sasiska games','Opal Alien','Cboy YT','Ssb2 discovery','Uur Gaming','SimpleSamYT','Flunokai','Soapie Boi','Kamiflex','Alex wolk','Turbo TV','Melon Gaming','komes* x','Phrobss','морковка','hardmoon','plastinka','the Lunie','Sirius','Lyoshka games','Kattrap_72','Barbie','Powerpixel','Alicovid 19','4ulok','МоРкОВКа','ORBITO4IK','NIK Стритрейсер','Madalink','FuFkeks','Мявский Live','DELMOP','Neyzich','КАША ССБ2','KAPUSTA.','Шифер','8uLka','Деспел','Kartonovsky','popkaogyrcaa','ЈАВА','PAKETIK','Александр Трамваев','HoFiLiOn','sv1st','Sosiska','Kromeshnik','Barbie','Aqueen','Бонни ИТ','Дефлёр','Оклахомашет','Бебьеме','ДариониСигму','Гуманоидный эльф','Apex1115','Лешкины игры','Спокойной ночи','7.500$','Xperia 30','He-a','Masih','Jg','untuk','Lucallm','Джинбо','Ранен656','Халлев SSB2','ПАКЕТ1K SSB²','Simpl_e2','Дикий','Макс SSB2 228','Альфа SSB2','Люцифер YT','RDAS Україн','Тарак','Македонтол','ased','Fabr3N','ПЛЕЕР1944 Ссб2'].map(name => `<li class="media-item">${name}</li>`).join('')}
+            </ul>
+        </div>
+    `,
+    maps: () => `
+        <h2><i class="fas fa-map"></i> Карты</h2>
+        <h3><i class="fas fa-globe"></i> Существующие карты</h3>
+        <p>В игре доступно множество разнообразных карт: от песчаных пляжей (f_Sand) и зелёных лугов (f_Grass) до заброшенных городов (f_Chernobyl, f_Prison) и космических просторов (f_SpaceMap). Всего насчитывается более двух десятков официальных локаций.</p>
+        <div class="quote-block"><div class="quote-item">f_Grass</div><div class="quote-item">f_Sand</div><div class="quote-item">f_AirPort</div><div class="quote-item">f_Port</div><div class="quote-item">f_DesertCity</div><div class="quote-item">f_GoodMap</div><div class="quote-item">f_SnowVillage</div><div class="quote-item">f_BigCity</div><div class="quote-item">f_SpaceMap</div><div class="quote-item">f_Road</div><div class="quote-item">f_Chernobyl</div><div class="quote-item">f_Prison</div><div class="quote-item">f_RussianStreet</div><div class="quote-item">f_SquidMap</div><div class="quote-item">f_Snow</div><div class="quote-item">f_Sand Islands</div><div class="quote-item">gm_Bog</div><div class="quote-item">f_BlackIsland</div><div class="quote-item">f_WorldWar2_Map</div><div class="quote-item">f_LostIsland</div><div class="quote-item">f_BigMountain</div><div class="quote-item">f_Sandpolis_City</div><div class="quote-item">f_WasteLand</div><div class="quote-item">f_Stalker</div></div>
+        <h3><i class="fas fa-trash-alt"></i> Удалённые карты</h3><p>f_RacerMap, f_Nightcircus, f_Farm, f_Scificity</p>
+    `,
+    props: () => `
+        <h2><i class="fas fa-cubes"></i> Пропы</h2>
+        <p><strong>Лимит объектов:</strong> 50 000 в одиночной, 998 в мультиплеере.</p>
+        <h3>Наборы пропов</h3>
+        <div class="list-item"><span class="label">Default</span><span class="value">Roofs, Environment, Icon</span></div>
+        <div class="list-item"><span class="label">Furnitures</span><span class="value">Мебель</span></div>
+        <div class="list-item"><span class="label">City</span><span class="value">Бесплатно / 75💎</span></div>
+        <div class="list-item"><span class="label">Military / WW2</span><span class="value">Ядерная бомба</span></div>
+        <div class="list-item"><span class="label">Space</span><span class="value">65💎</span></div>
+        <div class="list-item"><span class="label">Apocalypse</span><span class="value">Донат</span></div>
+        <div class="list-item"><span class="label">Big City</span><span class="value">200💎</span></div>
+        <p>Для строительства небоскрёбов чаще всего используют набор Space.</p>
+    `,
+    skins: () => `
+        <h2><i class="fas fa-tshirt"></i> Скины</h2>
+        <p>Всего скинов 250+, а аксессуаров примерно столько же.</p>
+        <h3>Интересные скины</h3>
+        <div class="quote-block">
+            <div class="quote-item">
+                <strong>Звёздный скин</strong><br>
+                <span style="font-size:13px; color:#555;">600 000 кристаллов! Самый дорогой скин в игре.</span><br>
+                <span style="font-size:12px; color:#888;">Можно получить в ежедневных призах или выиграть в ивентах.</span>
+            </div>
+            <div class="quote-item">
+                <strong>Скин ютубера</strong><br>
+                <span style="font-size:13px; color:#555;">Выдаётся от 1.3k подписчиков.</span><br>
+                <span style="font-size:12px; color:#888;">Раньше требовалось 3.5k, позже снизили до 1.3k, также был период с 7.5k.</span>
+            </div>
+            <div class="quote-item">
+                <strong>Тестер / Античит</strong><br>
+                <span style="font-size:13px; color:#555;">Выдавался участникам тестирования игры.</span><br>
+                <span style="font-size:12px; color:#888;">Эксклюзивный скин, который больше не получить.</span>
+            </div>
+            <div class="quote-item">
+                <strong>Дьявол</strong><br>
+                <span style="font-size:13px; color:#555;">Можно было получить в Хэллоуинском паркуре.</span><br>
+                <span style="font-size:12px; color:#888;">Сезонный скин, который появляется только на Хэллоуин.</span>
+            </div>
+        </div>
+    `,
+    weapons: () => `<h2><i class="fas fa-gun"></i> Оружие</h2><p>Информация появится позже.</p>`,
+    vehicles: () => `
+        <h2><i class="fas fa-car"></i> Транспорт</h2>
+        <div class="quote-block">
+            <div class="quote-item"><strong>Наземный транспорт:</strong><br><span style="font-size:13px; color:#555;">Машины, танки, грузовики, мотоциклы, квадроциклы, скейты, самокаты, велосипеды.</span></div>
+            <div class="quote-item"><strong>Воздушный транспорт:</strong><br><span style="font-size:13px; color:#555;">Самолёты, вертолёты, космический корабль, летающая машина.</span></div>
+            <div class="quote-item"><strong>Водный транспорт:</strong><br><span style="font-size:13px; color:#555;">Лодки, Еатера, Яхты</span></div>
+            <div class="quote-item"><strong>Прочий транспорт:</strong><br><span style="font-size:13px; color:#555;">Роботы, Строительный кран.</span></div>
+        </div>
+        <h2><i class="fas fa-wrench"></i> Интересный факт</h2>
+        <p>С помощью гаечного ключа можно чинить колёса!</p>
+    `,
+    clans: () => `
+        <h2><i class="fas fa-fist-raised"></i> Кланы</h2>
+        <p>В Simple Sandbox 2 кланы играли значительную роль, особенно в период активного PvP. Сила кланов определялась численностью, боевыми навыками, политическим влиянием и умением вести длительные конфликты.</p>
+        <h3>Известные кланы</h3>
+        <div class="quote-item"><strong>LFD</strong> — Клан настоящих защитников simple sandbox 2/3 от читеров. К сожалению о них мало что известно</div>
+        <div class="quote-item"><strong>ARES</strong> (ранее ARE) — сильнейший клан по политической власти. Пользовался уважением моддеров (Bombhacker, Lider Turk), тестировщиков и разработчика Игоря Подгайного.</div>
+        <div class="quote-item"><strong>SPRS, DSR, NAR, UNI</strong> — доминировали в раннюю эпоху за счёт численности и слаженности в PvP.</div>
+        <h3>Лидеры кланов</h3>
+        <div class="quote-item"><strong>Шенатор</strong> — занимал 1-е место в RPG. Приобрёл большой боевой опыт в UNI.</div>
+        <div class="quote-item"><strong>Кафка (AFK)</strong> — занимал 1-е место среди снайперов. Развивал навыки в немецком сообществе.</div>
+        <p>Войны кланов часто сводились к испытанию на выносливость, а не к активным боям.</p>
+    `,
+    facts: () => `
+        <h2><i class="fas fa-lightbulb"></i> Факты и баги</h2>
+        <ul style="padding-left:18px;">
+            <li>Русскоязычных больше</li>
+            <li>Android получает обновления раньше</li>
+            <li>Баг с дверями</li>
+            <li>Баг переворота</li>
+            <li>Мифы: Крабмен, Статуя, Водомен</li>
+            <li>Погода: солнце, снег, дождь, гроза, буря</li>
+            <li>Новые механики: барьер, редактор подсветки, пропы ускорения</li>
+            <li>Скорость пули с любого оружия около 3000 км/ч</li>
+            <li>Скорость снаряда рпг около 170 км/ч</li>
+        </ul>
+    `,
+    versions: () => `
+        <h2><i class="fas fa-code-branch"></i> Версии</h2>
+        <p><strong>Ранние версии:</strong> 0.2.1, 0.2.7, 0.3.8, 0.6.4, 0.7.1, 0.7.6, 0.7.8, 0.8.7, 0.9.0, 1.0.0, 1.2.0, 1.6.0, 1.6.4</p>
+        <p><strong>Современные версии:</strong> 1.8.00, 1.8.11, 1.8.20, 1.8.30, 1.9.05, 1.9.06, 1.9.08, 1.9.26, 1.9.30, 1.9.37, 1.9.41, 1.9.45, 1.9.49, 1.9.51</p>
+    `,
+    cheats: () => `
+        <h2><i class="fas fa-skull"></i> Читы</h2>
+        <div class="list-item"><span class="label">Polar Patcher</span><span class="value"></span></div>
+        <div class="list-item"><span class="label">GAZ Mod</span><span class="value"></span></div>
+        <div class="list-item"><span class="label">Epilog</span><span class="value"></span></div>
+        <div class="list-item"><span class="label">Vexor cheats</span><span class="value"></span></div>
+        <h3><i class="fas fa-calendar-alt"></i> Хронология событий (май – июнь 2026)</h3>
+        <p><strong>24 мая 2026 года</strong> — в канале «Vexor cheats» появилось сообщение «ssb2 soon..». Это означало, что читы могут вернуться в SSB2, повторяя ситуацию осени 2024 года (волна от Epilog и Bombhacker). Начали публиковаться спойлеры с новыми командами и функциями. В чате канала, по мнению наблюдателей, присутствовали не вполне адекватные личности.</p>
+        <p><strong>1–2 июня 2026 года</strong> — совершена серия атак на серверы SSB2: их запаролили, игроки не могли зайти. 2 июня в 21:00 по московскому времени в канале появилось фото с надписью «мне пизда», а также скриншот сообщения из другого канала, где говорилось о доксе разработчика читов «Яшки» (кража паспортных данных). После этого на канал посыпались жалобы.</p>
+        <img src="https://s10.iimage.su/s/03/gFX9HX0xfFQsdLqpf3cqGAVTRE6NRiY7i17orYNN9.png" alt="Сообщение Vexor cheats" style="width:100%; border-radius:16px; margin-top:12px;">
+        <p style="font-style:italic; margin-top:4px;">* но информация про докс может оказаться фейком!</p>
+        <p><strong>3 июня 2026 года, 21:15</strong> — сервера SSB2 снова атакованы мощной DDoS-атакой. Бот заходил, паролил сервер и забирал права хоста. Зайти на сервер было невозможно, создавалось ощущение, что сервер заброшен, но на нём якобы играют другие. Атака затронула несколько регионов:</p>
+        <ul style="margin-left: 20px; margin-bottom: 10px;"><li>RU</li><li>USA</li><li>Европа</li><li>Украина</li><li>часть азиатских серверов</li></ul>
+        <p><strong>4 июня 2026 года</strong> — массовая DDoS-атака на серверы игры, приведшая к нестабильности практически во всех регионах. Вечером сервера отпустили, но множество игроков выразило злость на читы — начался бунт в виде серверов с негативными названиями.</p>
+        <div style="margin: 10px 0;"><a href="https://iimg.su/i/g9hrHi" target="_blank"><img src="https://s10.iimage.su/s/09/gg9hrHixHDRAq1VYmL1Z0GdLhHmwajno2kLtZcnzT.jpg" alt="Бунт игроков" style="max-width:100%; border-radius:16px;"></a><p style="font-size:12px; text-align:center; margin-top:4px;">Пример того, как игроки с помощью названия сервера выражали протест</p></div>
+        <p><strong>5 июня 2026 года</strong> — повторные DDoS-атаки, но уже с новым способом: невидимый для списка игроков бот заходил на сервер, спамил в чат рекламой чита, а затем делал всех игроков, заходивших на сервер, «невидимыми». На деле игроки оставались в фазе подключения, их камера смотрела на превью карты, работало только меню. Выйти было невозможно — только перезаход в игру. Произведено 2 атаки. Ожидается скорый выпуск читов.</p>
+        <p><strong>Новая информация про читы!</strong> - слова из телеграм канала читов: Если хотите меньший шанс на бан или что-бы простых игроков банило то вот вам гайд: Скопируйте ******* игрока из плеер листа на сервере (только со включенным A*****n S****f) и вставьте его в *** ***, тогда вы будете играть на его гостевом аккауте.</p>
+        <p style="margin-top:12px; font-style:italic;">Ситуация стремительно развивается. Информация предоставлена командой Nexus Squad. О новых новостях будет сообщено в этом разделе.</p>
+        <h2>Nemises</h2>
+        <p>Скоро новая информация про читы "Nemises"</p>
+    `,
+    reqs: () => `
+        <h2><i class="fas fa-mobile-alt"></i> Требования</h2>
+        <div class="list-item"><span class="label">Android</span><span class="value">5.0+, 2 ГБ ОЗУ</span></div>
+        <div class="list-item"><span class="label">iOS</span><span class="value">11.0+, iPhone 6s+</span></div>
+    `,
+    donate: () => `
+        <h2><i class="fas fa-gem"></i> Донат</h2>
+        <h3>VIP навсегда</h3><div class="quote-item">1 799,00 ₽ — нет рекламы, верёвка, +40 друзей, доход x1.75, макс. 15 игроков, скин Cyber Punks, отключение PvP</div>
+        <h3>Наборы</h3>
+        <div class="quote-item"><strong>Starter Pack</strong> — 349,99 ₽ (Draven, Elara)</div>
+        <div class="quote-item"><strong>Elite Bundle</strong> — 399,00 ₽ (скидка 75%)</div>
+        <div class="quote-item"><strong>Байкерский Пак</strong> — 449,99 ₽</div>
+        <div class="quote-item"><strong>USA ARMY</strong> — 499,00 ₽ (M1 ABRAMS, F-16, MATV)</div>
+        <div class="quote-item"><strong>Армия Германии</strong> — 599,00 ₽</div>
+        <div class="quote-item"><strong>Армия Казахстана</strong> — 599,00 ₽</div>
+        <div class="quote-item"><strong>Японская Армия</strong> — 590,00 ₽</div>
+        <div class="quote-item"><strong>Бразильская армия</strong> — 425,00 ₽ (GUARANI, KC-390)</div>
+        <div class="quote-item"><strong>British Pack</strong> — 349,99 ₽</div>
+        <div class="quote-item"><strong>Racer Pack</strong> — 399,00 ₽</div>
+        <h3>Другие товары</h3>
+        <div class="quote-item"><strong>WW2 Pack</strong> — 799,99 ₽</div>
+        <div class="quote-item"><strong>Apocalypse Pack</strong> — 899,99 ₽</div>
+        <div class="quote-item"><strong>Apocalypse Interiors</strong> — 249,99 ₽</div>
+        <div class="quote-item"><strong>Halloween Skin #1/#2</strong> — 199,99 ₽</div>
+        <div class="quote-item"><strong>HD SKIN</strong> — 249,99 ₽</div>
+        <div class="quote-item"><strong>Mafia Skin</strong> — 225,00 ₽</div>
+        <div class="quote-item"><strong>Creatures Skins</strong> — 149,99 ₽</div>
+        <div class="quote-item"><strong>Robot Pack</strong> — 149,00 ₽</div>
+        <div class="quote-item"><strong>Heli Pack</strong> — 139,00 ₽</div>
+        <div class="quote-item"><strong>Vehicle Pack</strong> — 199,99 ₽</div>
+        <div class="quote-item"><strong>Car#1</strong> — 199,00 ₽</div>
+        <div class="quote-item"><strong>Air Pack</strong> — 299,00 ₽</div>
+        <div class="quote-item"><strong>Retro Pack</strong> — 209,00 ₽</div>
+        <div class="quote-item"><strong>Skins REKT</strong> — 159,00 ₽</div>
+        <div class="quote-item"><strong>Water REKT</strong> — 189,00 ₽</div>
+        <div class="quote-item"><strong>RPG2.0</strong> — 179,00 ₽</div>
+        <div class="quote-item"><strong>Mini-Gun MH1</strong> — 199,00 ₽</div>
+    `,
+    eastereggs: () => `
+        <h2><i class="fas fa-egg"></i> Пасхалки</h2>
+        <p>В игре Simple Sandbox 2 есть несколько пасхалок и секретных элементов, которые можно разблокировать или найти на определённых картах.</p>
+        <div class="quote-item"><strong>Alien Skin (скин пришельца).</strong> Чтобы его получить, нужно играть в игру между 00:00 и 01:00 и зайти на карту Big City (f_BigCity).</div>
+        <div class="quote-item"><strong>Cameraman Skin и NPC Speakerman (скин оператора и NPC диктора).</strong> На карте Island (f_Island) нужно найти скрытый подводный туннель, который ведёт в комнату с камерами наблюдения и шкафчиками. В одном из шкафчиков находится скин и NPC.</div>
+        <div class="quote-item"><strong>Red Cube Guy Skin (скин парня в красном кубе).</strong> Этот скин можно разблокировать в режиме приключения (adventure/story mode).</div>
+        <div class="quote-item"><strong>Penguin Skin (скин пингвина).</strong> Нужно играть на любой карте, зайти в меню реквизита (prop menu), выбрать мини-локацию и разместить ту, где есть igoos. В одном из них будет NPC-пингвин, с которым можно взаимодействовать, чтобы разблокировать скин. После этого скин не появится в меню магазина — чтобы его надеть, нужно разместить предмет одежды и взаимодействовать с ним.</div>
+        <div class="quote-item"><strong>Ghost Girl Skin (скин призрачной девушки).</strong> Находится на карте gmBog (f_gm_Bog).</div>
+        <div class="quote-item"><strong>Two Hat Items (два головных убора).</strong> На карте gmBog (f_gm_Bog) нужно найти дом с компьютером и ввести трёхзначный код.</div>
+        <div class="quote-item"><strong>White and Orange Bag (белая и оранжевая сумка).</strong> Чтобы её получить, нужно зайти на карту f_Space_Map, спуститься по лестнице до второй палубы. В большом пустом коридоре слева будет дверь, которую можно открыть, там и находится сумка.</div>
+        <div class="quote-item"><strong>Blue Car (синяя машина).</strong> Нужно зайти на карту f_RussianStreet и пройти некоторое расстояние в радиоактивной зоне.</div>
+        <div class="quote-item"><strong>Animal Head Thing (предмет в виде головы животного).</strong> На карте f_RussianStreet в конце карты нужно найти дом с ключом, висящим на нём. Возьмите ключ и войдите в дом.</div>
+        <p>Некоторые пасхалки и секреты могут быть связаны с обновлениями игры или багами. Например, в одном из видео упоминались такие элементы, как «откопать могилу» (приз — скин) и «поймать нож на антенне» (приз — нож), но из-за бага могилу на тот момент раскопать было невозможно.</p>
+    `,
+    guide: () => `
+        <h2><i class="fas fa-book-open"></i> Руководство</h2>
+        <div class="quote-item"><strong><i class="fas fa-bug"></i> Как сообщить о баге</strong>
+            <img src="https://s10.iimage.su/s/16/grAPhtqx2hGc1EnQq9tUzzFz7QQI8z9I868LfSi7o.jpg" alt="баг" style="width:100%; border-radius:16px; margin-top:12px;">
+            <br>Снимите баг на видео или сделайте скриншот, максимально подробно опишите, добавьте хэштег #bugs. Отправить можно в <a href="https://t.me/SimpleSandBoxCommunity" target="_blank">@SimpleSandBoxCommunity</a> или <a href="https://t.me/Simplesandbox2reports" target="_blank">@Simplesandbox2reports</a>. Если баг описан правильно и понятно — он будет исправлен. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-download"></i> Установка карты</strong>
+            <img src="https://s10.iimage.su/s/16/gANpBt3xpOmPcI3Ftss4j1qkiIyHb5Whw9eRiJZSd.jpg" alt="Установка карт" style="width:100%; border-radius:16px; margin-top:12px;">
+            <br><u>Способ 1 (Android):</u> Установите файловый менеджер. Для Android 11+ скачайте Shizuku/Cx проводник и запустите отладку по Wi-Fi. Скачайте файл карты (.clm или .clm.msg.gz). Через Telegram: 3 точки → Сохранить в загрузках. Переместите файл в <code>Android/data/com.SimpleSandbox2/files/Save Maps/</code>.<br><u>Способ 2 (ПК):</u> Скачайте файл карты. Подключите устройство по USB. На телефоне нажмите «Зарядка устройства через USB» → выберите «Передача файлов». Переместите файл через проводник Windows в <code>Android/data/com.SimpleSandbox2/files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-comment"></i> Текст на табличках в мультиплеере</strong>
+            <img src="https://s10.iimage.su/s/16/gBPw5rvxXDvQT453ZeIwi3JBv3vFfkVPJO4cZ1Oqc.jpg" alt="таблички" style="width:100%; border-radius:16px; margin-top:12px;">
+            <br>Пропадает, если сервер создан без «Cache Props» или табличка установлена в мультиплеере. Решение: перед созданием сервера включите Cache Props и используйте карту с готовыми надписями. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-server"></i> Настройка сервера</strong>
+            <img src="https://s10.iimage.su/s/16/gMpxPqBx5Bz1BM8ypGNI0SvI8sC6iEy1vWVZSZrvv.jpg" alt="сервер" style="width:100%; border-radius:16px; margin-top:12px;">
+            <br>Хост может менять правила:<br><u>Players:</u> список игроков, кнопка KICK.<br><u>Gameplay:</u> стрельба (отключение — VIP), строительство, транспорт, агрессивные NPC, двойной прыжок, сохранение карт, вид от первого лица.<br><u>World:</u> остановка времени, тёмная ночь, облака, рекламные предметы, время суток (01:00–24:00, в мультиплеере раз в 30 сек), погода (солнечно, снег, дождь, дождь с грозой, песчаная буря). <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-sliders-h"></i> Игровые настройки</strong>
+            <img src="https://s6.iimage.su/s/09/gCEkZO2x6uzLyUGABlUiVQbD5iqDELbcambZ3UDKO.jpg" alt="Игровые настройки" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br><u>Игра:</u> FPS, подсветка объектов, отображение рук, открыть транспорт чужим, деформация машин, туман, джойстик самолёта, управление машиной (UI Buttons/Accelerometer/Steering Wheel), чувствительность, редактор кнопок.<br><u>Графика:</u> Game Quality, Texture Quality, Shadow, Ultra Water, лимит FPS.<br><u>Аудио:</u> Main Volume, Music Volume, SFX Volume, Siren Volume, Spawn SFX. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-hammer"></i> Функции строительства</strong>
+            <img src="https://s6.iimage.su/s/09/gWMuQ8Nx5f8Lve4m48dRwkNNWzzL7rzDZ2PjtBzIE.jpg" alt="Строительство" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Kinematics — автозаморозка объектов (по умолчанию вкл). Free Build — свободная установка. Free Ground — установка внутрь других пропов. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-ban"></i> Бан за читы</strong>
+            <img src="https://s6.iimage.su/s/09/gQKmbdJx5fKuGq6qlb3PeJLNKtikLKwU4mZyfsKX8.jpg" alt="Бан" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Бан «Cheater | Indefinite» может выдаваться по ошибке. Если вы не использовали читы — бан пропадёт через несколько часов/дней. Никогда не скачивайте читы! <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-gem"></i> Как получить донат</strong>
+            <img src="https://s6.iimage.su/s/10/grQv8Tlx2NlmsaU2WW1gZKkTt24JeWTTT2L8n4iJd.jpg" alt="Донат" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>1. Купить в игре. 2. Через администратора. 3. Участвовать в конкурсах в Telegram-каналах Madness Games (награды ограничены). 4. Промокоды (очень редко, награда непредсказуема). Остальные способы могут привести к блокировке. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-lock"></i> Подключение к серверам в РФ</strong>
+            <img src="https://s6.iimage.su/s/10/gr2d7pTxhDtk5cpAL20RpIfQzi8NweZ4nJKmVHj8X.jpg" alt="Неважно" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>РКН бывает блокирует адреса серверов. Решения (не 100%): VPN, очистка кэша и перезагрузка, отключение прокси, смена интернета, перезаход в аккаунт. Меняйте VPN, если не помогает. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-ad"></i> Не работает реклама</strong>
+            <img src="https://s6.iimage.su/s/10/g98sudmx6fTOMy6dFHbdtYUU4sjOVimS2pvKsaU18.jpg" alt="Неважно" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Решения: очистить кэш игры, сбросить рекламный идентификатор (Настройки → Безопасность → Реклама), включить/отключить VPN, отключить персональный DNS, отключить блокировщик рекламы. <span style="opacity:0.6;">#Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-user-circle"></i> Не подключается аккаунт</strong>
+            <img src="https://s6.iimage.su/s/10/gpNvQwuxnaPc6VXG1u5YYEeOANt2YZL2rCIJtXsiu.jpg" alt="А тут важно" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Решения: перезапустить игру/устройство, очистить кэш, Play Игры → Профиль → 3 точки → Настройки → Очистить историю поиска, включить/отключить VPN, сменить интернет. После каждого действия перезапускайте игру. <span style="opacity:0.6;">#Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-shield-alt"></i> Безопасный режим</strong>
+            <img src="https://s6.iimage.su/s/10/gfnZhMCxCOz3Z96wzzjd3cIQjn3rmROCdWVt4TBs2.jpg" alt="Безопасный режим" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Урон по вам не регистрируется, вы не наносите урон. Над игроком иконка. Включается в меню паузы. После отключения нельзя включить 60 секунд. Не спасает от падения под карту. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-robot"></i> Настройка NPC</strong>
+            <img src="https://s6.iimage.su/s/10/gMimBY7xG1dFZz7y5taB3ymWIlsngH7ZfY6zp6ePW.jpg" alt="Настройка NPC" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Наведите прицел на туловище для смены скина, на голову — для смены анимации. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-draw-polygon"></i> Граунды (Grounds)</strong>
+            <img src="https://s6.iimage.su/s/10/gFT3sKKxGvIAP6DMZ7joRwdMjw47tb60fNOSkHcAA.jpg" alt="Граунды" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Редактируемые пропы из Others. Обычный (9 текстур: 0-Трава, 1-Песок, 2-Камень, 3-Снег, 4-Асфальт, 5-Земля, 6-Стандартные плиты, 7-Чёрные плиты, 8-Серые плиты; лимит 250). Вода (без текстур, лимит 500). Барьер (2 текстуры: 0-Прозрачно-красный, 1-Обыкновенный; лимит 250). <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-wrench"></i> Улучшение транспорта</strong>
+            <img src="https://s6.iimage.su/s/10/gKJ5SeMxusrFevH2ru9O0pAiamzTL8wmwX7vBSkgd.jpg" alt="Тюнинг" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Поставьте спец. проп из Others и заезжайте в зону. Доступно: Neo (цвет подсветки: 0-Ничего, 1-Голубой, 2-Зелёный, 3-Красный) и Wheels (колёса: 0-Стандартные, 1–15 уникальные). Только для транспорта с меткой «E». <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-box-open"></i> Пропажа купленных элементов</strong>
+            <img src="https://s6.iimage.su/s/10/g0hF0naxCkgjMAoGeUIZwj3vYkNwzzZKL2o6EmMOn.jpg" alt="Пропажа покупок" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Обратитесь к администратору, приложите игровой ID в текстовом формате, название доната и чеки. Монеты/кристаллы/ключи/детали не восстанавливаются. Связь: GamzeeChert. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-ticket-alt"></i> Активация промокода</strong>
+            <img src="https://s6.iimage.su/s/10/glNhE8CxLPRj9yqCSaLGhBJuDZBWg6vCqDd3albLY.jpg" alt="Промокод" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Внутриигровой магазин → поле «Введите код...» → ввести промокод. При успехе появится «КУПОН АКТИВИРОВАН». <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-exclamation-triangle"></i> Обнаружение читов</strong>
+            <img src="https://s6.iimage.su/s/10/gpTAobpxIO0iy7r617mCnRDvfn2zzGperck0LGoTs.jpg" alt="Обнаружение читов" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Предупреждение появляется при обнаружении стороннего ПО. Удалите подозрительные файлы из папки «Загрузки»/«Download». Не скачивайте читы! <span style="opacity:0.6;">#Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-sync-alt"></i> Смена Google аккаунта</strong>
+            <img src="https://s6.iimage.su/s/10/gf1xPK2xSUl0wzYDy2tOtGq6gCKmzSjE9suNGof6O.jpg" alt="Смена Google" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>Удерживайте иконку игры → «Профиль» → выберите аккаунт → «Сохранить». Должен быть установлен Play Игры. Проверено на Galaxy S24, Android 16. <span style="opacity:0.6;">#Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-car-crash"></i> Восстановление колёс</strong>
+            <br>Возьмите гаечный ключ (Player/Items/2), наведите на место колеса (возможно, ниже кузова) и чините. Ключ восстанавливает 125 ед., колёса имеют ~200 ед. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-flag"></i> Жалоба на игрока</strong>
+            <img src="https://s6.iimage.su/s/10/gcRkidfxd8IqOy7ZavIfng0zkbMisWDJ7VqvJblFX.jpg" alt="Жалоба" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br>1. Сделайте 2+ скриншота/видео нарушения. 2. Добавьте нарушителя в друзья. 3. Покиньте сервер, зайдите во вкладку «Друзья», сделайте скриншот с никнеймом. 4. Нажмите на аватар, скопируйте ID и сделайте скриншот. Отправьте в группу в тему «Жалобы на игроков» в формате: Причина | ID (например: Abuse | 1234567890ABCDEF). Без полных доказательств жалоба не принимается. За подделку — наказание. <span style="opacity:0.6;">#IOS #Android</span>
+        </div>
+        <div class="quote-item"><strong><i class="fas fa-laptop"></i> VolgaEditor — Редактор сохранений и карт</strong>
+            <img src="https://s6.iimage.su/s/10/g3Xdhdax3hbB34ptzNfqlAkngGVy3OFjOTOBZ5wtl.jpg" alt="VolgaEditor" style="width:100%; border-radius:20px; margin-bottom:16px;">
+            <br><u>Что это:</u> Программа для редактирования сохранений и карт Simple Sandbox 2 на ПК. Позволяет изменять пропы, таблички, граунды и многое другое.
+            <br><br><u>Основные функции:</u>
+            <br>• Редактирование сохранений и карт
+            <br>• Загрузка файла: перенесите сохранение с телефона на ПК (USB или Telegram) и перетащите в окно программы
+            <br>• Редактирование Граундов: размер, тип (Обычный/Вода/Барьер), текстура (0-8)
+            <br>• Редактирование текста на табличках (кроме табличек с "@")
+            <br>• Декомпиляция в .json и компиляция в .gz
+            <br>• Слияние карт, смещение пропов, удаление дубликатов
+            <br>• Клонирование пропов и выгрузка/загрузка построек (.prefab)
+            <br>• Генерация ландшафта с настройками (сид, высота, вода, структуры)
+            <br><br><u>Экспериментальные функции:</u> удаление повторений, клонирование, генерация ландшафта.
+            <br><br><u>Важно:</u>
+            <br>• Программа доступна только для Windows
+            <br>• Приложение неофициальное, антивирусы могут выдавать ложные срабатывания
+            <br>• Не рекомендуется злоупотреблять функциями (правила 2, 10, 11, 14)
+            <br>• Если файл не запускается: правой кнопкой → Свойства → внизу "Разблокировать" → Применить → ОК
+            <br><br><u>Скачать:</u> <a href="https://t.me/RU_Simple_SandBox2/50" target="_blank">https://t.me/RU_Simple_SandBox2/50</a>
+            <br><span style="opacity:0.6;">#Windows #ПК #VolgaEditor</span>
+        </div>
+    `,
+    faq: () => {
+        const items = [
+            { q: "Кто создал сайт?", a: "Команда Nexus Squad." },
+            { q: "Как связаться?", a: "Telegram @HoFiLiOnclkc или hofilionclkc@gmail.com." },
+            { q: "Где скачать игру?", a: "Google Play и App Store." },
+            { q: "Почему возможны неточности?", a: "Информация собирается из открытых источников. Сообщите нам." },
+            { q: "Будет ли тёмная тема?", a: "Планируется позже." },
+            { q: "Как часто обновляется архив?", a: "По мере появления новой информации и обновлений игры." },
+            { q: "Можно ли помочь проекту?", a: "Да, заполните анкету или свяжитесь с нами." },
+            { q: "Планируется ли мобильное приложение?", a: "Пока что только веб-версия, но вы можете добавить сайт на главный экран." },
+            { q: "Что такое PvP в SSB2?", a: "Игрок против игрока — сражения на различных картах." },
+            { q: "Как установить карту?", a: "См. раздел «Руководство» — Установка карты." },
+            { q: "Где найти пасхалки?", a: "В разделе «Пасхалки» перечислены известные секреты." },
+            { q: "Есть ли донат?", a: "Да, подробности в разделе «Донат»." },
+            { q: "Когда будет чат?", a: "Ориентировочно в версиях 1.0.7–1.0.8." },
+            { q: "Как сообщить о баге?", a: "Опишите баг и отправьте в Telegram-каналы сообщества (см. Руководство)." },
+            { q: "Что нового в последней версии?", a: "Нажмите на номер версии в шапке сайта." }
+        ];
+        let html = '<h2><i class="fas fa-question-circle"></i> FAQ</h2>';
+        items.forEach(i => html += `<div class="faq-item" onclick="this.classList.toggle('open')"><div class="faq-question">${i.q} <i class="fas fa-chevron-down"></i></div><div class="faq-answer">${i.a}</div></div>`);
+        return html;
+    },
+    feedback: () => `
+        <h2><i class="fas fa-envelope"></i> Сообщить об ошибке</h2>
+        <p>Нашли неточность, баг или хотите предложить новую информацию? Заполните форму ниже.</p>
+        <form class="feedback-form" id="feedbackForm">
+            <select id="feedbackType" required><option value="" disabled selected>Тема</option><option value="Баг">Баг / Ошибка</option><option value="Идея">Предложение</option><option value="Другое">Другое</option></select>
+            <textarea id="feedbackMessage" placeholder="Опишите проблему или предложение..." required></textarea>
+            <input type="email" id="feedbackContact" placeholder="Email или Telegram (необязательно)">
+            <button type="submit"><i class="fas fa-paper-plane"></i> Отправить</button>
+            <div class="form-message" id="formMessage"></div>
+        </form>
+    `,
+    join: () => getJoinContent(),
+    chat: () => `<h2><i class="fas fa-comments"></i> Общий чат</h2><p>Общий чат появится в версиях <strong>1.0.8</strong>. Следите за обновлениями!</p>`,
+    profile: async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const target = urlParams.get('u') || (currentUser ? currentUser[FIELDS.username] : null);
+        if (!target) return await renderProfileContent(null);
+        const content = await renderProfileContent(target);
+        if (currentUser && currentUser[FIELDS.username] !== target) await recordProfileView(target);
+        return content;
+    }
+};
+
+// —ОБЩИЕ ФУНКЦИИ—
+function getFullThemes() {
+    let themes = [...baseThemes];
+    if (isAdmin) themes.push({ id: 'admin', label: 'Админ-панель' });
+    return themes;
+}
+
+function getContent(id) {
+    if (id === 'admin') return getAdminContent();
+    if (contentGenerators[id]) return contentGenerators[id]();
+    return '';
+}
+
+function renderTabs() {
+    const themes = getFullThemes();
+    document.getElementById('tabsContainer').innerHTML = themes.map(t =>
+        `<button class="tab ${t.id===currentPageId?'active':''}" data-tab="${t.id}">${t.label}</button>`
+    ).join('');
+}
+
+async function renderPage(tabId) {
+    const page = document.getElementById(`page-${tabId}`);
+    if (!page) return;
+    page.dataset.rendered = '1';
+    let html = await getContent(tabId);
+    if (!['home', 'profile', 'admin', 'feedback', 'join', 'chat'].includes(tabId)) {
+        const shareBtn = `<button class="share-icon" onclick="sharePage('${tabId}')" title="Поделиться"><i class="fas fa-share-alt"></i></button>`;
+        page.innerHTML = `<div class="card">${shareBtn}${html}</div>`;
+    } else {
+        page.innerHTML = `<div class="card">${html}</div>`;
+    }
+    if (!['home', 'profile', 'admin', 'feedback', 'join', 'chat'].includes(tabId)) {
+        const card = page.querySelector('.card');
+        if (card) {
+            await renderPageViews(tabId, card);
         }
+    }
+    if (tabId === 'home') updateHomeStats();
+    if (tabId === 'join') {
+        const startBtn = document.getElementById('startJoinWizard');
+        if (startBtn) startBtn.addEventListener('click', () => { joinStep = 1; joinAnswers = []; refreshJoinPage(); });
+    }
+    if (tabId === 'profile') setTimeout(() => bindProfileEvents(), 100);
+}
 
-        function getContent(id) {
-            if (id === 'admin') return getAdminContent();
-            if (contentGenerators[id]) return contentGenerators[id]();
-            return '';
-        }
+async function updateHomeStats() {
+    const onlineEl = document.getElementById('onlineCount');
+    const totalEl = document.getElementById('totalViews');
+    const visitorsEl = document.getElementById('totalVisitors');
+    if (onlineEl) { const online = await getOnlineCount(); onlineEl.textContent = online; }
+    if (totalEl) totalEl.textContent = (await getTotalViews()).toLocaleString();
+    if (visitorsEl) visitorsEl.textContent = (await getTotalVisitors()).toLocaleString();
+}
 
-        function renderTabs() {
-            const themes = getFullThemes();
-            document.getElementById('tabsContainer').innerHTML = themes.map(t =>
-                `<button class="tab ${t.id===currentPageId?'active':''}" data-tab="${t.id}">${t.label}</button>`
-            ).join('');
-        }
-
-        async function renderPage(tabId) {
-            const page = document.getElementById(`page-${tabId}`);
-            if (!page) return;
-            page.dataset.rendered = '1';
-            let html = await getContent(tabId);
-            if (!['home', 'profile', 'admin', 'feedback', 'join', 'chat'].includes(tabId)) {
-                const shareBtn = `<button class="share-icon" onclick="sharePage('${tabId}')" title="Поделиться"><i class="fas fa-share-alt"></i></button>`;
-                page.innerHTML = `<div class="card">${shareBtn}${html}</div>`;
-            } else {
-                page.innerHTML = `<div class="card">${html}</div>`;
-            }
-            if (!['home', 'profile', 'admin', 'feedback', 'join', 'chat'].includes(tabId)) {
-                const card = page.querySelector('.card');
-                if (card) {
-                    await renderPageViews(tabId, card);
-                }
-            }
-            if (tabId === 'home') updateHomeStats();
-            if (tabId === 'join') {
-                const startBtn = document.getElementById('startJoinWizard');
-                if (startBtn) startBtn.addEventListener('click', () => { joinStep = 1;
-                    joinAnswers = [];
-                    refreshJoinPage(); });
-            }
-            if (tabId === 'profile') setTimeout(() => bindProfileEvents(), 100);
-        }
-
-        async function updateHomeStats() {
-            const onlineEl = document.getElementById('onlineCount');
-            const totalEl = document.getElementById('totalViews');
-            const visitorsEl = document.getElementById('totalVisitors');
-            if (onlineEl) { const online = await getOnlineCount();
-                onlineEl.textContent = online; }
-            if (totalEl) totalEl.textContent = (await getTotalViews()).toLocaleString();
-            if (visitorsEl) visitorsEl.textContent = (await getTotalVisitors()).toLocaleString();
-        }
-
-        function switchTab(tabId, searchTerm = '') {
-            if (tabId === currentPageId && !searchTerm) return;
-            if (typeof currentSearchTerm === 'undefined') {
-                var currentSearchTerm = '';
-            }
-            currentSearchTerm = searchTerm;
-            document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-            const page = document.getElementById(`page-${tabId}`);
-            if (page) {
-                page.classList.add('active-page');
-            } else {
-                const pagesDiv = document.getElementById('pagesContainer');
-                const newPage = document.createElement('div');
-                newPage.id = `page-${tabId}`;
-                newPage.className = 'page active-page';
-                pagesDiv.appendChild(newPage);
-            }
-            currentPageId = tabId;
-            renderTabs();
-            renderPage(tabId);
-            incrementPageView(tabId);
-        }
-
-        // —ПОИСК—
-        let searchTimeout = null;
-
-        function setupSearch() {
-            const input = document.getElementById('searchInput');
-            const resultsDiv = document.getElementById('searchResults');
-            input.addEventListener('input', function() {
-                const term = this.value.trim().toLowerCase();
-                clearTimeout(searchTimeout);
-                if (term.length < 1) { resultsDiv.classList.remove('active');
-                    resultsDiv.innerHTML = ''; return; }
-                searchTimeout = setTimeout(() => {
-                    const results = searchAcrossPages(term);
-                    resultsDiv.innerHTML = '';
-                    if (results.length === 0) {
-                        resultsDiv.innerHTML = '<div class="search-result-item">Ничего не найдено</div>';
-                    } else {
-                        results.forEach(r => {
-                            const item = document.createElement('div');
-                            item.className = 'search-result-item';
-                            item.innerHTML = `<div class="search-result-title">${r.title}</div><div class="search-result-snippet">${r.snippet}</div>`;
-                            item.addEventListener('click', () => {
-                                switchTab(r.id, term);
-                                resultsDiv.classList.remove('active');
-                                document.getElementById('searchInput').value = term;
-                            });
-                            resultsDiv.appendChild(item);
-                        });
-                    }
-                    resultsDiv.classList.add('active');
-                }, 300);
-            });
-            document.addEventListener('click', (e) => {
-                if (!e.target.closest('.search-box')) resultsDiv.classList.remove('active');
-            });
-        }
-
-        function searchAcrossPages(query) {
-            const results = [];
-            const allIds = Object.keys(contentGenerators).filter(id => id !== 'join' && id !== 'admin');
-            allIds.forEach(id => {
-                const content = getContent(id);
-                const div = document.createElement('div');
-                div.innerHTML = content;
-                const text = div.innerText || '';
-                if (text.toLowerCase().includes(query.toLowerCase())) {
-                    const idx = text.toLowerCase().indexOf(query.toLowerCase());
-                    const start = Math.max(0, idx - 40);
-                    const end = Math.min(text.length, idx + query.length + 40);
-                    const snippet = text.substring(start, end).replace(/\n/g, ' ');
-                    const title = baseThemes.find(t => t.id === id)?.label || id;
-                    results.push({ id, title, snippet });
-                }
-            });
-            return results;
-        }
-
-        // —УВЕДОМЛЕНИЯ—
-        function subscribeToNotifications() {
-            if (!currentUser) return;
-            if (notificationUnsubscribe) { notificationUnsubscribe();
-                notificationUnsubscribe = null; }
-            const notifRef = collection(db, COLLECTIONS.notifications, currentUser[FIELDS.username], 'userNotifs');
-            notificationUnsubscribe = onSnapshot(query(notifRef, orderBy('timestamp', 'desc'), limit(50)), (snapshot) => {
-                const unread = snapshot.docs.filter(d => d.data().read === false).length;
-                const badge = document.getElementById('notifBadge');
-                if (badge) {
-                    if (unread > 0) { badge.textContent = unread;
-                        badge.style.display = 'inline'; } else { badge.style.display = 'none'; }
-                }
-            }, (error) => { console.warn('Ошибка подписки на уведомления:', error); });
-        }
-
-        function openNotificationsModal() {
-            if (!currentUser) { showToast('Войдите, чтобы увидеть уведомления', 'fa-exclamation-circle', 3000); return; }
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content">
-                    <h2><i class="fas fa-bell"></i> Уведомления</h2>
-                    <div class="modal-body" id="notifList"><p style="text-align:center;color:#888;padding:20px;">Загрузка...</p></div>
-                    <div class="modal-footer"><button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button></div>
-                </div>
-            `;
-            openModal(overlay);
-            const markRead = async () => {
-                const notifRef = collection(db, COLLECTIONS.notifications, currentUser[FIELDS.username], 'userNotifs');
-                const snap = await getDocs(query(notifRef, where('read', '==', false)));
-                snap.forEach(async (d) => { await updateDoc(doc(db, COLLECTIONS.notifications, currentUser[FIELDS.username], 'userNotifs', d.id), { read: true }); });
-            };
-            const loadNotifs = async () => {
-                const list = document.getElementById('notifList');
-                const notifRef = collection(db, COLLECTIONS.notifications, currentUser[FIELDS.username], 'userNotifs');
-                const snap = await getDocs(query(notifRef, orderBy('timestamp', 'desc'), limit(50)));
-                if (snap.empty) { list.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Нет уведомлений</p>'; return; }
-                let html = '';
-                snap.forEach(d => {
-                    const data = d.data();
-                    const icon = data.type === 'official' ? '✅' : data.type === 'view' ? '👁️' : '📢';
-                    const time = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString() : '';
-                    const isRead = data.read ? '⚪' : '🔵';
-                    html += `<div style="${data.read ? 'opacity:0.7;' : ''}"><div>${icon}</div><div><div>${data.text || 'Уведомление'}</div><div style="font-size:12px;color:#888;">${time}</div></div><div>${isRead}</div></div>`;
-                });
-                list.innerHTML = html;
-                await markRead();
-            };
-            loadNotifs();
-        }
-
-        async function openUserStatsModal() {
-            if (!currentUser) { showToast('Войдите, чтобы увидеть статистику', 'fa-exclamation-circle', 3000); return; }
-            const userData = await getUserByUsername(currentUser[FIELDS.username]);
-            if (!userData) { showToast('Ошибка загрузки', 'fa-exclamation-circle', 2000); return; }
-            const profile = userData[FIELDS.profile] || { [FIELDS.views]: 0 };
-            const registered = userData[FIELDS.registeredAt] ? new Date(userData[FIELDS.registeredAt].toMillis()).toLocaleDateString() : '—';
-            const lastLogin = userData[FIELDS.lastLogin] ? new Date(userData[FIELDS.lastLogin].toMillis()).toLocaleString() : '—';
-            let favoriteSection = 'Не определён';
-            let totalPages = 0;
-            try {
-                const historyRef = collection(db, 'userHistory', currentUser[FIELDS.username], 'pages');
-                const snap = await getDocs(historyRef);
-                const counts = {};
-                snap.forEach(d => {
-                    const page = d.data().pageId;
-                    if (page && !['home', 'profile', 'chat', 'join', 'feedback', 'admin'].includes(page)) {
-                        counts[page] = (counts[page] || 0) + 1;
-                        totalPages++;
-                    }
-                });
-                let max = 0;
-                for (const [page, cnt] of Object.entries(counts)) {
-                    if (cnt > max) { max = cnt;
-                        favoriteSection = baseThemes.find(t => t.id === page)?.label || page; }
-                }
-            } catch (e) {}
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content">
-                    <h2><i class="fas fa-chart-bar"></i> Моя статистика</h2>
-                    <div class="modal-body">
-                        <div> В архиве с: ${registered}</div>
-                        <div> Последний визит: ${lastLogin}</div>
-                        <div> Просмотров профиля: ${profile[FIELDS.views] || 0}</div>
-                        <div> Просмотрено разделов: ${totalPages}</div>
-                        <div> Любимый раздел: ${favoriteSection}</div>
-                    </div>
-                    <div class="modal-footer"><button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button></div>
-                </div>
-            `;
-            openModal(overlay);
-        }
-
-        // —ПРОСМОТРЫ ПРОФИЛЯ—
-        async function recordProfileView(targetUsername) {
-            if (!targetUsername || (currentUser && currentUser[FIELDS.username] === targetUsername)) return;
-            const ownerData = await getUserByUsername(targetUsername);
-            if (!ownerData) return;
-            const settings = ownerData.settings || {};
-            const notifyView = settings.notifyViews !== false;
-            const visitorId = currentUser ? currentUser[FIELDS.username] : getDeviceId();
-            const viewRef = doc(db, COLLECTIONS.profileViews, targetUsername + '_' + visitorId);
-            const snap = await getDoc(viewRef);
-            const targetRef = doc(db, COLLECTIONS.users, targetUsername);
-            if (!snap.exists()) {
-                await setDoc(viewRef, { visitor: visitorId, target: targetUsername, timestamp: serverTimestamp() });
-                await updateDoc(targetRef, { [FIELDS.profile]: { [FIELDS.views]: increment(1) } });
-                if (currentUser && notifyView) {
-                    await addDoc(collection(db, COLLECTIONS.notifications, targetUsername, 'userNotifs'), {
-                        type: 'view',
-                        from: currentUser[FIELDS.username],
-                        text: currentUser[FIELDS.displayName] + ' просмотрел ваш профиль',
-                        timestamp: serverTimestamp(),
-                        read: false,
-                        link: '/u/' + currentUser[FIELDS.username]
-                    });
-                }
-            }
-        }
-
-        // —ЗАВЕРШЕНИЕ СЕССИИ ПРИ ЗАКРЫТИИ—
-        window.addEventListener('beforeunload', async () => {
-            await endSession();
-        });
-
-        // —ИНИЦИАЛИЗАЦИЯ—
-        const agreementScreen = document.getElementById('agreementScreen');
-        const agreeCheck = document.getElementById('agreeCheck');
-        const agreeBtn = document.getElementById('agreeBtn');
-        const mainApp = document.getElementById('mainApp');
-        if (localStorage.getItem('ssb2_agreed') === 'true') {
-            agreementScreen.classList.add('hidden');
-            document.body.classList.remove('agreement-active');
-            mainApp.classList.add('visible');
-            showTelegramToast();
-        }
-        agreeCheck.addEventListener('change', () => { agreeBtn.disabled = !agreeCheck.checked;
-            agreeBtn.classList.toggle('active', agreeCheck.checked); });
-        agreeBtn.addEventListener('click', () => {
-            if (!agreeCheck.checked) return;
-            localStorage.setItem('ssb2_agreed', 'true');
-            agreementScreen.classList.add('hidden');
-            document.body.classList.remove('agreement-active');
-            mainApp.classList.add('visible');
-            showTelegramToast();
-        });
-        const tabsScroll = document.getElementById('tabsScroll');
-        let isDown = false,
-            startX, scrollLeft;
-        tabsScroll.addEventListener('mousedown', e => { isDown = true;
-            startX = e.pageX - tabsScroll.offsetLeft;
-            scrollLeft = tabsScroll.scrollLeft; });
-        tabsScroll.addEventListener('mouseleave', () => isDown = false);
-        tabsScroll.addEventListener('mouseup', () => isDown = false);
-        tabsScroll.addEventListener('mousemove', e => { if (!isDown) return;
-            e.preventDefault();
-            tabsScroll.scrollLeft = scrollLeft - (e.pageX - tabsScroll.offsetLeft - startX) * 1.5; });
+function switchTab(tabId, searchTerm = '') {
+    if (tabId === currentPageId && !searchTerm) return;
+    if (typeof currentSearchTerm === 'undefined') {
+        var currentSearchTerm = '';
+    }
+    currentSearchTerm = searchTerm;
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+    const page = document.getElementById(`page-${tabId}`);
+    if (page) {
+        page.classList.add('active-page');
+    } else {
         const pagesDiv = document.getElementById('pagesContainer');
+        const newPage = document.createElement('div');
+        newPage.id = `page-${tabId}`;
+        newPage.className = 'page active-page';
+        pagesDiv.appendChild(newPage);
+    }
+    currentPageId = tabId;
+    renderTabs();
+    renderPage(tabId);
+    incrementPageView(tabId);
+}
 
-        function initPages() {
-            const allIds = [...baseThemes.map(t => t.id), 'admin'];
-            allIds.forEach(id => {
-                const page = document.createElement('div');
-                page.id = `page-${id}`;
-                page.className = `page ${id==='home'?'active-page':''}`;
-                pagesDiv.appendChild(page);
+//  —ПОИСК—
+let searchTimeout = null;
+
+function setupSearch() {
+    const input = document.getElementById('searchInput');
+    const resultsDiv = document.getElementById('searchResults');
+    input.addEventListener('input', function() {
+        const term = this.value.trim().toLowerCase();
+        clearTimeout(searchTimeout);
+        if (term.length < 1) { resultsDiv.classList.remove('active'); resultsDiv.innerHTML = ''; return; }
+        searchTimeout = setTimeout(() => {
+            const results = searchAcrossPages(term);
+            resultsDiv.innerHTML = '';
+            if (results.length === 0) {
+                resultsDiv.innerHTML = '<div class="search-result-item">Ничего не найдено</div>';
+            } else {
+                results.forEach(r => {
+                    const item = document.createElement('div');
+                    item.className = 'search-result-item';
+                    item.innerHTML = `<div class="search-result-title">${r.title}</div><div class="search-result-snippet">${r.snippet}</div>`;
+                    item.addEventListener('click', () => {
+                        switchTab(r.id, term);
+                        resultsDiv.classList.remove('active');
+                        document.getElementById('searchInput').value = term;
+                    });
+                    resultsDiv.appendChild(item);
+                });
+            }
+            resultsDiv.classList.add('active');
+        }, 300);
+    });
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.search-box')) resultsDiv.classList.remove('active');
+    });
+}
+
+function searchAcrossPages(query) {
+    const results = [];
+    const allIds = Object.keys(contentGenerators).filter(id => id !== 'join' && id !== 'admin');
+    allIds.forEach(id => {
+        const content = getContent(id);
+        const div = document.createElement('div');
+        div.innerHTML = content;
+        const text = div.innerText || '';
+        if (text.toLowerCase().includes(query.toLowerCase())) {
+            const idx = text.toLowerCase().indexOf(query.toLowerCase());
+            const start = Math.max(0, idx - 40);
+            const end = Math.min(text.length, idx + query.length + 40);
+            const snippet = text.substring(start, end).replace(/\n/g, ' ');
+            const title = baseThemes.find(t => t.id === id)?.label || id;
+            results.push({ id, title, snippet });
+        }
+    });
+    return results;
+}
+
+// ===== УВЕДОМЛЕНИЯ =====
+function subscribeToNotifications() {
+    if (!currentUser) return;
+    if (notificationUnsubscribe) { notificationUnsubscribe(); notificationUnsubscribe = null; }
+    const notifRef = collection(db, COLLECTIONS.notifications, currentUser[FIELDS.username], 'userNotifs');
+    notificationUnsubscribe = onSnapshot(query(notifRef, orderBy('timestamp', 'desc'), limit(50)), (snapshot) => {
+        const unread = snapshot.docs.filter(d => d.data().read === false).length;
+        const badge = document.getElementById('notifBadge');
+        if (badge) {
+            if (unread > 0) { badge.textContent = unread; badge.style.display = 'inline'; } else { badge.style.display = 'none'; }
+        }
+    }, (error) => { console.warn('Ошибка подписки на уведомления:', error); });
+}
+
+function openNotificationsModal() {
+    if (!currentUser) { showToast('Войдите, чтобы увидеть уведомления', 'fa-exclamation-circle', 3000); return; }
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-content">
+            <h2><i class="fas fa-bell"></i> Уведомления</h2>
+            <div class="modal-body" id="notifList"><p style="text-align:center;color:#888;padding:20px;">Загрузка...</p></div>
+            <div class="modal-footer"><button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button></div>
+        </div>
+    `;
+    openModal(overlay);
+    const markRead = async () => {
+        const notifRef = collection(db, COLLECTIONS.notifications, currentUser[FIELDS.username], 'userNotifs');
+        const snap = await getDocs(query(notifRef, where('read', '==', false)));
+        snap.forEach(async (d) => { await updateDoc(doc(db, COLLECTIONS.notifications, currentUser[FIELDS.username], 'userNotifs', d.id), { read: true }); });
+    };
+    const loadNotifs = async () => {
+        const list = document.getElementById('notifList');
+        const notifRef = collection(db, COLLECTIONS.notifications, currentUser[FIELDS.username], 'userNotifs');
+        const snap = await getDocs(query(notifRef, orderBy('timestamp', 'desc'), limit(50)));
+        if (snap.empty) { list.innerHTML = '<p style="text-align:center;color:#888;padding:20px;">Нет уведомлений</p>'; return; }
+        let html = '';
+        snap.forEach(d => {
+            const data = d.data();
+            const icon = data.type === 'official' ? '' : data.type === 'view' ? '👁️' : '📢';
+            const time = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString() : '';
+            const isRead = data.read ? '' : '';
+            html += `<div style="${data.read ? 'opacity:0.7;' : ''}"><div>${icon}</div><div><div>${data.text || 'Уведомление'}</div><div style="font-size:12px;color:#888;">${time}</div></div><div>${isRead}</div></div>`;
+        });
+        list.innerHTML = html;
+        await markRead();
+    };
+    loadNotifs();
+}
+
+async function openUserStatsModal() {
+    if (!currentUser) { showToast('Войдите, чтобы увидеть статистику', 'fa-exclamation-circle', 3000); return; }
+    const userData = await getUserByUsername(currentUser[FIELDS.username]);
+    if (!userData) { showToast('Ошибка загрузки', 'fa-exclamation-circle', 2000); return; }
+    const profile = userData[FIELDS.profile] || { [FIELDS.views]: 0 };
+    const registered = userData[FIELDS.registeredAt] ? new Date(userData[FIELDS.registeredAt].toMillis()).toLocaleDateString() : '—';
+    const lastLogin = userData[FIELDS.lastLogin] ? new Date(userData[FIELDS.lastLogin].toMillis()).toLocaleString() : '—';
+    let favoriteSection = 'Не определён';
+    let totalPages = 0;
+    try {
+        const historyRef = collection(db, 'userHistory', currentUser[FIELDS.username], 'pages');
+        const snap = await getDocs(historyRef);
+        const counts = {};
+        snap.forEach(d => {
+            const page = d.data().pageId;
+            if (page && !['home', 'profile', 'chat', 'join', 'feedback', 'admin'].includes(page)) {
+                counts[page] = (counts[page] || 0) + 1;
+                totalPages++;
+            }
+        });
+        let max = 0;
+        for (const [page, cnt] of Object.entries(counts)) {
+            if (cnt > max) { max = cnt; favoriteSection = baseThemes.find(t => t.id === page)?.label || page; }
+        }
+    } catch (e) {}
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-content">
+            <h2><i class="fas fa-chart-bar"></i> Моя статистика</h2>
+            <div class="modal-body">
+                <div> В архиве с: ${registered}</div>
+                <div> Последний визит: ${lastLogin}</div>
+                <div> Просмотров профиля: ${profile[FIELDS.views] || 0}</div>
+                <div> Просмотрено разделов: ${totalPages}</div>
+                <div> Любимый раздел: ${favoriteSection}</div>
+            </div>
+            <div class="modal-footer"><button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button></div>
+        </div>
+    `;
+    openModal(overlay);
+}
+
+// —ПРОСМОТРЫ ПРОФИЛЯ—
+async function recordProfileView(targetUsername) {
+    if (!targetUsername || (currentUser && currentUser[FIELDS.username] === targetUsername)) return;
+    const ownerData = await getUserByUsername(targetUsername);
+    if (!ownerData) return;
+    const settings = ownerData.settings || {};
+    const notifyView = settings.notifyViews !== false;
+    const visitorId = currentUser ? currentUser[FIELDS.username] : getDeviceId();
+    const viewRef = doc(db, COLLECTIONS.profileViews, targetUsername + '_' + visitorId);
+    const snap = await getDoc(viewRef);
+    const targetRef = doc(db, COLLECTIONS.users, targetUsername);
+    if (!snap.exists()) {
+        await setDoc(viewRef, { visitor: visitorId, target: targetUsername, timestamp: serverTimestamp() });
+        await updateDoc(targetRef, { [FIELDS.profile]: { [FIELDS.views]: increment(1) } });
+        if (currentUser && notifyView) {
+            await addDoc(collection(db, COLLECTIONS.notifications, targetUsername, 'userNotifs'), {
+                type: 'view',
+                from: currentUser[FIELDS.username],
+                text: currentUser[FIELDS.displayName] + ' просмотрел ваш профиль',
+                timestamp: serverTimestamp(),
+                read: false,
+                link: '/u/' + currentUser[FIELDS.username]
             });
         }
-         initPages();
+    }
+}
 
-// —ОБРАБОТКА URL ПАРАМЕТРОВ—
+// ===== ИНИЦИАЛИЗАЦИЯ =====
+// Завершение сессии при закрытии
+window.addEventListener('beforeunload', async () => {
+    await endSession();
+});
+
+// Соглашение
+const agreementScreen = document.getElementById('agreementScreen');
+const agreeCheck = document.getElementById('agreeCheck');
+const agreeBtn = document.getElementById('agreeBtn');
+const mainApp = document.getElementById('mainApp');
+if (localStorage.getItem('ssb2_agreed') === 'true') {
+    agreementScreen.classList.add('hidden');
+    document.body.classList.remove('agreement-active');
+    mainApp.classList.add('visible');
+    showTelegramToast();
+}
+agreeCheck.addEventListener('change', () => { agreeBtn.disabled = !agreeCheck.checked; agreeBtn.classList.toggle('active', agreeCheck.checked); });
+agreeBtn.addEventListener('click', () => {
+    if (!agreeCheck.checked) return;
+    localStorage.setItem('ssb2_agreed', 'true');
+    agreementScreen.classList.add('hidden');
+    document.body.classList.remove('agreement-active');
+    mainApp.classList.add('visible');
+    showTelegramToast();
+});
+
+// Прокрутка вкладок
+const tabsScroll = document.getElementById('tabsScroll');
+let isDown = false, startX, scrollLeft;
+tabsScroll.addEventListener('mousedown', e => { isDown = true; startX = e.pageX - tabsScroll.offsetLeft; scrollLeft = tabsScroll.scrollLeft; });
+tabsScroll.addEventListener('mouseleave', () => isDown = false);
+tabsScroll.addEventListener('mouseup', () => isDown = false);
+tabsScroll.addEventListener('mousemove', e => { if (!isDown) return; e.preventDefault(); tabsScroll.scrollLeft = scrollLeft - (e.pageX - tabsScroll.offsetLeft - startX) * 1.5; });
+
+// Создание страниц
+const pagesDiv = document.getElementById('pagesContainer');
+function initPages() {
+    const allIds = [...baseThemes.map(t => t.id), 'admin'];
+    allIds.forEach(id => {
+        const page = document.createElement('div');
+        page.id = `page-${id}`;
+        page.className = `page ${id==='home'?'active-page':''}`;
+        pagesDiv.appendChild(page);
+    });
+}
+initPages();
+
+// Обработка URL параметров
 const urlParams = new URLSearchParams(window.location.search);
 const pageParam = urlParams.get('page');
 const targetUser = urlParams.get('u');
@@ -2965,6 +2917,7 @@ if (targetUser) {
     switchTab(pageParam);
 }
 
+// Восстановление сессии
 const savedUser = localStorage.getItem('ssb2_user');
 if (savedUser) {
     try {
@@ -2979,8 +2932,8 @@ if (savedUser) {
                 localStorage.removeItem('ssb2_user');
             }
         }
-    } catch (e) { 
-        localStorage.removeItem('ssb2_user'); 
+    } catch (e) {
+        localStorage.removeItem('ssb2_user');
     }
 }
 
@@ -2989,162 +2942,180 @@ updateAuthUI();
 renderTabs();
 renderPage('home');
 incrementPageView('home');
+
+// Клик по табам
 document.getElementById('tabsContainer').addEventListener('click', e => {
     const tab = e.target.closest('.tab');
     if (!tab) return;
     switchTab(tab.dataset.tab, '');
 });
-        setupSearch();
-        const topBtn = document.getElementById('scrollTop');
-        window.addEventListener('scroll', () => topBtn.classList.toggle('visible', window.scrollY > 200));
-        topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
-        window.addEventListener('beforeunload', async () => {
-            if (currentUser) {
-                await setDoc(doc(db, 'presence', currentUser[FIELDS.userId] || currentUser[FIELDS.username]), { online: false, lastSeen: serverTimestamp() }, { merge: true });
-            }
-            if (notificationUnsubscribe) { notificationUnsubscribe(); }
-            await endSession();
-        });
-        setInterval(async () => {
-            const onlineEl = document.getElementById('onlineCount');
-            if (onlineEl && onlineEl.textContent !== '—') {
-                const online = await getOnlineCount();
-                onlineEl.textContent = online;
-            }
-        }, 60000);
-        document.addEventListener('submit', async (e) => {
-            if (e.target.id === 'feedbackForm') {
-                e.preventDefault();
-                const type = document.getElementById('feedbackType').value;
-                const message = document.getElementById('feedbackMessage').value;
-                const contact = document.getElementById('feedbackContact').value;
-                const btn = e.target.querySelector('button');
-                const msg = document.getElementById('formMessage');
-                btn.disabled = true;
-                msg.textContent = 'Отправка...';
-                msg.className = 'form-message';
-                try {
-                    await addDoc(collection(db, COLLECTIONS.feedback), { type, message, contact: contact || 'Не указано', createdAt: serverTimestamp() });
-                    msg.textContent = 'Спасибо! Сообщение отправлено.';
-                    msg.className = 'form-message success';
-                    e.target.reset();
-                    showToast('Сообщение отправлено');
-                } catch (err) {
-                    msg.textContent = 'Ошибка отправки. Попробуйте позже.';
-                    msg.className = 'form-message error';
-                } finally {
-                    btn.disabled = false;
-                }
-            }
-        });
-        document.getElementById('changelogLink').addEventListener('click', () => {
+
+setupSearch();
+
+// Кнопка вверх
+const topBtn = document.getElementById('scrollTop');
+window.addEventListener('scroll', () => topBtn.classList.toggle('visible', window.scrollY > 200));
+topBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+// Перед закрытием
+window.addEventListener('beforeunload', async () => {
+    if (currentUser) {
+        await setDoc(doc(db, 'presence', currentUser[FIELDS.userId] || currentUser[FIELDS.username]), { online: false, lastSeen: serverTimestamp() }, { merge: true });
+    }
+    if (notificationUnsubscribe) { notificationUnsubscribe(); }
+    await endSession();
+});
+
+// Обновление онлайна
+setInterval(async () => {
+    const onlineEl = document.getElementById('onlineCount');
+    if (onlineEl && onlineEl.textContent !== '—') {
+        const online = await getOnlineCount();
+        onlineEl.textContent = online;
+    }
+}, 60000);
+
+// Обработка формы обратной связи
+document.addEventListener('submit', async (e) => {
+    if (e.target.id === 'feedbackForm') {
+        e.preventDefault();
+        const type = document.getElementById('feedbackType').value;
+        const message = document.getElementById('feedbackMessage').value;
+        const contact = document.getElementById('feedbackContact').value;
+        const btn = e.target.querySelector('button');
+        const msg = document.getElementById('formMessage');
+        btn.disabled = true;
+        msg.textContent = 'Отправка...';
+        msg.className = 'form-message';
+        try {
+            await addDoc(collection(db, COLLECTIONS.feedback), { type, message, contact: contact || 'Не указано', createdAt: serverTimestamp() });
+            msg.textContent = 'Спасибо! Сообщение отправлено.';
+            msg.className = 'form-message success';
+            e.target.reset();
+            showToast('Сообщение отправлено');
+        } catch (err) {
+            msg.textContent = 'Ошибка отправки. Попробуйте позже.';
+            msg.className = 'form-message error';
+        } finally {
+            btn.disabled = false;
+        }
+    }
+});
+
+// Список изменений
+document.getElementById('changelogLink').addEventListener('click', () => {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
             overlay.innerHTML = `
-                <div class="modal-content" style="max-width:550px; text-align:left;">
+                <div class="modal-content" style="max-width:550px; text-align:left; max-height:80vh; overflow-y:auto;">
+                    <h2 style="text-align:center;"><i class="fas fa-history"></i> История изменений</h2>
+                    
                     <h3><i class="fas fa-shield-alt"></i> Версия 1.0.7 Beta</h3>
-<ul>
-  <li>Внедрена собственная система регистрации с логином и паролем вместо Google-авторизации</li>
-  <li>Пароли хранятся в зашифрованном виде (PBKDF2 + соль) — администратор не имеет к ним доступа</li>
-  <li>Добавлена защита от брутфорс-атак — временная блокировка при множестве неудачных попыток входа</li>
-  <li>Введено правило «один IP — один аккаунт» для борьбы с мультиаккаунтингом</li>
-  <li>Добавлена функция сброса пароля прямо из профиля</li>
-  <li>Созданы личные профили пользователей с аватаркой, информацией о себе, полом и соцсетями</li>
-  <li>Добавлен приватный режим для скрытия профиля от других пользователей</li>
-  <li>В профиле отображается онлайн-статус, счётчик просмотров и дата регистрации</li>
-  <li>Внедрена система личных уведомлений о просмотрах профиля и важных анонсах</li>
-  <li>Появились рекомендации популярных разделов на главной странице</li>
-  <li>Добавлена кнопка «Поделиться» на каждой странице</li>
-  <li>Улучшен поиск — подсвечивает найденные слова в результатах</li>
-  <li>Добавлены плавные анимации появления карточек и модальных окон</li>
-  <li>Улучшена адаптация для мобильных устройств</li>
-  <li>Проведена общая оптимизация производительности сайта</li>
-  <li>Введена система официального статуса (синяя галочка) для YouTube-блогеров, Telegram-каналов и студий</li>
-</ul>
+                    <ul>
+                        <li>Внедрена собственная система регистрации с логином и паролем вместо Google-авторизации</li>
+                        <li>Пароли хранятся в зашифрованном виде (PBKDF2 + соль) — администратор не имеет к ним доступа</li>
+                        <li>Добавлена защита от брутфорс-атак — временная блокировка при множестве неудачных попыток входа</li>
+                        <li>Введено правило «один IP — один аккаунт» для борьбы с мультиаккаунтингом</li>
+                        <li>Добавлена функция сброса пароля прямо из профиля</li>
+                        <li>Созданы личные профили пользователей с аватаркой, информацией о себе, полом и соцсетями</li>
+                        <li>Добавлен приватный режим для скрытия профиля от других пользователей</li>
+                        <li>В профиле отображается онлайн-статус, счётчик просмотров и дата регистрации</li>
+                        <li>Внедрена система личных уведомлений о просмотрах профиля и важных анонсах</li>
+                        <li>Появились рекомендации популярных разделов на главной странице</li>
+                        <li>Добавлена кнопка «Поделиться» на каждой странице</li>
+                        <li>Улучшен поиск — подсвечивает найденные слова в результатах</li>
+                        <li>Добавлены плавные анимации появления карточек и модальных окон</li>
+                        <li>Улучшена адаптация для мобильных устройств</li>
+                        <li>Проведена общая оптимизация производительности сайта</li>
+                        <li>Введена система официального статуса (синяя галочка) для YouTube-блогеров, Telegram-каналов и студий</li>
+                    </ul>
 
-<h3><i class="fas fa-star"></i> Версия 1.0.6 Patch</h3>
-<ul>
-    <li>Полная замена эмодзи на SVG-иконки</li>
-    <li>Добавлен счётчик рекордного онлайна на главной странице</li>
-    <li>Вернули раздел «Сообщить об ошибке» с формой обратной связи</li>
-    <li>Приветственное уведомление о Telegram-канале</li>
-    <li>Добавлена новая хронология событий о недавнем чите</li>
-    <li>Исправлены мелкие баги и улучшена производительность</li>
-</ul>
+                    <h3><i class="fas fa-star"></i> Версия 1.0.6 Patch</h3>
+                    <ul>
+                        <li>Полная замена эмодзи на SVG-иконки</li>
+                        <li>Добавлен счётчик рекордного онлайна на главной странице</li>
+                        <li>Вернули раздел «Сообщить об ошибке» с формой обратной связи</li>
+                        <li>Приветственное уведомление о Telegram-канале</li>
+                        <li>Добавлена новая хронология событий о недавнем чите</li>
+                        <li>Исправлены мелкие баги и улучшена производительность</li>
+                    </ul>
 
-<h3><i class="fas fa-code-branch"></i> Версия 1.0.6 Beta</h3>
-<ul>
-    <li>Обновленный поиск с подсветкой совпадений</li>
-    <li>Авторизация через Google</li>
-    <li>Уникальные просмотры разделов</li>
-    <li>Анкета для вступления в Nexus Squad (15 вопросов)</li>
-    <li>Главная страница: онлайн, общее количество просмотров, всего посетителей</li>
-    <li>FAQ в виде аккордеона</li>
-    <li>Раздел «О нас» о команде Nexus Squad (11 участников)</li>
-    <li>Добавлены разделы «Читы» (Epilog, Vexor cheats) и хронология событий мая-июня 2026</li>
-    <li>Toast-уведомления</li>
-    <li>Множество плавных анимаций появления</li>
-    <li>Улучшена адаптация под мобильные устройства</li>
-    <li>Исправлены баги переключения вкладок</li>
-</ul>
+                    <h3><i class="fas fa-code-branch"></i> Версия 1.0.6 Beta</h3>
+                    <ul>
+                        <li>Обновленный поиск с подсветкой совпадений</li>
+                        <li>Авторизация через Google</li>
+                        <li>Уникальные просмотры разделов</li>
+                        <li>Анкета для вступления в Nexus Squad (15 вопросов)</li>
+                        <li>Главная страница: онлайн, общее количество просмотров, всего посетителей</li>
+                        <li>FAQ в виде аккордеона</li>
+                        <li>Раздел «О нас» о команде Nexus Squad (11 участников)</li>
+                        <li>Добавлены разделы «Читы» (Epilog, Vexor cheats) и хронология событий мая-июня 2026</li>
+                        <li>Toast-уведомления</li>
+                        <li>Множество плавных анимаций появления</li>
+                        <li>Улучшена адаптация под мобильные устройства</li>
+                        <li>Исправлены баги переключения вкладок</li>
+                    </ul>
 
-<h3><i class="fas fa-book"></i> Версия 1.0.5 Beta</h3>
-<ul>
-    <li>Добавлена вкладка «Руководство» с инструкциями</li>
-    <li>Добавлены гайды: как установить карту, настроить сервер, пожаловаться на игрока</li>
-    <li>Добавлена информация о безопасном режиме, граундах, улучшении транспорта</li>
-    <li>Добавлен раздел о восстановлении колёс и смене Google-аккаунта</li>
-</ul>
+                    <h3><i class="fas fa-book"></i> Версия 1.0.5 Beta</h3>
+                    <ul>
+                        <li>Добавлена вкладка «Руководство» с инструкциями</li>
+                        <li>Добавлены гайды: как установить карту, настроить сервер, пожаловаться на игрока</li>
+                        <li>Добавлена информация о безопасном режиме, граундах, улучшении транспорта</li>
+                        <li>Добавлен раздел о восстановлении колёс и смене Google-аккаунта</li>
+                    </ul>
 
-<h3><i class="fas fa-trash-alt"></i> Версия 1.0.4 Beta</h3>
-<ul>
-    <li>Убрана информация о кейсах (появится позже)</li>
-</ul>
+                    <h3><i class="fas fa-trash-alt"></i> Версия 1.0.4 Beta</h3>
+                    <ul>
+                        <li>Убрана информация о кейсах (появится позже)</li>
+                    </ul>
 
-<h3><i class="fas fa-film"></i> Версия 1.0.3 Beta</h3>
-<ul>
-    <li>Добавлена информация о студии SSB FILMS STUDIO</li>
-    <li>Исправлено отображение списка изменений</li>
-    <li>Форма обратной связи теперь уведомляет об ответе на почту</li>
-    <li>Обновлена контактная почта (hofilionclkc@gmail.com)</li>
-</ul>
+                    <h3><i class="fas fa-film"></i> Версия 1.0.3 Beta</h3>
+                    <ul>
+                        <li>Добавлена информация о студии SSB FILMS STUDIO</li>
+                        <li>Исправлено отображение списка изменений</li>
+                        <li>Форма обратной связи теперь уведомляет об ответе на почту</li>
+                        <li>Обновлена контактная почта (hofilionclkc@gmail.com)</li>
+                    </ul>
 
-<h3><i class="fas fa-egg"></i> Версия 1.0.2 Beta</h3>
-<ul>
-    <li>Добавлен раздел «Пасхалки» с подробным списком</li>
-    <li>Добавлен раздел «Донат» с ценами и наборами</li>
-    <li>Добавлен раздел «FAQ» с частыми вопросами</li>
-    <li>Соглашение больше не блокирует скролл страницы</li>
-</ul>
+                    <h3><i class="fas fa-egg"></i> Версия 1.0.2 Beta</h3>
+                    <ul>
+                        <li>Добавлен раздел «Пасхалки» с подробным списком</li>
+                        <li>Добавлен раздел «Донат» с ценами и наборами</li>
+                        <li>Добавлен раздел «FAQ» с частыми вопросами</li>
+                        <li>Соглашение больше не блокирует скролл страницы</li>
+                    </ul>
 
-<h3><i class="fas fa-users"></i> Версия 1.0.1 Beta</h3>
-<ul>
-    <li>Добавлен раздел «Кланы» с историей ARES, SPRS, NAR и других</li>
-    <li>Добавлен раздел «Моды» (Polar Patcher, GAZ Mod)</li>
-    <li>Исправлены стили жидкого стекла</li>
-</ul>
+                    <h3><i class="fas fa-users"></i> Версия 1.0.1 Beta</h3>
+                    <ul>
+                        <li>Добавлен раздел «Кланы» с историей ARES, SPRS, NAR и других</li>
+                        <li>Добавлен раздел «Моды» (Polar Patcher, GAZ Mod)</li>
+                        <li>Исправлены стили жидкого стекла</li>
+                    </ul>
 
-<h3><i class="fas fa-rocket"></i> Версия 1.0.0 Beta</h3>
-<ul>
-    <li>Первый публичный релиз</li>
-    <li>Разделы: Об игре, Разработчик, Медиа, Карты, Пропы, Скины, Оружие, Транспорт, Факты, Версии, Требования</li>
-    <li>Система избранного (звёздочки)</li>
-    <li>Поиск по вкладкам</li>
-    <li>Пользовательское соглашение при первом заходе</li>
-    <li>Стеклянный дизайн (glassmorphism)</li>
-</ul>
-                    <div class="modal-footer">
-                        <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button>
+                    <h3><i class="fas fa-rocket"></i> Версия 1.0.0 Beta</h3>
+                    <ul>
+                        <li>Первый публичный релиз</li>
+                        <li>Разделы: Об игре, Разработчик, Медиа, Карты, Пропы, Скины, Оружие, Транспорт, Факты, Версии, Требования</li>
+                        <li>Система избранного (звёздочки)</li>
+                        <li>Поиск по вкладкам</li>
+                        <li>Пользовательское соглашение при первом заходе</li>
+                        <li>Стеклянный дизайн (glassmorphism)</li>
+                    </ul>
+
+                    <div class="modal-footer" style="text-align:center; padding-top:16px; border-top:1px solid rgba(0,0,0,0.05);">
+                        <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))" style="padding:10px 30px; border-radius:30px; background:#1e3a5f; color:white; border:none; cursor:pointer; font-weight:600;">Закрыть</button>
                     </div>
                 </div>
             `;
             openModal(overlay);
         });
 
+        // —ЭКСПОРТ В ГЛОБАЛЬНЫЙ ОБЪЕКТ—
         window.sharePage = sharePage;
         window.switchTab = switchTab;
         window.showLoginModal = showLoginModal;
         window.copyToClipboard = copyToClipboard;
+
         if (currentUser) {
             renderPage('profile');
         }
