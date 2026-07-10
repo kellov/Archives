@@ -661,7 +661,7 @@
     if (found[FIELDS.password] !== password) return null;
     await updateDoc(doc(db, COLLECTIONS.users, found.id), { [FIELDS.lastLogin]: serverTimestamp() });
     return found;
-} 
+}
 
         async function getUserByUsername(username) {
             const snap = await getDoc(doc(db, COLLECTIONS.users, username));
