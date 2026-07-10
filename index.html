@@ -431,6 +431,7 @@
             joinAnswers = [];
         let notificationUnsubscribe = null;
         let allUsersCache = [];
+        let currentSearchTerm = '';
         let currentAdminPage = 1;
         const ADMIN_PAGE_SIZE = 10;
         let currentSessionId = null;
@@ -2639,7 +2640,9 @@ const contentGenerators = {
         </div>
         <div class="quote-item"><strong><i class="fas fa-download"></i> Установка карты</strong>
             <img src="https://s10.iimage.su/s/16/gANpBt3xpOmPcI3Ftss4j1qkiIyHb5Whw9eRiJZSd.jpg" alt="Установка карт" style="width:100%; border-radius:16px; margin-top:12px;">
-            <br><u>Способ 1 (Android):</u> Установите файловый менеджер. Для Android 11+ скачайте Shizuku/Cx проводник и запустите отладку по Wi-Fi. Скачайте файл карты (.clm или .clm.msg.gz). Через Telegram: 3 точки → Сохранить в загрузках. Переместите файл в <code>Android/data/com.SimpleSandbox2/files/Save Maps/</code>.<br><u>Способ 2 (ПК):</u> Скачайте файл карты. Подключите устройство по USB. На телефоне нажмите «Зарядка устройства через USB» → выберите «Передача файлов». Переместите файл через проводник Windows в <code>Android/data/com.SimpleSandbox2/files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
+            <br><u>Способ 1 (Android):</u> Установите файловый менеджер. Для Android 11+ скачайте Shizuku/Cx проводник и запустите отладку по Wi-Fi. Скачайте файл карты (.clm или .clm.msg.gz). Через Telegram: 3 точки → Сохранить в загрузках. Переместите файл в <code>Android/data/com.SimpleSandbox2/
+files/Save Maps/</code>.<br><u>Способ 2 (ПК):</u> Скачайте файл карты. Подключите устройство по USB. На телефоне нажмите «Зарядка устройства через USB» → выберите «Передача файлов». Переместите файл через проводник Windows в <code>Android/data/com.SimpleSandbox2/
+files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
         </div>
         <div class="quote-item"><strong><i class="fas fa-comment"></i> Текст на табличках в мультиплеере</strong>
             <img src="https://s10.iimage.su/s/16/gBPw5rvxXDvQT453ZeIwi3JBv3vFfkVPJO4cZ1Oqc.jpg" alt="таблички" style="width:100%; border-radius:16px; margin-top:12px;">
