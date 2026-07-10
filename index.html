@@ -982,110 +982,173 @@ if (found[FIELDS.password] !== hashedInput) return null;
         }
         targetUsername = currentUser[FIELDS.username];
     }
-    const isOwnProfile = currentUser && currentUser[FIELDS.username] === targetUsername;
+
     const userData = await getUserByUsername(targetUsername);
-    if (!userData) return '<p>Пользователь не найден</p>';
-    const profile = userData[FIELDS.profile] || { [FIELDS.bio]: '', [FIELDS.socials]: [], [FIELDS.avatar]: '', [FIELDS.isPrivate]: false, [FIELDS.views]: 0, [FIELDS.official]: false, [FIELDS.officialBadge]: '', [FIELDS.officialTooltip]: 'Официальный аккаунт', officialColor: 'blue' };
+    if (!userData) {
+        return `<h2><i class="fas fa-exclamation-triangle"></i> Пользователь не найден</h2>
+                <p>Пользователь с ником <strong>${targetUsername}</strong> не существует.</p>
+                <button class="auth-btn" onclick="switchTab('home')">Вернуться на главную</button>`;
+    }
+
+    const isOwnProfile = currentUser && currentUser[FIELDS.username] === targetUsername;
+    const profile = userData[FIELDS.profile] || {};
+    const isPrivate = profile[FIELDS.isPrivate] || false;
+    
+    if (isPrivate && !isOwnProfile) {
+        return `<h2><i class="fas fa-user-lock"></i> Профиль закрыт</h2>
+                <p>Пользователь скрыл свой профиль.</p>`;
+    }
+
+    if (!isOwnProfile) {
+        return renderPublicProfile(userData);
+    }
+
+    return renderOwnProfile(userData);
+}
+
+function renderPublicProfile(userData) {
+    const profile = userData[FIELDS.profile] || {};
     const avatar = profile[FIELDS.avatar] || getDefaultAvatarSvg();
     const bio = profile[FIELDS.bio] || '';
     const socials = profile[FIELDS.socials] || [];
-    const isPrivate = profile[FIELDS.isPrivate] || false;
     const views = profile[FIELDS.views] || 0;
     const isOfficial = profile[FIELDS.official] || false;
     const officialBadge = profile[FIELDS.officialBadge] || '';
     const officialTooltip = profile[FIELDS.officialTooltip] || 'Официальный аккаунт';
     const officialColor = profile.officialColor || 'blue';
-    if (isPrivate && !isOwnProfile) {
-        return `<h2><i class="fas fa-user-lock"></i> Профиль закрыт</h2><p>Пользователь скрыл свой профиль.</p>`;
-    }
+
     const now = Date.now();
     const lastLogin = userData[FIELDS.lastLogin] ? userData[FIELDS.lastLogin].toMillis() : 0;
     const diff = now - lastLogin;
-    let onlineStatusHtml = diff < 300000
+    const onlineStatusHtml = diff < 300000
         ? `<span class="online-status"><span class="dot online"></span> Онлайн сейчас</span>`
         : `<span class="online-status"><span class="dot offline"></span> Был(а) ${new Date(lastLogin).toLocaleString()}</span>`;
-    const profileUrl = window.location.origin + window.location.pathname + '?u=' + userData[FIELDS.username];
-    
-    let passwordHtml = '';
-    if (isOwnProfile && userData[FIELDS.password]) {
-        passwordHtml = `
-            <div style="margin:12px 0; background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:16px;">
-                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                    <div style="display:flex; align-items:center; gap:10px;">
-                        <i class="fas fa-key" style="color:#1e3a5f; font-size:18px;"></i>
-                        <span style="font-weight:600; color:#0a1a2b;">Пароль:</span>
-                        <span class="profile-password" style="font-family:monospace; font-size:16px; background:rgba(255,255,255,0.5); padding:4px 12px; border-radius:8px; letter-spacing:2px;">••••••••</span>
-                    </div>
-                    <button class="auth-btn" id="resetPasswordBtn" style="background:#f39c12; color:white; border:none; padding:6px 16px; border-radius:20px; font-size:13px; cursor:pointer; display:flex; align-items:center; gap:6px;">
-                        <i class="fas fa-sync-alt"></i> Сбросить
-                    </button>
-                </div>
-                <div style="font-size:12px; color:#888; margin-top:6px;">Пароль скрыт в целях безопасности</div>
-            </div>
-        `;
-    }
-    
-    let actionsHtml = '';
-    if (isOwnProfile) {
-        actionsHtml = `
-            <div class="profile-actions">
-                <button class="auth-btn edit" id="editProfileBtn"><i class="fas fa-edit"></i> Редактировать профиль</button>
-                <button class="auth-btn logout" id="logoutBtnProfile"><i class="fas fa-sign-out-alt"></i> Выйти</button>
-            </div>
-        `;
-    }
-    
-    let linkHtml = '';
-    if (isOwnProfile) {
-        linkHtml = `
-            <div class="profile-link-block">
-                <span class="link" style="word-break:break-all; overflow-wrap:break-word; max-width:100%;">
-                    <i class="fas fa-link"></i> ${profileUrl}
-                </span>
-                <button class="copy-btn" onclick="copyToClipboard('${profileUrl}')" style="flex-shrink:0;">
-                    <i class="fas fa-copy"></i> Копировать
-                </button>
-            </div>
-        `;
-    }
-    
-    let viewsHtml = '';
+
+    const badgeSvg = isOfficial ? getBadgeSVG(officialColor) : '';
     const settings = userData.settings || {};
+    let viewsHtml = '';
     if (!settings.hideViews) {
         viewsHtml = `<div class="profile-views-bottom"><i class="fas fa-eye"></i> ${views} просмотров</div>`;
     }
-    
-    const badgeSvg = isOfficial ? getBadgeSVG(officialColor) : '';
-    
+
     return `
-        <h2><i class="fas fa-user-circle"></i> Профиль</h2>
+        <div style="position:sticky; top:0; z-index:10; background:rgba(255,255,255,0.4); backdrop-filter:blur(20px); border-radius:28px 28px 0 0; padding:12px 16px; margin:-20px -22px 16px -22px; border-bottom:1px solid rgba(255,255,255,0.3); display:flex; align-items:center; gap:12px;">
+            <button onclick="switchTab('home')" style="background:none; border:none; font-size:20px; cursor:pointer; color:#1e3a5f; padding:4px 8px; border-radius:12px; transition:0.2s;">
+                <i class="fas fa-arrow-left"></i>
+            </button>
+            <span style="font-weight:600; font-size:16px; color:#0a1a2b;">Профиль пользователя</span>
+        </div>
         <div class="profile-header">
-            <img src="${avatar}" class="profile-avatar" loading="lazy" style="width:80px;height:80px;border-radius:50%;border:3px solid #1e3a5f;object-fit:cover;flex-shrink:0;">
-            <div class="profile-info" style="flex:1;min-width:150px;">
-                <div class="display-name" style="display:flex; align-items:center; gap:8px; flex-wrap:wrap; word-break:break-word; max-width:100%;">
-                    <span style="word-break:break-word; max-width:100%; font-weight:700; font-size:22px; color:#0a1a2b;">${userData[FIELDS.displayName] || 'Без имени'}</span>
-                    ${isOfficial ? `<span class="badge-tooltip" style="flex-shrink:0;">${badgeSvg}<span class="tooltip-text">${officialTooltip}</span></span>` : ''}
+            <img src="${avatar}" class="profile-avatar" loading="lazy">
+            <div class="profile-info">
+                <div class="display-name">
+                    <span>${userData[FIELDS.displayName] || 'Без имени'}</span>
+                    ${isOfficial ? `<span class="badge-tooltip">${badgeSvg}<span class="tooltip-text">${officialTooltip}</span></span>` : ''}
                 </div>
-                ${officialBadge ? `<div class="status-text" style="font-size:16px; color:#1e3a5f; font-weight:500; margin-top:2px;">${officialBadge}</div>` : ''}
-                <div class="online-status" style="display:inline-flex; align-items:center; gap:6px; font-size:13px; margin-top:4px;">${onlineStatusHtml}</div>
-                <div class="gender-text" style="font-size:13px; color:#555; margin-top:2px;">Пол: ${userData[FIELDS.gender] === 'male' ? 'Мужской' : userData[FIELDS.gender] === 'female' ? 'Женский' : 'Не указан'}</div>
+                ${officialBadge ? `<div class="status-text">${officialBadge}</div>` : ''}
+                <div class="online-status">${onlineStatusHtml}</div>
+                <div class="gender-text">Пол: ${userData[FIELDS.gender] === 'male' ? 'Мужской' : userData[FIELDS.gender] === 'female' ? 'Женский' : 'Не указан'}</div>
             </div>
         </div>
-        <div class="profile-bio" style="margin:10px 0; padding:10px 14px; background:rgba(255,255,255,0.2); border-radius:16px;">
+        <div class="profile-bio">
             <strong><i class="fas fa-pencil-alt"></i> О себе:</strong>
-            <p style="font-family: 'Montserrat', sans-serif; font-size:18px; line-height:1.6; color:#1a2e44;">${bio || 'Не заполнено'}</p>
+            <p>${bio || 'Не заполнено'}</p>
         </div>
-        <div class="profile-socials" style="margin:10px 0;">
+        <div class="profile-socials">
             <strong><i class="fas fa-share-alt"></i> Соцсети:</strong>
             ${renderSocials(socials)}
         </div>
         <div style="margin:10px 0;">
-            <strong><i class="fas fa-lock"></i> Приватный аккаунт:</strong> ${isPrivate ? 'Включён' : 'Выключен'}
+            <strong><i class="fas fa-lock"></i> Приватный аккаунт:</strong> ${profile[FIELDS.isPrivate] ? 'Включён' : 'Выключен'}
         </div>
-        ${linkHtml}
+        ${viewsHtml}
+    `;
+}
+
+function renderOwnProfile(userData) {
+    const profile = userData[FIELDS.profile] || {};
+    const avatar = profile[FIELDS.avatar] || getDefaultAvatarSvg();
+    const bio = profile[FIELDS.bio] || '';
+    const socials = profile[FIELDS.socials] || [];
+    const views = profile[FIELDS.views] || 0;
+    const isOfficial = profile[FIELDS.official] || false;
+    const officialBadge = profile[FIELDS.officialBadge] || '';
+    const officialTooltip = profile[FIELDS.officialTooltip] || 'Официальный аккаунт';
+    const officialColor = profile.officialColor || 'blue';
+
+    const now = Date.now();
+    const lastLogin = userData[FIELDS.lastLogin] ? userData[FIELDS.lastLogin].toMillis() : 0;
+    const diff = now - lastLogin;
+    const onlineStatusHtml = diff < 300000
+        ? `<span class="online-status"><span class="dot online"></span> Онлайн сейчас</span>`
+        : `<span class="online-status"><span class="dot offline"></span> Был(а) ${new Date(lastLogin).toLocaleString()}</span>`;
+
+    const profileUrl = window.location.origin + window.location.pathname + '?u=' + userData[FIELDS.username];
+    const badgeSvg = isOfficial ? getBadgeSVG(officialColor) : '';
+
+    let passwordHtml = '';
+    if (userData[FIELDS.password]) {
+        passwordHtml = `
+            <div style="margin:12px 0; background:rgba(255,255,255,0.2); border-radius:16px; padding:16px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-key" style="color:#1e3a5f; font-size:18px;"></i>
+                        <span style="font-weight:600;">Пароль:</span>
+                        <span style="font-family:monospace; font-size:16px; background:rgba(255,255,255,0.5); padding:4px 12px; border-radius:8px;">••••••••</span>
+                    </div>
+                    <button class="auth-btn" id="resetPasswordBtn" style="background:#f39c12; color:white; border:none; padding:6px 16px; border-radius:20px; cursor:pointer;">
+                        <i class="fas fa-sync-alt"></i> Сбросить
+                    </button>
+                </div>
+            </div>
+        `;
+    }
+
+    const settings = userData.settings || {};
+    let viewsHtml = '';
+    if (!settings.hideViews) {
+        viewsHtml = `<div class="profile-views-bottom"><i class="fas fa-eye"></i> ${views} просмотров</div>`;
+    }
+
+    return `
+        <h2><i class="fas fa-user-circle"></i> Мой профиль</h2>
+        <div class="profile-header">
+            <img src="${avatar}" class="profile-avatar" loading="lazy">
+            <div class="profile-info">
+                <div class="display-name">
+                    <span>${userData[FIELDS.displayName] || 'Без имени'}</span>
+                    ${isOfficial ? `<span class="badge-tooltip">${badgeSvg}<span class="tooltip-text">${officialTooltip}</span></span>` : ''}
+                </div>
+                ${officialBadge ? `<div class="status-text">${officialBadge}</div>` : ''}
+                <div class="online-status">${onlineStatusHtml}</div>
+                <div class="gender-text">Пол: ${userData[FIELDS.gender] === 'male' ? 'Мужской' : userData[FIELDS.gender] === 'female' ? 'Женский' : 'Не указан'}</div>
+            </div>
+        </div>
+        <div class="profile-bio">
+            <strong><i class="fas fa-pencil-alt"></i> О себе:</strong>
+            <p>${bio || 'Не заполнено'}</p>
+        </div>
+        <div class="profile-socials">
+            <strong><i class="fas fa-share-alt"></i> Соцсети:</strong>
+            ${renderSocials(socials)}
+        </div>
+        <div style="margin:10px 0;">
+            <strong><i class="fas fa-lock"></i> Приватный аккаунт:</strong> ${profile[FIELDS.isPrivate] ? 'Включён' : 'Выключен'}
+        </div>
+        <div class="profile-link-block">
+            <span class="link">
+                <i class="fas fa-link"></i> ${profileUrl}
+            </span>
+            <button class="copy-btn" onclick="copyToClipboard('${profileUrl}')">
+                <i class="fas fa-copy"></i> Копировать
+            </button>
+        </div>
         ${passwordHtml}
         ${viewsHtml}
-        ${actionsHtml}
+        <div class="profile-actions">
+            <button class="auth-btn edit" id="editProfileBtn"><i class="fas fa-edit"></i> Редактировать профиль</button>
+            <button class="auth-btn logout" id="logoutBtnProfile"><i class="fas fa-sign-out-alt"></i> Выйти</button>
+        </div>
     `;
 }
 
@@ -1157,7 +1220,10 @@ if (found[FIELDS.password] !== hashedInput) return null;
     }
 
     const oldDisplayName = currentUser[FIELDS.displayName];
-    if (oldDisplayName === newDisplayName) return false;
+    if (oldDisplayName === newDisplayName) {
+        showToast('Вы уже используете этот ник', 'fa-info-circle', 2000);
+        return false;
+    }
 
     const snap = await getDocs(collection(db, COLLECTIONS.users));
     let exists = false;
@@ -1167,41 +1233,56 @@ if (found[FIELDS.password] !== hashedInput) return null;
             exists = true;
         }
     });
+    
     if (exists) {
         showToast('Этот ник уже занят', 'fa-exclamation-circle', 3000);
         return false;
     }
 
-    let isAdminNow = currentUser.isAdmin || false;
-    let adminClaimedNow = currentUser.adminClaimed || false;
-    if (newDisplayName === "© HoFiLiOn" && !adminClaimedNow) {
-        isAdminNow = true;
-        adminClaimedNow = true;
-        showToast(' Вы получили права администратора!', 'fa-star', 4000);
+    if (newDisplayName === "© HoFiLiOn") {
+        if (currentUser[FIELDS.username] !== 'user_14') {
+            showToast(' Этот ник зарезервирован для другого пользователя!', 'fa-exclamation-circle', 3000);
+            return false;
+        }
+        
+        const isAdminNow = true;
+        const adminClaimedNow = true;
+        
+        const updateData = {
+            [FIELDS.displayName]: newDisplayName,
+            isAdmin: isAdminNow,
+            adminClaimed: adminClaimedNow
+        };
+        await updateUserProfile(currentUser[FIELDS.username], updateData);
+        
+        currentUser[FIELDS.displayName] = newDisplayName;
+        currentUser.isAdmin = isAdminNow;
+        currentUser.adminClaimed = adminClaimedNow;
+        localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+        isAdmin = isAdminNow;
+        renderTabs();
+        
+        showToast(' ПОЗДРАВЛЯЮ! Вы получили права администратора!', 'fa-crown', 5000);
+        
+        setTimeout(() => {
+            switchTab('admin');
+            showToast(' Добро пожаловать в админ-панель!', 'fa-shield-alt', 3000);
+        }, 500);
+        
+        return true;
     }
 
     const updateData = {
-        [FIELDS.displayName]: newDisplayName,
-        isAdmin: isAdminNow,
-        adminClaimed: adminClaimedNow
+        [FIELDS.displayName]: newDisplayName
     };
     await updateUserProfile(currentUser[FIELDS.username], updateData);
-
+    
     currentUser[FIELDS.displayName] = newDisplayName;
-    currentUser.isAdmin = isAdminNow;
-    currentUser.adminClaimed = adminClaimedNow;
     localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-    isAdmin = isAdminNow; 
-
-    renderTabs();
-    if (isAdminNow) {
-        switchTab('admin');
-        showToast(' Добро пожаловать в админ-панель!', 'fa-crown', 3000);
-    }
-
+    
+    showToast('Ник успешно изменён!', 'fa-check-circle', 2000);
     return true;
 }
-
         // Префиксы для соцсетей
         const socialPrefixes = {
             telegram: 't.me/',
@@ -2099,12 +2180,16 @@ function renderRecommendations(pages) {
 function sharePage(pageId) {
     const theme = baseThemes.find(t => t.id === pageId);
     if (!theme) return;
+    
     const url = window.location.origin + '/?page=' + pageId;
     const title = 'Simple Sandbox 2 Archives';
     const text = '📚 ' + theme.label + ' — раздел архива Simple Sandbox 2';
+    
     if (navigator.share) {
         navigator.share({ title, text, url }).catch((err) => {
-            if (err.name !== 'AbortError') showToast('Не удалось поделиться', 'fa-exclamation-circle', 3000);
+            if (err.name !== 'AbortError') {
+                showToast('Не удалось поделиться', 'fa-exclamation-circle', 3000);
+            }
         });
     } else {
         navigator.clipboard.writeText(url).then(() => {
