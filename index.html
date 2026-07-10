@@ -2045,8 +2045,8 @@ if (found[FIELDS.password] !== hashedInput) return null;
             { id: 'profile', label: 'Профиль' }, { id: 'join', label: 'Анкета' }
         ];
 
-        const contentGenerators = {
-             home: async () => {
+    const contentGenerators = {
+    home: async () => {
     let recs = [];
     try { recs = await getRecommendedPages(); } catch(e) { console.warn('Ошибка получения рекомендаций:', e); }
     const recHtml = renderRecommendations(recs);
@@ -2499,67 +2499,64 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             `,
             join: () => getJoinContent(),
             chat: () => `<h2><i class="fas fa-comments"></i> Общий чат</h2><p>Общий чат появится в версиях <strong>1.0.8</strong>. Следите за обновлениями!</p>`,
-            profile: async () => {
-                const urlParams = new URLSearchParams(window.location.search);
-const pageParam = urlParams.get('page');
-const targetUser = urlParams.get('u');
+                profile: async () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const target = urlParams.get('u') || (currentUser ? currentUser[FIELDS.username] : null);
+        if (!target) return await renderProfileContent(null);
+        const content = await renderProfileContent(target);
+        if (currentUser && currentUser[FIELDS.username] !== target) await recordProfileView(target);
+        return content;
+    },
+};
 
-if (targetUser) {
-    currentPageId = 'profile';
-    switchTab('profile');
-} else if (pageParam) {
-    currentPageId = pageParam;
-    switchTab(pageParam);
+// ===== ФУНКЦИИ ДЛЯ РЕКОМЕНДАЦИЙ =====
+async function getRecommendedPages() {
+    try {
+        const snap = await getDocs(collection(db, COLLECTIONS.pageViewCounts));
+        const views = {};
+        snap.forEach(d => views[d.id] = d.data().count || 0);
+        const exclude = ['home', 'profile', 'chat', 'join', 'feedback', 'admin'];
+        const available = Object.keys(views).filter(id => !exclude.includes(id));
+        available.sort((a, b) => views[b] - views[a]);
+        let top = available.slice(0, 6);
+        if (top.length < 4) {
+            const allIds = baseThemes.map(t => t.id).filter(id => !exclude.includes(id));
+            const shuffled = allIds.sort(() => Math.random() - 0.5);
+            const random = shuffled.filter(id => !top.includes(id));
+            top = [...top, ...random.slice(0, 6 - top.length)];
+        }
+        return top;
+    } catch (e) { return []; }
 }
 
-        // —РЕКОМЕНДАЦИИ —
-        async function getRecommendedPages() {
-            try {
-                const snap = await getDocs(collection(db, COLLECTIONS.pageViewCounts));
-                const views = {};
-                snap.forEach(d => views[d.id] = d.data().count || 0);
-                const exclude = ['home', 'profile', 'chat', 'join', 'feedback', 'admin'];
-                const available = Object.keys(views).filter(id => !exclude.includes(id));
-                available.sort((a, b) => views[b] - views[a]);
-                let top = available.slice(0, 6);
-                if (top.length < 4) {
-                    const allIds = baseThemes.map(t => t.id).filter(id => !exclude.includes(id));
-                    const shuffled = allIds.sort(() => Math.random() - 0.5);
-                    const random = shuffled.filter(id => !top.includes(id));
-                    top = [...top, ...random.slice(0, 6 - top.length)];
-                }
-                return top;
-            } catch (e) { return []; }
-        }
+function renderRecommendations(pages) {
+    if (!pages || pages.length === 0) return '';
+    let html = `
+        <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.2);">
+            <h3 style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color:#ffd700;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                Рекомендуем почитать
+                <span style="font-size:12px; font-weight:400; color:#888; margin-left:8px;">(самое популярное сегодня)</span>
+            </h3>
+            <div class="recommend-grid">
+    `;
+    pages.forEach(id => {
+        const theme = baseThemes.find(t => t.id === id);
+        if (!theme) return;
+        const icon = sectionIcons[id] || sectionIcons.home;
+        html += `
+            <div class="recommend-card" onclick="switchTab('${id}')">
+                ${icon}
+                <div class="label">${theme.label}</div>
+            </div>
+        `;
+    });
+    html += `</div></div>`;
+    return html;
+}
 
-        function renderRecommendations(pages) {
-            if (!pages || pages.length === 0) return '';
-            let html = `
-                <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.2);">
-                    <h3 style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="color:#ffd700;"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
-                        Рекомендуем почитать
-                        <span style="font-size:12px; font-weight:400; color:#888; margin-left:8px;">(самое популярное сегодня)</span>
-                    </h3>
-                    <div class="recommend-grid">
-            `;
-            pages.forEach(id => {
-                const theme = baseThemes.find(t => t.id === id);
-                if (!theme) return;
-                const icon = sectionIcons[id] || sectionIcons.home;
-                html += `
-                    <div class="recommend-card" onclick="switchTab('${id}')">
-                        ${icon}
-                        <div class="label">${theme.label}</div>
-                    </div>
-                `;
-            });
-            html += `</div></div>`;
-            return html;
-        }
-
-        // —ПОДЕЛИТЬСЯ—
-        function sharePage(pageId) {
+// ===== ПОДЕЛИТЬСЯ =====
+function sharePage(pageId) {
     const theme = baseThemes.find(t => t.id === pageId);
     if (!theme) return;
     const url = window.location.origin + '/?page=' + pageId;
@@ -2584,64 +2581,66 @@ if (targetUser) {
     }
 }
 
-        // —JOIN—
-        const joinSteps = [
-            { q: "Готовы заполнить анкету для вступления в Nexus Squad?", type: 'info', btn: 'Начать' },
-            { q: "1. Ваш никнейм/имя", type: 'text' }, { q: "2. Возраст | если не хотите говорить то пропустите вопрос", type: 'text' }, { q: "3. Сколько времени играете в SSB2?", type: 'text' },
-            { q: "4. Ваш часовой пояс", type: 'select', opts: ['Москва +3', 'Киев +2', 'Минск +3', 'Астана +6', 'Другой'] },
-            { q: "5. Опишите ваш опыт в других командах: ", type: 'text' }, { q: "6. Почему хотите присоединиться к команде?", type: 'text' },
-            { q: "7. Ваши навыки", type: 'text' }, { q: "8. Идея для развития сайта", type: 'textarea' },
-            { q: "9. Ссылка на Telegram", type: 'text' }, { q: "10. GitHub (если есть)", type: 'text' },
-            { q: "11. Готовы уделять 2 часа в неделю?", type: 'select', opts: ['Да', 'Нет', 'По обстоятельствам'] },
-            { q: "12. Роль в команде", type: 'select', opts: ['Поиск информации', 'Дизайн', 'Перевод', 'Разработка', 'Другое'] },
-            { q: "13. Любимый раздел архива", type: 'text' }, { q: "14. О себе в двух словах", type: 'textarea' },
-            { q: "15. Пожелания или вопросы", type: 'text' }
-        ];
+// ===== АНКЕТА =====
+const joinSteps = [
+    { q: "Готовы заполнить анкету для вступления в Nexus Squad?", type: 'info', btn: 'Начать' },
+    { q: "1. Ваш никнейм/имя", type: 'text' },
+    { q: "2. Возраст | если не хотите говорить то пропустите вопрос", type: 'text' },
+    { q: "3. Сколько времени играете в SSB2?", type: 'text' },
+    { q: "4. Ваш часовой пояс", type: 'select', opts: ['Москва +3', 'Киев +2', 'Минск +3', 'Астана +6', 'Другой'] },
+    { q: "5. Опишите ваш опыт в других командах: ", type: 'text' },
+    { q: "6. Почему хотите присоединиться к команде?", type: 'text' },
+    { q: "7. Ваши навыки", type: 'text' },
+    { q: "8. Идея для развития сайта", type: 'textarea' },
+    { q: "9. Ссылка на Telegram", type: 'text' },
+    { q: "10. GitHub (если есть)", type: 'text' },
+    { q: "11. Готовы уделять 2 часа в неделю?", type: 'select', opts: ['Да', 'Нет', 'По обстоятельствам'] },
+    { q: "12. Роль в команде", type: 'select', opts: ['Поиск информации', 'Дизайн', 'Перевод', 'Разработка', 'Другое'] },
+    { q: "13. Любимый раздел архива", type: 'text' },
+    { q: "14. О себе в двух словах", type: 'textarea' },
+    { q: "15. Пожелания или вопросы", type: 'text' }
+];
 
-        function getJoinContent() {
-            if (joinStep === 0) return `<h2><i class="fas fa-clipboard-list"></i> Анкета в Nexus Squad</h2><p>Добро пожаловать! Мы набираем активных участников. Ответьте на 15 вопросов.</p><button class="auth-btn" id="startJoinWizard"><i class="fas fa-play"></i> Начать</button>`;
-            if (joinStep <= joinSteps.length) {
-                const step = joinSteps[joinStep - 1];
-                let inputHtml = step.type === 'select' ? `<select id="joinInput" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">${step.opts.map(o => `<option>${o}</option>`).join('')}</select>` :
-                    step.type === 'textarea' ? `<textarea id="joinInput" style="width:100%;min-height:80px;padding:8px;border-radius:8px;border:1px solid #ddd;"></textarea>` :
-                    `<input id="joinInput" type="text" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">`;
-                return `<h2><i class="fas fa-clipboard-list"></i> Анкета</h2><p>${step.q}</p>${inputHtml}
-                    <div style="display:flex;justify-content:space-between;margin-top:16px;">
-                        <button onclick="prevJoinStep()" style="background:none;border:none;color:#1e3a5f;cursor:pointer;"><i class="fas fa-arrow-left"></i> Назад</button>
-                        <button class="auth-btn" onclick="nextJoinStep()" style="background:#1e3a5f;color:white;border:none;">${joinStep===joinSteps.length?'Отправить':'Далее'}</button>
-                    </div><div id="joinMsg" style="text-align:center;color:#1e3a5f;margin-top:8px;"></div>`;
-            }
-            return `<h2><i class="fas fa-check-circle" style="color:#4caf50;"></i> Спасибо!</h2><p>Ваша анкета отправлена. С вами скоро свяжется менеджер.</p>`;
-        }
-        window.nextJoinStep = async function() {
-            if (joinStep > 0 && joinStep <= joinSteps.length) {
-                const input = document.getElementById('joinInput');
-                if (input) joinAnswers.push(input.value);
-            }
-            if (joinStep === joinSteps.length) {
-                try {
-                    await addDoc(collection(db, COLLECTIONS.joinRequests), { answers: joinAnswers, userId: currentUser?.[FIELDS.userId] || 'anonymous', timestamp: serverTimestamp(),
-                        status: 'new' });
-                    joinStep++;
-                    refreshJoinPage();
-                } catch (e) { showToast('Ошибка'); }
-            } else { joinStep++;
-                refreshJoinPage(); }
-        };
-        window.prevJoinStep = function() { if (joinStep > 1) { joinAnswers.pop();
-                joinStep--;
-                refreshJoinPage(); } };
+function getJoinContent() {
+    if (joinStep === 0) return `<h2><i class="fas fa-clipboard-list"></i> Анкета в Nexus Squad</h2><p>Добро пожаловать! Мы набираем активных участников. Ответьте на 15 вопросов.</p><button class="auth-btn" id="startJoinWizard"><i class="fas fa-play"></i> Начать</button>`;
+    if (joinStep <= joinSteps.length) {
+        const step = joinSteps[joinStep - 1];
+        let inputHtml = step.type === 'select' ? `<select id="joinInput" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">${step.opts.map(o => `<option>${o}</option>`).join('')}</select>` :
+            step.type === 'textarea' ? `<textarea id="joinInput" style="width:100%;min-height:80px;padding:8px;border-radius:8px;border:1px solid #ddd;"></textarea>` :
+            `<input id="joinInput" type="text" style="width:100%;padding:8px;border-radius:8px;border:1px solid #ddd;">`;
+        return `<h2><i class="fas fa-clipboard-list"></i> Анкета</h2><p>${step.q}</p>${inputHtml}
+            <div style="display:flex;justify-content:space-between;margin-top:16px;">
+                <button onclick="prevJoinStep()" style="background:none;border:none;color:#1e3a5f;cursor:pointer;"><i class="fas fa-arrow-left"></i> Назад</button>
+                <button class="auth-btn" onclick="nextJoinStep()" style="background:#1e3a5f;color:white;border:none;">${joinStep===joinSteps.length?'Отправить':'Далее'}</button>
+            </div><div id="joinMsg" style="text-align:center;color:#1e3a5f;margin-top:8px;"></div>`;
+    }
+    return `<h2><i class="fas fa-check-circle" style="color:#4caf50;"></i> Спасибо!</h2><p>Ваша анкета отправлена. С вами скоро свяжется менеджер.</p>`;
+}
 
-        function refreshJoinPage() {
-            const page = document.getElementById('page-join');
-            if (page) {
-                page.innerHTML = `<div class="card">${getJoinContent()}</div>`;
-                const startBtn = document.getElementById('startJoinWizard');
-                if (startBtn) startBtn.addEventListener('click', () => { joinStep = 1;
-                    joinAnswers = [];
-                    refreshJoinPage(); });
-            }
-        }
+window.nextJoinStep = async function() {
+    if (joinStep > 0 && joinStep <= joinSteps.length) {
+        const input = document.getElementById('joinInput');
+        if (input) joinAnswers.push(input.value);
+    }
+    if (joinStep === joinSteps.length) {
+        try {
+            await addDoc(collection(db, COLLECTIONS.joinRequests), { answers: joinAnswers, userId: currentUser?.[FIELDS.userId] || 'anonymous', timestamp: serverTimestamp(), status: 'new' });
+            joinStep++;
+            refreshJoinPage();
+        } catch (e) { showToast('Ошибка'); }
+    } else { joinStep++; refreshJoinPage(); }
+};
+
+window.prevJoinStep = function() { if (joinStep > 1) { joinAnswers.pop(); joinStep--; refreshJoinPage(); } };
+
+function refreshJoinPage() {
+    const page = document.getElementById('page-join');
+    if (page) {
+        page.innerHTML = `<div class="card">${getJoinContent()}</div>`;
+        const startBtn = document.getElementById('startJoinWizard');
+        if (startBtn) startBtn.addEventListener('click', () => { joinStep = 1; joinAnswers = []; refreshJoinPage(); });
+    }
+}
 
         // —ОБЩИЕ ФУНКЦИИ—
         function getFullThemes() {
@@ -2951,33 +2950,50 @@ if (targetUser) {
                 pagesDiv.appendChild(page);
             });
         }
-        initPages();
-        const savedUser = localStorage.getItem('ssb2_user');
-        if (savedUser) {
-            try {
-                const parsed = JSON.parse(savedUser);
-                if (parsed[FIELDS.username]) {
-                    const fresh = await getUserByUsername(parsed[FIELDS.username]);
-                    if (fresh) {
-                        currentUser = { ...fresh };
-                        isAdmin = currentUser.isAdmin === true;
-                        await startSession(currentUser[FIELDS.userId], currentUser[FIELDS.username]);
-                    } else {
-                        localStorage.removeItem('ssb2_user');
-                    }
-                }
-            } catch (e) { localStorage.removeItem('ssb2_user'); }
+         initPages();
+
+// —ОБРАБОТКА URL ПАРАМЕТРОВ—
+const urlParams = new URLSearchParams(window.location.search);
+const pageParam = urlParams.get('page');
+const targetUser = urlParams.get('u');
+
+if (targetUser) {
+    currentPageId = 'profile';
+    switchTab('profile');
+} else if (pageParam) {
+    currentPageId = pageParam;
+    switchTab(pageParam);
+}
+
+const savedUser = localStorage.getItem('ssb2_user');
+if (savedUser) {
+    try {
+        const parsed = JSON.parse(savedUser);
+        if (parsed[FIELDS.username]) {
+            const fresh = await getUserByUsername(parsed[FIELDS.username]);
+            if (fresh) {
+                currentUser = { ...fresh };
+                isAdmin = currentUser.isAdmin === true;
+                await startSession(currentUser[FIELDS.userId], currentUser[FIELDS.username]);
+            } else {
+                localStorage.removeItem('ssb2_user');
+            }
         }
-        getDeviceId();
-        updateAuthUI();
-        renderTabs();
-        renderPage('home');
-        incrementPageView('home');
-        document.getElementById('tabsContainer').addEventListener('click', e => {
-            const tab = e.target.closest('.tab');
-            if (!tab) return;
-            switchTab(tab.dataset.tab, '');
-        });
+    } catch (e) { 
+        localStorage.removeItem('ssb2_user'); 
+    }
+}
+
+getDeviceId();
+updateAuthUI();
+renderTabs();
+renderPage('home');
+incrementPageView('home');
+document.getElementById('tabsContainer').addEventListener('click', e => {
+    const tab = e.target.closest('.tab');
+    if (!tab) return;
+    switchTab(tab.dataset.tab, '');
+});
         setupSearch();
         const topBtn = document.getElementById('scrollTop');
         window.addEventListener('scroll', () => topBtn.classList.toggle('visible', window.scrollY > 200));
