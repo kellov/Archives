@@ -2501,13 +2501,16 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             chat: () => `<h2><i class="fas fa-comments"></i> Общий чат</h2><p>Общий чат появится в версиях <strong>1.0.8</strong>. Следите за обновлениями!</p>`,
             profile: async () => {
                 const urlParams = new URLSearchParams(window.location.search);
-                const target = urlParams.get('u') || (currentUser ? currentUser[FIELDS.username] : null);
-                if (!target) return await renderProfileContent(null);
-                const content = await renderProfileContent(target);
-                if (currentUser && currentUser[FIELDS.username] !== target) await recordProfileView(target);
-                return content;
-            }
-        };
+const pageParam = urlParams.get('page');
+const targetUser = urlParams.get('u');
+
+if (targetUser) {
+    currentPageId = 'profile';
+    switchTab('profile');
+} else if (pageParam) {
+    currentPageId = pageParam;
+    switchTab(pageParam);
+}
 
         // —РЕКОМЕНДАЦИИ —
         async function getRecommendedPages() {
@@ -2557,29 +2560,29 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
 
         // —ПОДЕЛИТЬСЯ—
         function sharePage(pageId) {
-            const theme = baseThemes.find(t => t.id === pageId);
-            if (!theme) return;
-            const url = window.location.origin + '/' + pageId;
-            const title = 'Simple Sandbox 2 Archives';
-            const text = '📚 ' + theme.label + ' — раздел архива Simple Sandbox 2';
-            if (navigator.share) {
-                navigator.share({ title, text, url }).catch((err) => {
-                    if (err.name !== 'AbortError') showToast('Не удалось поделиться', 'fa-exclamation-circle', 3000);
-                });
-            } else {
-                navigator.clipboard.writeText(url).then(() => {
-                    showToast('Ссылка скопирована!', 'fa-copy', 3000);
-                }).catch(() => {
-                    const input = document.createElement('input');
-                    input.value = url;
-                    document.body.appendChild(input);
-                    input.select();
-                    document.execCommand('copy');
-                    document.body.removeChild(input);
-                    showToast('Ссылка скопирована!', 'fa-copy', 3000);
-                });
-            }
-        }
+    const theme = baseThemes.find(t => t.id === pageId);
+    if (!theme) return;
+    const url = window.location.origin + '/?page=' + pageId;
+    const title = 'Simple Sandbox 2 Archives';
+    const text = '📚 ' + theme.label + ' — раздел архива Simple Sandbox 2';
+    if (navigator.share) {
+        navigator.share({ title, text, url }).catch((err) => {
+            if (err.name !== 'AbortError') showToast('Не удалось поделиться', 'fa-exclamation-circle', 3000);
+        });
+    } else {
+        navigator.clipboard.writeText(url).then(() => {
+            showToast('Ссылка скопирована!', 'fa-copy', 3000);
+        }).catch(() => {
+            const input = document.createElement('input');
+            input.value = url;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            showToast('Ссылка скопирована!', 'fa-copy', 3000);
+        });
+    }
+}
 
         // —JOIN—
         const joinSteps = [
