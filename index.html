@@ -658,8 +658,8 @@
         }
     });
     if (!found) return null;
-    if (found[FIELDS.password] !== password) return null;
-    await updateDoc(doc(db, COLLECTIONS.users, found.id), { [FIELDS.lastLogin]: serverTimestamp() });
+    const hashedInput = await hashPassword(password, found[FIELDS.passwordSalt]);
+if (found[FIELDS.password] !== hashedInput) return null;
     return found;
 }
 
