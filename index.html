@@ -1000,6 +1000,10 @@ if (found[FIELDS.password] !== hashedInput) return null;
     }
 
     if (!isOwnProfile) {
+        await recordProfileView(targetUsername);
+    }
+
+    if (!isOwnProfile) {
         return renderPublicProfile(userData);
     }
 
@@ -1032,8 +1036,8 @@ function renderPublicProfile(userData) {
     }
 
     return `
-        <div style="position:sticky; top:0; z-index:10; background:rgba(255,255,255,0.4); backdrop-filter:blur(20px); border-radius:28px 28px 0 0; padding:12px 16px; margin:-20px -22px 16px -22px; border-bottom:1px solid rgba(255,255,255,0.3); display:flex; align-items:center; gap:12px;">
-            <button onclick="switchTab('home')" style="background:none; border:none; font-size:20px; cursor:pointer; color:#1e3a5f; padding:4px 8px; border-radius:12px; transition:0.2s;">
+        <div style="position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.4); backdrop-filter:blur(20px); border-radius:28px 28px 0 0; padding:12px 16px; margin:-20px -22px 16px -22px; border-bottom:1px solid rgba(255,255,255,0.3); display:flex; align-items:center; gap:12px;">
+            <button onclick="goHomeFromProfile()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#1e3a5f; padding:4px 8px; border-radius:12px; transition:0.2s;">
                 <i class="fas fa-arrow-left"></i>
             </button>
             <span style="font-weight:600; font-size:16px; color:#0a1a2b;">Профиль пользователя</span>
@@ -1151,6 +1155,92 @@ function renderOwnProfile(userData) {
         </div>
     `;
 }
+
+async function recordProfileView(targetUsername) {
+    if (!targetUsername) return;
+    
+    if (currentUser && currentUser[FIELDS.username] === targetUsername) return;
+    
+    const ownerData = await getUserByUsername(targetUsername);
+    if (!ownerData) return;
+    
+    const visitorId = currentUser ? currentUser[FIELDS.username] : getDeviceId();
+    
+    const today = new Date().toDateString();
+    const viewKey = targetUsername + '_' + visitorId + '_' + today;
+    const viewRef = doc(db, COLLECTIONS.profileViews, viewKey);
+    
+    const snap = await getDoc(viewRef);
+    
+    if (!snap.exists()) {
+    
+        await setDoc(viewRef, { 
+            visitor: visitorId, 
+            target: targetUsername, 
+            timestamp: serverTimestamp(),
+            date: today
+        });
+        
+        const targetRef = doc(db, COLLECTIONS.users, targetUsername);
+        await updateDoc(targetRef, {
+            [FIELDS.profile]: {
+                [FIELDS.views]: increment(1)
+            }
+        });
+        
+        if (currentUser && ownerData.settings?.notifyViews !== false) {
+            try {
+                await addDoc(collection(db, COLLECTIONS.notifications, targetUsername, 'userNotifs'), {
+                    type: 'view',
+                    from: currentUser[FIELDS.username],
+                    text: currentUser[FIELDS.displayName] + ' просмотрел ваш профиль',
+                    timestamp: serverTimestamp(),
+                    read: false,
+                    link: '/u/' + currentUser[FIELDS.username]
+                });
+            } catch(e) {
+                console.warn('Ошибка отправки уведомления:', e);
+            }
+        }
+    }
+}
+
+function goHomeFromProfile() {
+    window.history.replaceState({}, '', window.location.pathname);
+    switchTab('home');
+}
+
+function switchTab(tabId, searchTerm = '') {
+    if (tabId === currentPageId && !searchTerm) return;
+    
+    currentSearchTerm = searchTerm || '';
+    
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+    const page = document.getElementById(`page-${tabId}`);
+    if (page) {
+        page.classList.add('active-page');
+    } else {
+        const pagesDiv = document.getElementById('pagesContainer');
+        const newPage = document.createElement('div');
+        newPage.id = `page-${tabId}`;
+        newPage.className = 'page active-page';
+        pagesDiv.appendChild(newPage);
+    }
+    
+    currentPageId = tabId;
+    renderTabs();
+    renderPage(tabId);
+    
+    if (!['home', 'profile', 'admin', 'feedback', 'join', 'chat'].includes(tabId)) {
+        incrementPageView(tabId);
+    }
+}
+
+window.goHomeFromProfile = goHomeFromProfile;
+window.sharePage = sharePage;
+window.switchTab = switchTab;
+window.showLoginModal = showLoginModal;
+window.copyToClipboard = copyToClipboard;
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
@@ -2747,29 +2837,6 @@ async function updateHomeStats() {
     if (visitorsEl) visitorsEl.textContent = (await getTotalVisitors()).toLocaleString();
 }
 
-function switchTab(tabId, searchTerm = '') {
-    if (tabId === currentPageId && !searchTerm) return;
-    if (typeof currentSearchTerm === 'undefined') {
-        var currentSearchTerm = '';
-    }
-    currentSearchTerm = searchTerm;
-    document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
-    const page = document.getElementById(`page-${tabId}`);
-    if (page) {
-        page.classList.add('active-page');
-    } else {
-        const pagesDiv = document.getElementById('pagesContainer');
-        const newPage = document.createElement('div');
-        newPage.id = `page-${tabId}`;
-        newPage.className = 'page active-page';
-        pagesDiv.appendChild(newPage);
-    }
-    currentPageId = tabId;
-    renderTabs();
-    renderPage(tabId);
-    incrementPageView(tabId);
-}
-
 //  —ПОИСК—
 let searchTimeout = null;
 
@@ -2919,33 +2986,6 @@ async function openUserStatsModal() {
     openModal(overlay);
 }
 
-// —ПРОСМОТРЫ ПРОФИЛЯ—
-async function recordProfileView(targetUsername) {
-    if (!targetUsername || (currentUser && currentUser[FIELDS.username] === targetUsername)) return;
-    const ownerData = await getUserByUsername(targetUsername);
-    if (!ownerData) return;
-    const settings = ownerData.settings || {};
-    const notifyView = settings.notifyViews !== false;
-    const visitorId = currentUser ? currentUser[FIELDS.username] : getDeviceId();
-    const viewRef = doc(db, COLLECTIONS.profileViews, targetUsername + '_' + visitorId);
-    const snap = await getDoc(viewRef);
-    const targetRef = doc(db, COLLECTIONS.users, targetUsername);
-    if (!snap.exists()) {
-        await setDoc(viewRef, { visitor: visitorId, target: targetUsername, timestamp: serverTimestamp() });
-        await updateDoc(targetRef, { [FIELDS.profile]: { [FIELDS.views]: increment(1) } });
-        if (currentUser && notifyView) {
-            await addDoc(collection(db, COLLECTIONS.notifications, targetUsername, 'userNotifs'), {
-                type: 'view',
-                from: currentUser[FIELDS.username],
-                text: currentUser[FIELDS.displayName] + ' просмотрел ваш профиль',
-                timestamp: serverTimestamp(),
-                read: false,
-                link: '/u/' + currentUser[FIELDS.username]
-            });
-        }
-    }
-}
-
 // ===== ИНИЦИАЛИЗАЦИЯ =====
 // Завершение сессии при закрытии
 window.addEventListener('beforeunload', async () => {
@@ -3001,10 +3041,19 @@ const targetUser = urlParams.get('u');
 
 if (targetUser) {
     currentPageId = 'profile';
+    // Убираем параметры из URL, чтобы при обновлении не терялся профиль
+    window.history.replaceState({}, '', window.location.pathname + '?u=' + targetUser);
     switchTab('profile');
-} else if (pageParam) {
+} 
+
+else if (pageParam) {
     currentPageId = pageParam;
     switchTab(pageParam);
+} 
+
+else {
+    renderPage('home');
+    incrementPageView('home');
 }
 
 // Восстановление пользователя
@@ -3037,11 +3086,6 @@ if (!targetUser && !pageParam) {
 
 incrementPageView('home');
 
-getDeviceId();
-updateAuthUI();
-renderTabs();
-renderPage('home');
-incrementPageView('home');
 
 // Клик по табам
 document.getElementById('tabsContainer').addEventListener('click', e => {
