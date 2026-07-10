@@ -1147,7 +1147,6 @@ if (found[FIELDS.password] !== hashedInput) return null;
         async function changeDisplayName(newDisplayName) {
     if (!currentUser) return false;
     
-    // Проверка длины ника
     if (newDisplayName.length > 15) {
         showToast('Ник не может быть длиннее 15 символов', 'fa-exclamation-circle', 3000);
         return false;
@@ -1160,7 +1159,6 @@ if (found[FIELDS.password] !== hashedInput) return null;
     const oldDisplayName = currentUser[FIELDS.displayName];
     if (oldDisplayName === newDisplayName) return false;
 
-    // Проверяем уникальность
     const snap = await getDocs(collection(db, COLLECTIONS.users));
     let exists = false;
     snap.forEach(doc => {
@@ -1176,10 +1174,10 @@ if (found[FIELDS.password] !== hashedInput) return null;
 
     let isAdminNow = currentUser.isAdmin || false;
     let adminClaimedNow = currentUser.adminClaimed || false;
-    if (newDisplayName === "HoFiLiOn | ARC " && !adminClaimedNow) {
+    if (newDisplayName === "© HoFiLiOn" && !adminClaimedNow) {
         isAdminNow = true;
         adminClaimedNow = true;
-        showToast('Вы получили ?!', 'fa-star', 4000);
+        showToast(' Вы получили права администратора!', 'fa-star', 4000);
     }
 
     const updateData = {
@@ -1193,7 +1191,14 @@ if (found[FIELDS.password] !== hashedInput) return null;
     currentUser.isAdmin = isAdminNow;
     currentUser.adminClaimed = adminClaimedNow;
     localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-    isAdmin = isAdminNow;
+    isAdmin = isAdminNow; 
+
+    renderTabs();
+    if (isAdminNow) {
+        switchTab('admin');
+        showToast(' Добро пожаловать в админ-панель!', 'fa-crown', 3000);
+    }
+
     return true;
 }
 
@@ -2904,7 +2909,7 @@ function initPages() {
 }
 initPages();
 
-// Обработка URL параметров
+// — ОБРАБОТКА URL ПАРАМЕТРОВ —
 const urlParams = new URLSearchParams(window.location.search);
 const pageParam = urlParams.get('page');
 const targetUser = urlParams.get('u');
@@ -2917,7 +2922,7 @@ if (targetUser) {
     switchTab(pageParam);
 }
 
-// Восстановление сессии
+// Восстановление пользователя
 const savedUser = localStorage.getItem('ssb2_user');
 if (savedUser) {
     try {
@@ -2936,6 +2941,16 @@ if (savedUser) {
         localStorage.removeItem('ssb2_user');
     }
 }
+
+getDeviceId();
+updateAuthUI();
+renderTabs();
+
+if (!targetUser && !pageParam) {
+    renderPage('home');
+}
+
+incrementPageView('home');
 
 getDeviceId();
 updateAuthUI();
