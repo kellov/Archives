@@ -3048,14 +3048,16 @@
             }
         });
 
-        // —ЭКСПОРТ В ГЛОБАЛЬНЫЙ ОБЪЕКТ—
-        window.sharePage = sharePage;
-        window.switchTab = switchTab;
-        window.showLoginModal = showLoginModal;
-        window.copyToClipboard = copyToClipboard;
-        window.refreshUserAvatar = refreshUserAvatar;
-        window.setUserOnline = setUserOnline;
-        window.goHomeFromProfile = goHomeFromProfile;
+window.sharePage = sharePage;
+window.switchTab = switchTab;
+window.showLoginModal = showLoginModal;
+window.copyToClipboard = copyToClipboard;
+window.refreshUserAvatar = refreshUserAvatar;
+window.setUserOnline = setUserOnline;
+window.goHomeFromProfile = goHomeFromProfile;
+window.showEditProfileModal = showEditProfileModal;
+window.logoutUser = logoutUser;
+window.bindProfileEvents = bindProfileEvents;
 
         // Список изменений (кнопка в шапке)
         document.getElementById('changelogLink').addEventListener('click', () => {
