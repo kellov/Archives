@@ -783,18 +783,27 @@ if (found[FIELDS.password] !== hashedInput) return null;
         }
 
         async function logoutUser() {
-            await endSession();
-            if (notificationUnsubscribe) { notificationUnsubscribe();
-                notificationUnsubscribe = null; }
-            currentUser = null;
-            isAdmin = false;
-            currentSessionId = null;
-            localStorage.removeItem('ssb2_user');
-            updateAuthUI();
-            renderTabs();
-            switchTab('home');
-            showToast('Вы вышли');
-        }
+    if (currentUser) {
+        try {
+            const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
+            await setDoc(doc(db, 'presence', userId), {
+                online: false,
+                lastSeen: serverTimestamp()
+            }, { merge: true });
+        } catch(e) {}
+    }
+    
+    await endSession();
+    if (notificationUnsubscribe) { notificationUnsubscribe(); notificationUnsubscribe = null; }
+    currentUser = null;
+    isAdmin = false;
+    currentSessionId = null;
+    localStorage.removeItem('ssb2_user');
+    updateAuthUI();
+    renderTabs();
+    switchTab('home');
+    showToast('Вы вышли');
+}
 
         // —МОДАЛКИ (вход/регистрация) —
         function showLoginModal() {
@@ -991,8 +1000,13 @@ if (found[FIELDS.password] !== hashedInput) return null;
                 <button class="auth-btn" onclick="switchTab('home')">Вернуться на главную</button>`;
     }
 
-    const isOwnProfile = currentUser && currentUser[FIELDS.username] === targetUsername;
     const profile = userData[FIELDS.profile] || {};
+    const isOfficial = profile[FIELDS.official] || false;
+    const officialBadge = profile[FIELDS.officialBadge] || '';
+    const officialTooltip = profile[FIELDS.officialTooltip] || 'Официальный аккаунт';
+    const officialColor = profile.officialColor || 'blue';
+
+    const isOwnProfile = currentUser && currentUser[FIELDS.username] === targetUsername;
     const isPrivate = profile[FIELDS.isPrivate] || false;
     
     if (isPrivate && !isOwnProfile) {
@@ -1002,73 +1016,12 @@ if (found[FIELDS.password] !== hashedInput) return null;
 
     if (!isOwnProfile) {
         await recordProfileView(targetUsername);
-    }
-
-    if (!isOwnProfile) {
         return renderPublicProfile(userData);
     }
 
     return renderOwnProfile(userData);
 }
 
-function renderPublicProfile(userData) {
-    const profile = userData[FIELDS.profile] || {};
-    const avatar = profile[FIELDS.avatar] || getDefaultAvatarSvg();
-    const bio = profile[FIELDS.bio] || '';
-    const socials = profile[FIELDS.socials] || [];
-    const views = profile[FIELDS.views] || 0;
-    const isOfficial = profile[FIELDS.official] || false;
-    const officialBadge = profile[FIELDS.officialBadge] || '';
-    const officialTooltip = profile[FIELDS.officialTooltip] || 'Официальный аккаунт';
-    const officialColor = profile.officialColor || 'blue';
-
-    const now = Date.now();
-    const lastLogin = userData[FIELDS.lastLogin] ? userData[FIELDS.lastLogin].toMillis() : 0;
-    const diff = now - lastLogin;
-    const onlineStatusHtml = diff < 300000
-        ? `<span class="online-status"><span class="dot online"></span> Онлайн сейчас</span>`
-        : `<span class="online-status"><span class="dot offline"></span> Был(а) ${new Date(lastLogin).toLocaleString()}</span>`;
-
-    const badgeSvg = isOfficial ? getBadgeSVG(officialColor) : '';
-    const settings = userData.settings || {};
-    let viewsHtml = '';
-    if (!settings.hideViews) {
-        viewsHtml = `<div class="profile-views-bottom"><i class="fas fa-eye"></i> ${views} просмотров</div>`;
-    }
-
-    return `
-        <div style="position:sticky; top:0; z-index:100; background:rgba(255,255,255,0.4); backdrop-filter:blur(20px); border-radius:28px 28px 0 0; padding:12px 16px; margin:-20px -22px 16px -22px; border-bottom:1px solid rgba(255,255,255,0.3); display:flex; align-items:center; gap:12px;">
-            <button onclick="goHomeFromProfile()" style="background:none; border:none; font-size:20px; cursor:pointer; color:#1e3a5f; padding:4px 8px; border-radius:12px; transition:0.2s;">
-                <i class="fas fa-arrow-left"></i>
-            </button>
-            <span style="font-weight:600; font-size:16px; color:#0a1a2b;">Профиль пользователя</span>
-        </div>
-        <div class="profile-header">
-            <img src="${avatar}" class="profile-avatar" loading="lazy">
-            <div class="profile-info">
-                <div class="display-name">
-                    <span>${userData[FIELDS.displayName] || 'Без имени'}</span>
-                    ${isOfficial ? `<span class="badge-tooltip">${badgeSvg}<span class="tooltip-text">${officialTooltip}</span></span>` : ''}
-                </div>
-                ${officialBadge ? `<div class="status-text">${officialBadge}</div>` : ''}
-                <div class="online-status">${onlineStatusHtml}</div>
-                <div class="gender-text">Пол: ${userData[FIELDS.gender] === 'male' ? 'Мужской' : userData[FIELDS.gender] === 'female' ? 'Женский' : 'Не указан'}</div>
-            </div>
-        </div>
-        <div class="profile-bio">
-            <strong><i class="fas fa-pencil-alt"></i> О себе:</strong>
-            <p>${bio || 'Не заполнено'}</p>
-        </div>
-        <div class="profile-socials">
-            <strong><i class="fas fa-share-alt"></i> Соцсети:</strong>
-            ${renderSocials(socials)}
-        </div>
-        <div style="margin:10px 0;">
-            <strong><i class="fas fa-lock"></i> Приватный аккаунт:</strong> ${profile[FIELDS.isPrivate] ? 'Включён' : 'Выключен'}
-        </div>
-        ${viewsHtml}
-    `;
-}
 
 function renderOwnProfile(userData) {
     const profile = userData[FIELDS.profile] || {};
@@ -1616,6 +1569,7 @@ window.copyToClipboard = copyToClipboard;
 
                     closeModal(overlay);
                     showToast('Профиль обновлён!');
+                    await refreshUserAvatar();
                     renderPage('profile');
                 } catch (e) {
                     document.getElementById('editProfileMessage').textContent = 'Ошибка: ' + e.message;
@@ -2448,9 +2402,7 @@ const contentGenerators = {
         <div class="media-category">
             <h3><i class="fab fa-telegram"></i> Telegram-каналы</h3>
             <div style="text-align:center; margin:10px 0;">
-                <a href="https://iimg.su/i/pkOO4A" target="_blank">
-                    <img src="https://s10.iimage.su/s/09/gpkOO4AxQjhVGCIp2amZLNXKPpNuo05XmGnS5AJD6.jpg" style="max-width:100%; border-radius:16px;" loading="lazy" alt="Telegram-каналы сообщества">
-                </a>
+            <img src="https://s10.iimage.su/s/09/gpkOO4AxQjhVGCIp2amZLNXKPpNuo05XmGnS5AJD6.jpg" style="max-width:100%; border-radius:16px;" loading="lazy" alt="Telegram-каналы сообщества">
             </div>
             <ul class="media-list">
                 ${['Kartonovsky','maps for ssb2 by Hofilion','Lyoshka Games','Подвал Симола','Syria_Bolts RP','Kyiv RP','maps for SSB2','Muhosransk RP','Pixel studio','maps for SSB2 by iter','Домик Manola','Ssb2 maps made by URS','Комьюнити тапка','Карты от Крамотск','FOX Project','SCP Secret Box','Кладовка ased','Дефлер simple sandbox','Кладовка Hofilion','Tarak','Minsk RP','ZELO RP','Уголок Kattrap72','Europe RP','ССБешеры FRP','SSB2 build hacks','Freddy','Ссб2 ТГК помидорки','Cool RP Projects','Kraft RP','Project космос ССБ2','Volgograd rp[FRP]','Gotwors RP','Blopkagrad RP ssb2','maps for ssb2 MrEgor','Тавровка RP','2POTA 82часть','Sayex-канал','Moto FRP'].map(name => `<li class="media-item">${name}</li>`).join('')}
@@ -2460,9 +2412,7 @@ const contentGenerators = {
         <div class="media-category">
             <h3><i class="fab fa-youtube"></i> YouTube каналы</h3>
             <div style="text-align:center; margin:10px 0;">
-                <a href="https://iimg.su/i/jJbpWV" target="_blank">
                     <img src="https://s10.iimage.su/s/09/gjJbpWVxLPpjmQdRWDPdQmU97CcjmlVrZpGWtI8k0.jpg" style="max-width:100%; border-radius:16px;" loading="lazy" alt="YouTube каналы сообщества">
-                </a>
             </div>
             <ul class="media-list">
                 ${['Madness Games','Neon1','Kartonka what','Shaunee','_Феля_','M royal James King','Mr. Sasiska games','Opal Alien','Cboy YT','Ssb2 discovery','Uur Gaming','SimpleSamYT','Flunokai','Soapie Boi','Kamiflex','Alex wolk','Turbo TV','Melon Gaming','komes* x','Phrobss','морковка','hardmoon','plastinka','the Lunie','Sirius','Lyoshka games','Kattrap_72','Barbie','Powerpixel','Alicovid 19','4ulok','МоРкОВКа','ORBITO4IK','NIK Стритрейсер','Madalink','FuFkeks','Мявский Live','DELMOP','Neyzich','КАША ССБ2','KAPUSTA.','Шифер','8uLka','Деспел','Kartonovsky','popkaogyrcaa','ЈАВА','PAKETIK','Александр Трамваев','HoFiLiOn','sv1st','Sosiska','Kromeshnik','Barbie','Aqueen','Бонни ИТ','Дефлёр','Оклахомашет','Бебьеме','ДариониСигму','Гуманоидный эльф','Apex1115','Лешкины игры','Спокойной ночи','7.500$','Xperia 30','He-a','Masih','Jg','untuk','Lucallm','Джинбо','Ранен656','Халлев SSB2','ПАКЕТ1K SSB²','Simpl_e2','Дикий','Макс SSB2 228','Альфа SSB2','Люцифер YT','RDAS Україн','Тарак','Македонтол','ased','Fabr3N','ПЛЕЕР1944 Ссб2'].map(name => `<li class="media-item">${name}</li>`).join('')}
@@ -3068,7 +3018,7 @@ setTimeout(() => {
     loadInitialContent();
 }, 100);
 
-// Восстановление пользователя
+// —ВОССТАНОВЛЕНИЕ ПОЛЬЗОВАТЕЛЯ—
 const savedUser = localStorage.getItem('ssb2_user');
 if (savedUser) {
     try {
@@ -3079,6 +3029,19 @@ if (savedUser) {
                 currentUser = { ...fresh };
                 isAdmin = currentUser.isAdmin === true;
                 await startSession(currentUser[FIELDS.userId], currentUser[FIELDS.username]);
+                
+                try {
+                    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
+                    await setDoc(doc(db, 'presence', userId), {
+                        online: true,
+                        lastSeen: serverTimestamp(),
+                        displayName: currentUser[FIELDS.displayName],
+                        username: currentUser[FIELDS.username],
+                        avatar: currentUser[FIELDS.profile]?.[FIELDS.avatar] || ''
+                    }, { merge: true });
+                } catch(e) {
+                    console.warn('Ошибка установки онлайн статуса:', e);
+                }
             } else {
                 localStorage.removeItem('ssb2_user');
             }
@@ -3088,15 +3051,40 @@ if (savedUser) {
     }
 }
 
-getDeviceId();
-updateAuthUI();
-renderTabs();
-
-if (!targetUser && !pageParam) {
-    renderPage('home');
+// —УСТАНОВКА ОНЛАЙН-СТАТУСА—
+async function setUserOnline() {
+    if (!currentUser) return;
+    try {
+        const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
+        await setDoc(doc(db, 'presence', userId), {
+            online: true,
+            lastSeen: serverTimestamp(),
+            displayName: currentUser[FIELDS.displayName],
+            username: currentUser[FIELDS.username]
+        }, { merge: true });
+    } catch(e) {
+        console.warn('Ошибка установки онлайн статуса:', e);
+    }
 }
 
-incrementPageView('home');
+if (currentUser) {
+    setUserOnline();
+}
+
+// —ОБНОВЛЕНИЕ АВАТАРКИ В ШАПКЕ—
+async function refreshUserAvatar() {
+    if (!currentUser) return;
+    try {
+        const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+        if (fresh) {
+            currentUser = { ...fresh };
+            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+            updateAuthUI();
+        }
+    } catch(e) {
+        console.warn('Ошибка обновления аватарки:', e);
+    }
+}
 
 
 // Клик по табам
@@ -3107,6 +3095,29 @@ document.getElementById('tabsContainer').addEventListener('click', e => {
 });
 
 setupSearch();
+
+// —ОБНОВЛЕНИЕ АВАТАРКИ ПРИ ЗАГРУЗКЕ—
+async function updateAvatarInAuthBar() {
+    if (!currentUser) return;
+    try {
+        const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+        if (fresh && fresh[FIELDS.profile]?.[FIELDS.avatar]) {
+            currentUser[FIELDS.profile] = fresh[FIELDS.profile];
+            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+            // Обновляем только аватарку в шапке
+            const avatarImg = document.querySelector('.user-info img');
+            if (avatarImg) {
+                avatarImg.src = fresh[FIELDS.profile][FIELDS.avatar];
+            }
+        }
+    } catch(e) {
+        console.warn('Ошибка обновления аватарки:', e);
+    }
+}
+
+if (currentUser) {
+    setTimeout(updateAvatarInAuthBar, 500);
+}
 
 // Кнопка вверх
 const topBtn = document.getElementById('scrollTop');
@@ -3157,6 +3168,14 @@ document.addEventListener('submit', async (e) => {
         }
     }
 });
+
+window.refreshUserAvatar = refreshUserAvatar;
+window.setUserOnline = setUserOnline;
+window.goHomeFromProfile = goHomeFromProfile;
+window.sharePage = sharePage;
+window.switchTab = switchTab;
+window.showLoginModal = showLoginModal;
+window.copyToClipboard = copyToClipboard;
 
 // Список изменений
 document.getElementById('changelogLink').addEventListener('click', () => {
