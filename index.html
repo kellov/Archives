@@ -2934,31 +2934,83 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
         }
 
         // —ОБНОВЛЕНИЕ АВАТАРКИ—
-        async function refreshUserAvatar() {
+       document.addEventListener('visibilitychange', async () => {
+    if (!currentUser) return;
+    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
+    if (document.hidden) {
+        await setDoc(doc(db, 'presence', userId), {
+            online: false,
+            lastSeen: serverTimestamp()
+        }, { merge: true });
+    } else {
+        await setDoc(doc(db, 'presence', userId), {
+            online: true,
+            lastSeen: serverTimestamp()
+        }, { merge: true });
+    }
+});
+
+window.addEventListener('beforeunload', async () => {
+    if (!currentUser) return;
+    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
+    try {
+        await setDoc(doc(db, 'presence', userId), {
+            online: false,
+            lastSeen: serverTimestamp()
+        }, { merge: true });
+    } catch (e) {
+        console.warn('Ошибка при сохранении статуса:', e);
+    }
+    if (notificationUnsubscribe) {
+        notificationUnsubscribe();
+    }
+    await endSession();
+});
+
+if (currentUser) {
+    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
+    setDoc(doc(db, 'presence', userId), {
+        online: true,
+        lastSeen: serverTimestamp(),
+        displayName: currentUser[FIELDS.displayName],
+        username: currentUser[FIELDS.username]
+    }, { merge: true }).catch(e => console.warn('Ошибка установки онлайн:', e));
+}
+
+setInterval(async () => {
+    const onlineEl = document.getElementById('onlineCount');
+    if (onlineEl && onlineEl.textContent !== '—') {
+        const online = await getOnlineCount();
+        onlineEl.textContent = online;
+    }
+}, 30000);
+
+async function refreshUserAvatar() {
     if (!currentUser) return;
     try {
         const fresh = await getUserByUsername(currentUser[FIELDS.username]);
         if (fresh) {
-            const oldAvatar = currentUser[FIELDS.profile]?.[FIELDS.avatar];
             const newAvatar = fresh[FIELDS.profile]?.[FIELDS.avatar];
-            
-            currentUser = { ...fresh };
-            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-            
-            const avatarImg = document.querySelector('.user-info img');
-            if (avatarImg && newAvatar) {
-                avatarImg.src = newAvatar;
+            if (newAvatar && newAvatar !== currentUser[FIELDS.profile]?.[FIELDS.avatar]) {
+                currentUser[FIELDS.profile] = fresh[FIELDS.profile];
+                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                const avatarImg = document.querySelector('.user-info img');
+                if (avatarImg) {
+                    avatarImg.src = newAvatar;
+                }
+                if (currentPageId === 'profile') {
+                    renderPage('profile');
+                }
+                updateAuthUI();
             }
-            
-            if (currentPageId === 'profile') {
-                renderPage('profile');
-            }
-            
-            updateAuthUI();
         }
-    } catch(e) {
+    } catch (e) {
         console.warn('Ошибка обновления аватарки:', e);
     }
+}
+
+if (currentUser) {
+    setTimeout(refreshUserAvatar, 1000);
 }
 
         // —УСТАНОВКА ОНЛАЙН-СТАТУСА—
@@ -3143,6 +3195,8 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
         });
     }
 }
+
+
 
                 window.sharePage = sharePage;
         window.switchTab = switchTab;
