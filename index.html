@@ -467,61 +467,77 @@
         function closeModal(modalElement) { if (modalElement && modalElement.parentNode) { modalElement.parentNode.removeChild(modalElement); } document.body.classList.remove('modal-open'); }
 
         async function registerUser(gender, ipAddress) {
-            const ipRef = doc(db, 'userIPs', ipAddress);
-            const ipSnap = await getDoc(ipRef);
-            if (ipSnap.exists()) {
-                showToast('С этого IP уже зарегистрирован аккаунт', 'fa-exclamation-circle', 5000);
-                return null;
-            }
-            const statsRef = doc(db, COLLECTIONS.stats, 'userCount');
-            let newId = 1;
-            try {
-                const snap = await getDoc(statsRef);
-                if (snap.exists()) newId = snap.data().count + 1;
-                await setDoc(statsRef, { count: newId }, { merge: true });
-            } catch (e) { newId = Math.floor(Math.random() * 100000); }
-            const userId = newId;
-            const username = 'user_' + userId;
-            const displayName = 'User #' + userId;
-            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let password = '';
-            for (let i = 0; i < 8; i++) password += chars[Math.floor(Math.random() * chars.length)];
-            const salt = crypto.randomUUID();
-            const hashedPassword = await hashPassword(password, salt);
-            const userData = {
-                [FIELDS.userId]: userId,
-                [FIELDS.username]: username,
-                [FIELDS.displayName]: displayName,
-                [FIELDS.password]: hashedPassword,
-                [FIELDS.passwordSalt]: salt,
-                [FIELDS.gender]: gender || '',
-                [FIELDS.registeredAt]: serverTimestamp(),
-                [FIELDS.lastLogin]: serverTimestamp(),
-                [FIELDS.profile]: {
-                    [FIELDS.bio]: '',
-                    [FIELDS.socials]: [],
-                    [FIELDS.avatar]: '',
-                    [FIELDS.isPrivate]: false,
-                    [FIELDS.views]: 0,
-                    [FIELDS.official]: false,
-                    [FIELDS.officialBadge]: '',
-                    [FIELDS.officialTooltip]: 'Официальный аккаунт',
-                    officialColor: 'blue'
-                },
-                isAdmin: false,
-                adminClaimed: false,
-                banned: false,
-                settings: { notifyViews: true, notifyStatus: true, hideViews: false },
-                loginAttempts: 0,
-                lastLoginAttempt: null,
-                lockedUntil: null,
-                registrationType: 'form'
-            };
-            const userRef = doc(db, COLLECTIONS.users, username);
-            await setDoc(userRef, userData);
-            await setDoc(ipRef, { userId, username, createdAt: serverTimestamp() });
-            return { username, password, displayName, userId };
+    const ipRef = doc(db, 'userIPs', ipAddress);
+    const ipSnap = await getDoc(ipRef);
+    if (ipSnap.exists()) {
+        showToast('С этого IP уже зарегистрирован аккаунт', 'fa-exclamation-circle', 5000);
+        return null;
+    }
+    
+    const statsRef = doc(db, COLLECTIONS.stats, 'userCount');
+    let newId = 1;
+    try {
+        const snap = await getDoc(statsRef);
+        if (snap.exists()) {
+            newId = snap.data().count + 1;
         }
+        await setDoc(statsRef, { count: newId }, { merge: true });
+    } catch (e) {
+        console.warn('Ошибка получения счетчика, используем рандом:', e);
+        newId = Math.floor(Math.random() * 100000);
+    }
+    
+    const userId = newId;
+    const username = 'user_' + userId;
+    const displayName = 'User #' + userId;
+    
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let password = '';
+    for (let i = 0; i < 8; i++) password += chars[Math.floor(Math.random() * chars.length)];
+    
+    const salt = crypto.randomUUID();
+    const hashedPassword = await hashPassword(password, salt);
+    
+    const userData = {
+        [FIELDS.userId]: userId,
+        [FIELDS.username]: username,
+        [FIELDS.displayName]: displayName,
+        [FIELDS.password]: hashedPassword,
+        [FIELDS.passwordSalt]: salt,
+        [FIELDS.gender]: gender || '',
+        [FIELDS.registeredAt]: serverTimestamp(),
+        [FIELDS.lastLogin]: serverTimestamp(),
+        [FIELDS.profile]: {
+            [FIELDS.bio]: '',
+            [FIELDS.socials]: [],
+            [FIELDS.avatar]: '',
+            [FIELDS.isPrivate]: false,
+            [FIELDS.views]: 0,
+            [FIELDS.official]: false,
+            [FIELDS.officialBadge]: '',
+            [FIELDS.officialTooltip]: 'Официальный аккаунт',
+            officialColor: 'blue'
+        },
+        isAdmin: false,
+        adminClaimed: false,
+        banned: false,
+        settings: {
+            notifyViews: true,
+            notifyStatus: true,
+            hideViews: false
+        },
+        loginAttempts: 0,
+        lastLoginAttempt: null,
+        lockedUntil: null,
+        registrationType: 'form'
+    };
+    
+    const userRef = doc(db, COLLECTIONS.users, username);
+    await setDoc(userRef, userData);
+    await setDoc(ipRef, { userId, username, createdAt: serverTimestamp() });
+    
+    return { username, password, displayName, userId };
+}
 
         async function loginUser(usernameOrDisplay, password) {
     const snap = await getDocs(collection(db, COLLECTIONS.users));
@@ -746,85 +762,102 @@
         }
 
         function showRegisterModal() {
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-content">
+            <h2><i class="fas fa-user-plus"></i> Регистрация</h2>
+            <div class="modal-body">
+                <div style="text-align:left; margin:10px 0;">
+                    <label style="display:block; font-weight:600; text-align:left;">Ваш ник (сгенерирован)</label>
+                    <input type="text" id="regUsername" style="width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; background:#f0f0f0;" readonly>
+                    <label style="display:block; font-weight:600; text-align:left;">Пароль (сгенерирован)</label>
+                    <input type="text" id="regPassword" style="width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; background:#f0f0f0;" readonly>
+                    <div style="font-size:12px; color:#888; margin-top:4px;"><i class="fas fa-info-circle"></i> Ник можно изменить в профиле</div>
+                    <label style="display:block; font-weight:600; text-align:left;">Пол</label>
+                    <select id="regGender" style="width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; margin:5px 0;">
+                        <option value="male">Мужской</option>
+                        <option value="female">Женский</option>
+                        <option value="">Не указано</option>
+                    </select>
+                </div>
+                <button class="auth-btn" id="registerSubmit" style="width:100%; justify-content:center;"><i class="fas fa-user-plus"></i> Создать аккаунт</button>
+                <div id="registerMessage" style="margin-top:10px; font-size:13px; color:red;"></div>
+                <div style="margin-top:12px; font-size:14px;">
+                    Уже есть аккаунт? <a href="#" id="showLoginLink">Войти</a>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button>
+            </div>
+        </div>
+    `;
+    openModal(overlay);
+
+    (async function() {
+        const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        let pass = '';
+        for (let i = 0; i < 8; i++) pass += chars[Math.floor(Math.random() * chars.length)];
+
+        const statsRef = doc(db, COLLECTIONS.stats, 'userCount');
+        let nextId = 1;
+        try {
+            const snap = await getDoc(statsRef);
+            if (snap.exists()) {
+                nextId = snap.data().count + 1;
+            }
+        } catch (e) {
+            nextId = Math.floor(Math.random() * 100000);
+        }
+
+        const tempUsername = 'user_' + nextId;
+        document.getElementById('regUsername').value = tempUsername;
+        document.getElementById('regPassword').value = pass;
+    })();
+
+    document.getElementById('registerSubmit').addEventListener('click', async () => {
+        const gender = document.getElementById('regGender').value;
+        const msg = document.getElementById('registerMessage');
+        const ip = await getClientIP();
+        if (ip === 'unknown') {
+            msg.textContent = 'Не удалось определить IP-адрес. Попробуйте позже.';
+            return;
+        }
+        try {
+            const result = await registerUser(gender, ip);
+            if (!result) return;
+            msg.textContent = '';
             overlay.innerHTML = `
                 <div class="modal-content">
-                    <h2><i class="fas fa-user-plus"></i> Регистрация</h2>
+                    <h2><i class="fas fa-check-circle" style="color:#4caf50;"></i> Готово!</h2>
                     <div class="modal-body">
-                        <div style="text-align:left; margin:10px 0;">
-                            <label style="display:block; font-weight:600; text-align:left;">Ваш ник (сгенерирован)</label>
-                            <input type="text" id="regUsername" style="width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; background:#f0f0f0;" readonly>
-                            <label style="display:block; font-weight:600; text-align:left;">Пароль (сгенерирован)</label>
-                            <input type="text" id="regPassword" style="width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; background:#f0f0f0;" readonly>
-                            <div style="font-size:12px; color:#888; margin-top:4px;"><i class="fas fa-info-circle"></i> Ник можно изменить в профиле</div>
-                            <label style="display:block; font-weight:600; text-align:left;">Пол</label>
-                            <select id="regGender" style="width:100%; padding:10px; border-radius:20px; border:1px solid #ccc; margin:5px 0;">
-                                <option value="male">Мужской</option>
-                                <option value="female">Женский</option>
-                                <option value="">Не указано</option>
-                            </select>
-                        </div>
-                        <button class="auth-btn" id="registerSubmit" style="width:100%; justify-content:center;"><i class="fas fa-user-plus"></i> Создать аккаунт</button>
-                        <div id="registerMessage" style="margin-top:10px; font-size:13px; color:red;"></div>
-                        <div style="margin-top:12px; font-size:14px;">
-                            Уже есть аккаунт? <a href="#" id="showLoginLink">Войти</a>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button>
+                        <p>Добро пожаловать, ${result.displayName}!</p>
+                        <p><strong>Логин:</strong> ${result.username}<br><strong>Пароль:</strong> ${result.password}</p>
+                        <p style="font-size:13px; color:#888;">Сохраните пароль, он понадобится для входа.</p>
+                        <button class="auth-btn" id="copyRegData" style="margin:10px 0;"><i class="fas fa-copy"></i> Скопировать данные</button>
+                        <button class="auth-btn" id="goToLogin" style="background:#1e3a5f; color:white; border:none;"><i class="fas fa-sign-in-alt"></i> Войти</button>
                     </div>
                 </div>
             `;
-            openModal(overlay);
-            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let pass = '';
-            for (let i = 0; i < 8; i++) pass += chars[Math.floor(Math.random() * chars.length)];
-            const tempUsername = 'user_' + Math.floor(Math.random() * 100000);
-            document.getElementById('regUsername').value = tempUsername;
-            document.getElementById('regPassword').value = pass;
-            document.getElementById('registerSubmit').addEventListener('click', async () => {
-                const gender = document.getElementById('regGender').value;
-                const msg = document.getElementById('registerMessage');
-                const ip = await getClientIP();
-                if (ip === 'unknown') {
-                    msg.textContent = 'Не удалось определить IP-адрес. Попробуйте позже.';
-                    return;
-                }
-                try {
-                    const result = await registerUser(gender, ip);
-                    if (!result) return;
-                    msg.textContent = '';
-                    overlay.innerHTML = `
-                        <div class="modal-content">
-                            <h2><i class="fas fa-check-circle" style="color:#4caf50;"></i> Готово!</h2>
-                            <div class="modal-body">
-                                <p>Добро пожаловать, ${result.displayName}!</p>
-                                <p><strong>Логин:</strong> ${result.username}<br><strong>Пароль:</strong> ${result.password}</p>
-                                <p style="font-size:13px; color:#888;">Сохраните пароль, он понадобится для входа.</p>
-                                <button class="auth-btn" id="copyRegData" style="margin:10px 0;"><i class="fas fa-copy"></i> Скопировать данные</button>
-                                <button class="auth-btn" id="goToLogin" style="background:#1e3a5f; color:white; border:none;"><i class="fas fa-sign-in-alt"></i> Войти</button>
-                            </div>
-                        </div>
-                    `;
-                    document.getElementById('copyRegData').addEventListener('click', () => {
-                        navigator.clipboard.writeText(`Логин: ${result.username}\nПароль: ${result.password}`);
-                        showToast('Данные скопированы');
-                    });
-                    document.getElementById('goToLogin').addEventListener('click', () => {
-                        closeModal(overlay);
-                        showLoginModal();
-                    });
-                } catch (e) {
-                    msg.textContent = 'Ошибка регистрации: ' + e.message;
-                }
+            document.getElementById('copyRegData').addEventListener('click', () => {
+                navigator.clipboard.writeText(`Логин: ${result.username}\nПароль: ${result.password}`);
+                showToast('Данные скопированы');
             });
-            document.getElementById('showLoginLink').addEventListener('click', (e) => {
-                e.preventDefault();
+            document.getElementById('goToLogin').addEventListener('click', () => {
                 closeModal(overlay);
                 showLoginModal();
             });
+        } catch (e) {
+            msg.textContent = 'Ошибка регистрации: ' + e.message;
         }
+    });
+
+    document.getElementById('showLoginLink').addEventListener('click', (e) => {
+        e.preventDefault();
+        closeModal(overlay);
+        showLoginModal();
+    });
+}
 
         function renderSocials(socials) {
             if (!socials || !Array.isArray(socials) || socials.length === 0) return '<div>Нет добавленных соцсетей</div>';
