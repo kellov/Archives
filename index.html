@@ -343,12 +343,25 @@
         let currentSessionId = null;
 
         async function hashPassword(password, salt) {
-            const encoder = new TextEncoder();
-            const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
-            const hashBuffer = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: encoder.encode(salt), iterations: 100000, hash: 'SHA-256' }, keyMaterial, 256);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const str = password + salt;
+    
+    try {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(str);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    } catch (e) {
+        console.warn('Web Crypto недоступен, использую fallback');
+        let hash = 0;
+        for (let i = 0; i < str.length; i++) {
+            const char = str.charCodeAt(i);
+            hash = ((hash << 5) - hash) + char;
+            hash = hash & hash;
         }
+        return 'fallback_' + Math.abs(hash).toString(36) + '_' + btoa(str).slice(0, 8);
+    }
+}
 
         async function getClientIP() {
             try {
@@ -522,7 +535,7 @@
     if (!found) return null;
     
     if (!found[FIELDS.passwordSalt]) {
-        const salt = crypto.randomUUID();
+        const salt = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 15);
         const hashedPassword = await hashPassword(found[FIELDS.password], salt);
         await updateDoc(doc(db, COLLECTIONS.users, found[FIELDS.username]), {
             password: hashedPassword,
@@ -533,7 +546,9 @@
     }
     
     const hashedInput = await hashPassword(password, found[FIELDS.passwordSalt]);
-    if (found[FIELDS.password] !== hashedInput) return null;
+    if (found[FIELDS.password] !== hashedInput) {
+        return null;
+    }
     
     return found;
 }
@@ -1731,19 +1746,19 @@ c.querySelectorAll('.official-badge-input').forEach(input => {
             allUsersCache = [];
             loadAdminUsers(currentAdminPage);
         } else if (action === 'resetpass') {
-            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-            let newPass = '';
-            for (let i = 0; i < 10; i++) newPass += chars[Math.floor(Math.random() * chars.length)];
-            
-            const salt = crypto.randomUUID();
-            const hashedPassword = await hashPassword(newPass, salt);
-            
-            await updateDoc(doc(db, COLLECTIONS.users, username), {
-                password: hashedPassword,
-                passwordSalt: salt
-            });
-            showToast(`Новый пароль: ${newPass}`, 'fa-key', 10000);
-        }
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let newPass = '';
+    for (let i = 0; i < 12; i++) newPass += chars[Math.floor(Math.random() * chars.length)];
+    
+    const salt = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 15);
+    const hashedPassword = await hashPassword(newPass, salt);
+    
+    await updateDoc(doc(db, COLLECTIONS.users, username), {
+        password: hashedPassword,
+        passwordSalt: salt
+    });
+    showToast(`Новый пароль: ${newPass}`, 'fa-key', 10000);
+}
     });
 });
             document.getElementById('adminUserSearch')?.addEventListener('input', function() {
