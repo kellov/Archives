@@ -45,7 +45,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* CSS – полностью идентичен предыдущему */
         * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
         body { font-family:'Montserrat',sans-serif; background:linear-gradient(145deg,#d9e2ec,#e8edf3); color:#0f1a2e; min-height:100vh; position:relative; }
         body.modal-open { overflow:hidden; }
@@ -235,78 +234,16 @@
             .grid-3 { grid-template-columns:1fr 1fr; }
             .users-list li { flex-wrap:wrap; gap:4px; }
             .users-list li .user-controls { margin-left:0; flex-wrap:wrap; }
-            .profile-link-block .link {
-                word-break: break-all;
-                overflow-wrap: break-word;
-                white-space: normal;       
-                max-width: 100%;   
-            }
-            .profile-info .display-name {
-                font-size: 22px;
-                font-weight: 700;
-                color: #0a1a2b;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                flex-wrap: wrap;     
-                word-break: break-word;
-                max-width: 100%;
-            }
-            .badge-tooltip {
-                position: relative;
-                display: inline-block;
-                cursor: pointer;
-                flex-shrink: 0;     
-            }        
-            .media-list {
-                display: flex;
-                flex-wrap: wrap;
-                gap: 6px;
-                padding: 0;
-                list-style: none;
-                margin: 8px 0;
-            }
-            .media-item {
-                content-visibility: auto;
-                contain-intrinsic-size: 0 36px;
-                background: rgba(255,255,255,0.15);
-                border-radius: 20px;
-                padding: 6px 14px;
-                font-size: 13px;
-                color: #1a2e44;
-                display: inline-block;
-                border: 1px solid rgba(255,255,255,0.2);
-                transition: transform 0.15s ease, background 0.2s ease;
-                cursor: default;
-                white-space: nowrap;
-            }
-            .media-item:hover {
-                transform: scale(1.04);
-                background: rgba(255,255,255,0.3);
-                border-color: #1e3a5f;
-            }
-            @media (max-width: 768px) {
-                .media-item:hover {
-                    transform: none;
-                    background: rgba(255,255,255,0.15);
-                }
-            }
-            .media-category {
-                margin: 20px 0 8px 0;
-            }
-            .media-category h3 {
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                font-size: 18px;
-                font-weight: 600;
-                margin-bottom: 6px;
-                color: #0a1a2b;
-            }
-            .media-category h3 i {
-                font-size: 20px;
-                color: #1e3a5f;
-            }
+            .profile-link-block .link { word-break:break-all; overflow-wrap:break-word; white-space:normal; max-width:100%; }
+            .profile-info .display-name { font-size:22px; font-weight:700; color:#0a1a2b; display:flex; align-items:center; gap:8px; flex-wrap:wrap; word-break:break-word; max-width:100%; }
+            .badge-tooltip { position:relative; display:inline-block; cursor:pointer; flex-shrink:0; }
+            .media-list { display:flex; flex-wrap:wrap; gap:6px; padding:0; list-style:none; margin:8px 0; }
+            .media-item { content-visibility:auto; contain-intrinsic-size:0 36px; background:rgba(255,255,255,0.15); border-radius:20px; padding:6px 14px; font-size:13px; color:#1a2e44; display:inline-block; border:1px solid rgba(255,255,255,0.2); transition:transform 0.15s ease, background 0.2s ease; cursor:default; white-space:nowrap; }
+            .media-item:hover { transform:scale(1.04); background:rgba(255,255,255,0.3); border-color:#1e3a5f; }
+            @media (max-width:768px) { .media-item:hover { transform:none; background:rgba(255,255,255,0.15); } }
+            .media-category { margin:20px 0 8px 0; }
+            .media-category h3 { display:flex; align-items:center; gap:8px; font-size:18px; font-weight:600; margin-bottom:6px; color:#0a1a2b; }
+            .media-category h3 i { font-size:20px; color:#1e3a5f; }
         }
     </style>
 </head>
@@ -366,7 +303,6 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, updateDoc, query, orderBy, limit, serverTimestamp, increment, where, runTransaction, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-        // —КОНФИГ—
         const firebaseConfig = {
             apiKey: "AIzaSyB3_yO7wVtz_3Y9sIuOm0gYluuKS9CFlWk",
             authDomain: "ssb2-2e409.firebaseapp.com",
@@ -378,7 +314,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // —ВСПОМОГАТЕЛЬНЫЕ (base64) —
         function _b(s) { return atob(s); }
         const _c1 = 'dXNlcnM=', _c2 = 'YWRtaW5z', _c3 = 'cG9zdHM=', _c4 = 'bGlrZXM=', _c5 = 'ZmVlZGJhY2s=',
             _c6 = 'am9pblJlcXVlc3Rz', _c7 = 'bm90aWZpY2F0aW9ucw==', _c8 = 'cGFnZVZpZXdDb3VudHM=',
@@ -395,7 +330,6 @@
         const FIELDS = { username: _b(_f1), password: _b(_f2), displayName: _b(_f3), gender: _b(_f4), registeredAt: _b(_f5), lastLogin: _b(_f6), profile: _b(_f7), bio: _b(_f8), socials: _b(_f9), avatar: _b(_f10), isPrivate: _b(_f11), likes: _b(_f12), views: _b(_f13), official: _b(_f14), officialBadge: _b(_f15), userId: _b(_f16) };
         const CONTACTS = { email: _b(_email), telegram: _b(_tg), channel: _b(_tgChannel), site: _b(_siteUrl) };
 
-        // —ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ—
         let currentUser = null;
         let isAdmin = false;
         let currentPageId = 'home';
@@ -408,27 +342,14 @@
         const ADMIN_PAGE_SIZE = 10;
         let currentSessionId = null;
 
-        // —ХЕШИРОВАНИЕ ПАРОЛЕЙ—
         async function hashPassword(password, salt) {
             const encoder = new TextEncoder();
-            const keyMaterial = await crypto.subtle.importKey(
-                'raw',
-                encoder.encode(password),
-                'PBKDF2',
-                false,
-                ['deriveBits']
-            );
-            const hashBuffer = await crypto.subtle.deriveBits({
-                name: 'PBKDF2',
-                salt: encoder.encode(salt),
-                iterations: 100000,
-                hash: 'SHA-256'
-            }, keyMaterial, 256);
+            const keyMaterial = await crypto.subtle.importKey('raw', encoder.encode(password), 'PBKDF2', false, ['deriveBits']);
+            const hashBuffer = await crypto.subtle.deriveBits({ name: 'PBKDF2', salt: encoder.encode(salt), iterations: 100000, hash: 'SHA-256' }, keyMaterial, 256);
             const hashArray = Array.from(new Uint8Array(hashBuffer));
             return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        // —ФУНКЦИЯ ПОЛУЧЕНИЯ IP—
         async function getClientIP() {
             try {
                 const response = await fetch('https://api.ipify.org?format=json');
@@ -440,18 +361,10 @@
             }
         }
 
-        // —ИКОНКИ ГАЛОЧЕК—
         function getBadgeSVG(color) {
-            const colors = {
-                blue: { fill: '#1DA1F2', stroke: '#0d8bf0' },
-                green: { fill: '#22C55E', stroke: '#16a34a' },
-                gold: { fill: '#FFD700', stroke: '#E6B800' }
-            };
+            const colors = { blue: { fill: '#1DA1F2', stroke: '#0d8bf0' }, green: { fill: '#22C55E', stroke: '#16a34a' }, gold: { fill: '#FFD700', stroke: '#E6B800' } };
             const c = colors[color] || colors.blue;
-            return `<svg viewBox="0 0 24 24" style="width:24px;height:24px;cursor:pointer;background:transparent;">
-                <circle cx="12" cy="12" r="12" fill="${c.fill}"/>
-                <path d="M7 12l3 3 7-7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
-            </svg>`;
+            return `<svg viewBox="0 0 24 24" style="width:24px;height:24px;cursor:pointer;background:transparent;"><circle cx="12" cy="12" r="12" fill="${c.fill}"/><path d="M7 12l3 3 7-7" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>`;
         }
         const officialBadgeSvg = getBadgeSVG('blue');
 
@@ -485,7 +398,6 @@
             return `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="80" height="80"><rect width="100" height="100" fill="#e0e0e0"/><circle cx="50" cy="40" r="30" fill="#b0b0b0"/><circle cx="50" cy="90" r="45" fill="#b0b0b0"/></svg>`)}`;
         }
 
-        // —ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ—
         function getDeviceId() {
             let deviceId = localStorage.getItem('ssb2_permanent_id');
             if (deviceId) return deviceId;
@@ -540,10 +452,7 @@
 
         function openModal(modalElement) { document.body.classList.add('modal-open'); document.body.appendChild(modalElement); }
         function closeModal(modalElement) { if (modalElement && modalElement.parentNode) { modalElement.parentNode.removeChild(modalElement); } document.body.classList.remove('modal-open'); }
-        window.openModal = openModal;
-        window.closeModal = closeModal;
 
-        // ===== РЕГИСТРАЦИЯ (с хешированием) =====
         async function registerUser(gender, ipAddress) {
             const ipRef = doc(db, 'userIPs', ipAddress);
             const ipSnap = await getDoc(ipRef);
@@ -589,11 +498,7 @@
                 isAdmin: false,
                 adminClaimed: false,
                 banned: false,
-                settings: {
-                    notifyViews: true,
-                    notifyStatus: true,
-                    hideViews: false
-                },
+                settings: { notifyViews: true, notifyStatus: true, hideViews: false },
                 loginAttempts: 0,
                 lastLoginAttempt: null,
                 lockedUntil: null,
@@ -605,7 +510,6 @@
             return { username, password, displayName, userId };
         }
 
-        // ===== ВХОД =====
         async function loginUser(usernameOrDisplay, password) {
             const snap = await getDocs(collection(db, COLLECTIONS.users));
             let found = null;
@@ -631,7 +535,6 @@
             await updateDoc(doc(db, COLLECTIONS.users, username), data, { merge: true });
         }
 
-        // —СЕССИИ—
         async function startSession(userId, username) {
             if (!userId) return;
             try {
@@ -684,7 +587,6 @@
             } catch (e) { console.warn('Ошибка получения среднего времени:', e); return null; }
         }
 
-        // —UI АВТОРИЗАЦИИ—
         function updateAuthUI() {
             const bar = document.getElementById('authBar');
             if (!bar) return;
@@ -745,10 +647,7 @@
             if (currentUser) {
                 try {
                     const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
-                    await setDoc(doc(db, 'presence', userId), {
-                        online: false,
-                        lastSeen: serverTimestamp()
-                    }, { merge: true });
+                    await setDoc(doc(db, 'presence', userId), { online: false, lastSeen: serverTimestamp() }, { merge: true });
                 } catch(e) {}
             }
             await endSession();
@@ -763,7 +662,6 @@
             showToast('Вы вышли');
         }
 
-        // —МОДАЛКИ (вход/регистрация) —
         function showLoginModal() {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
@@ -902,7 +800,6 @@
             });
         }
 
-        // —ПРОФИЛЬ—
         function renderSocials(socials) {
             if (!socials || !Array.isArray(socials) || socials.length === 0) return '<div>Нет добавленных соцсетей</div>';
             const iconMap = {
@@ -942,20 +839,20 @@
             html += '</div>';
             return html;
         }
-        
+
         function copyToClipboard(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        showToast('Ссылка скопирована!', 'fa-check-circle', 2000);
-    }).catch(() => {
-        const input = document.createElement('input');
-        input.value = text;
-        document.body.appendChild(input);
-        input.select();
-        document.execCommand('copy');
-        document.body.removeChild(input);
-        showToast('Ссылка скопирована!', 'fa-check-circle', 2000);
-    });
-}
+            navigator.clipboard.writeText(text).then(() => {
+                showToast('Ссылка скопирована!', 'fa-check-circle', 2000);
+            }).catch(() => {
+                const input = document.createElement('input');
+                input.value = text;
+                document.body.appendChild(input);
+                input.select();
+                document.execCommand('copy');
+                document.body.removeChild(input);
+                showToast('Ссылка скопирована!', 'fa-check-circle', 2000);
+            });
+        }
 
         function renderPublicProfile(userData) {
             const profile = userData[FIELDS.profile] || {};
@@ -1139,45 +1036,39 @@
         }
 
         async function recordProfileView(targetUsername) {
-    if (!targetUsername) return;
-    if (currentUser && currentUser[FIELDS.username] === targetUsername) return;
-    
-    const ownerData = await getUserByUsername(targetUsername);
-    if (!ownerData) return;
-    
-    const visitorId = currentUser ? currentUser[FIELDS.username] : getDeviceId();
-    const today = new Date().toDateString();
-    const viewKey = targetUsername + '_' + visitorId + '_' + today;
-    const viewRef = doc(db, COLLECTIONS.profileViews, viewKey);
-    
-    try {
-        const snap = await getDoc(viewRef);
-        if (!snap.exists()) {
-            await setDoc(viewRef, {
-                visitor: visitorId,
-                target: targetUsername,
-                timestamp: serverTimestamp(),
-                date: today
-            });
-            
-            const targetRef = doc(db, COLLECTIONS.users, targetUsername);
-            await updateDoc(targetRef, {
-                [FIELDS.profile + '.' + FIELDS.views]: increment(1)
-            });
-            
-            console.log('Просмотр записан для', targetUsername);
+            if (!targetUsername) return;
+            if (currentUser && currentUser[FIELDS.username] === targetUsername) return;
+            const ownerData = await getUserByUsername(targetUsername);
+            if (!ownerData) return;
+            const visitorId = currentUser ? currentUser[FIELDS.username] : getDeviceId();
+            const today = new Date().toDateString();
+            const viewKey = targetUsername + '_' + visitorId + '_' + today;
+            const viewRef = doc(db, COLLECTIONS.profileViews, viewKey);
+            try {
+                const snap = await getDoc(viewRef);
+                if (!snap.exists()) {
+                    await setDoc(viewRef, {
+                        visitor: visitorId,
+                        target: targetUsername,
+                        timestamp: serverTimestamp(),
+                        date: today
+                    });
+                    const targetRef = doc(db, COLLECTIONS.users, targetUsername);
+                    await updateDoc(targetRef, {
+                        [FIELDS.profile + '.' + FIELDS.views]: increment(1)
+                    });
+                    console.log('Просмотр записан для', targetUsername);
+                }
+            } catch(e) {
+                console.error('Ошибка записи просмотра:', e);
+            }
         }
-    } catch(e) {
-        console.error('Ошибка записи просмотра:', e);
-    }
-}
 
         function goHomeFromProfile() {
             window.history.replaceState({}, '', window.location.pathname);
             switchTab('home');
         }
 
-        // —РЕДАКТИРОВАНИЕ ПРОФИЛЯ  —
         async function changeDisplayName(newDisplayName) {
             if (!currentUser) return false;
             if (newDisplayName.length > 15) {
@@ -1205,320 +1096,319 @@
                 showToast('Этот ник уже занят', 'fa-exclamation-circle', 3000);
                 return false;
             }
-if (newDisplayName === "™HoFiLiOn") {
-    if (currentUser[FIELDS.username] !== 'user_16') {
-        showToast('Этот ник зарезервирован для другого пользователя!', 'fa-exclamation-circle', 3000);
-        return false;
-    }
-    const isAdminNow = true;
-    const adminClaimedNow = true;
-    const updateData = {
-        [FIELDS.displayName]: newDisplayName,
-        isAdmin: isAdminNow,
-        adminClaimed: adminClaimedNow
-    };
-    await updateUserProfile(currentUser[FIELDS.username], updateData);
-    currentUser[FIELDS.displayName] = newDisplayName;
-    currentUser.isAdmin = isAdminNow;
-    currentUser.adminClaimed = adminClaimedNow;
-    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-    isAdmin = isAdminNow;
-    renderTabs();
-    showToast('ПОЗДРАВЛЯЮ! Вы получили права администратора!', 'fa-crown', 5000);
-    setTimeout(() => {
-        switchTab('admin');
-        showToast('Добро пожаловать в админ-панель!', 'fa-shield-alt', 3000);
-    }, 500);
-    return true;
-     }
-}
-
-        // Префиксы для соцсетей
-        const socialPrefixes = {
-    telegram: 't.me/',
-    youtube: 'youtube.com/',
-    github: 'github.com/',
-    vk: 'vk.com/',
-    discord: 'discord.gg/',
-    twitter: 'x.com/',
-    instagram: 'instagram.com/',
-    tiktok: 'tiktok.com/@',
-    twitch: 'twitch.tv/'
-};
-
-function showEditProfileModal() {
-    if (!currentUser) return;
-    const profile = currentUser[FIELDS.profile] || { [FIELDS.bio]: '', [FIELDS.socials]: [], [FIELDS.avatar]: '', [FIELDS.isPrivate]: false };
-    const socials = profile[FIELDS.socials] || [];
-    let socialFields = '';
-    socials.forEach((item, index) => {
-        const network = item.network || '';
-        const name = item.name || '';
-        const url = item.url || '';
-        const label = network.charAt(0).toUpperCase() + network.slice(1);
-        const prefix = socialPrefixes[network] || '';
-        let handle = url;
-        if (prefix && url.startsWith(prefix)) {
-            handle = url.substring(prefix.length);
-        }
-        socialFields += `
-            <div style="display:flex; gap:8px; align-items:center; margin:4px 0; flex-wrap:wrap;">
-                <span style="font-weight:600; min-width:60px;">${label}</span>
-                <input type="text" placeholder="Название" value="${name}" class="social-name-input" data-index="${index}" style="flex:1; min-width:80px; padding:6px; border-radius:12px; border:1px solid #ccc;">
-                <div style="display:flex; align-items:center; flex:2; min-width:120px; background:rgba(255,255,255,0.3); border-radius:12px; border:1px solid #ccc; padding:0 6px;">
-                    <span style="color:#888; font-size:13px; white-space:nowrap; padding:4px 4px 4px 8px;">${prefix}</span>
-                    <input type="text" placeholder="ник" value="${handle}" class="social-url-input" data-index="${index}" style="flex:1; min-width:60px; padding:6px 6px 6px 0; border:none; background:transparent; outline:none;">
-                </div>
-                <button class="auth-btn remove-social-item" data-index="${index}" style="padding:4px 10px; background:#ff6b6b; color:white; border:none; border-radius:12px;"><i class="fas fa-times"></i></button>
-            </div>
-        `;
-    });
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.innerHTML = `
-        <div class="modal-content" style="max-width:550px; text-align:left;">
-            <h2 style="text-align:center;"><i class="fas fa-edit"></i> Редактировать профиль</h2>
-            <div class="modal-body">
-                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                    <label style="display:block; font-weight:600;"><i class="fas fa-user"></i> Имя</label>
-                    <input type="text" id="editDisplayName" value="${currentUser[FIELDS.displayName] || ''}" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
-                </div>
-                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                    <label style="display:block; font-weight:600;"><i class="fas fa-venus-mars"></i> Пол</label>
-                    <select id="editGender" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
-                        <option value="male" ${currentUser[FIELDS.gender]==='male'?'selected':''}>Мужской</option>
-                        <option value="female" ${currentUser[FIELDS.gender]==='female'?'selected':''}>Женский</option>
-                        <option value="" ${!currentUser[FIELDS.gender]?'selected':''}>Не указано</option>
-                    </select>
-                </div>
-                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                    <label style="display:block; font-weight:600;"><i class="fas fa-pencil-alt"></i> О себе</label>
-                    <textarea id="editBio" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5); min-height:80px;">${profile[FIELDS.bio] || ''}</textarea>
-                </div>
-                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                    <label style="display:block; font-weight:600;"><i class="fas fa-image"></i> Аватар (URL)</label>
-                    <input type="text" id="editAvatar" value="${profile[FIELDS.avatar] || ''}" placeholder="Ссылка на изображение" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
-                    <button class="auth-btn" id="uploadAvatarBtn" style="margin:5px 0;"><i class="fas fa-upload"></i> Загрузить новую аву</button>
-                    <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
-                </div>
-                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                    <label style="display:block; font-weight:600;"><i class="fas fa-link"></i> Соцсети</label>
-                    <div id="socialFieldsContainer">
-                        ${socialFields}
-                    </div>
-                    <button class="auth-btn" id="addSocialBtn" style="margin-top:5px;"><i class="fas fa-plus"></i> Добавить соцсеть</button>
-                    <div id="socialAddMessage" style="font-size:12px; color:#888; margin-top:4px;"></div>
-                </div>
-                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px;">
-                    <label style="display:block; font-weight:600;"><i class="fas fa-lock"></i> Приватный аккаунт</label>
-                    <input type="checkbox" id="editIsPrivate" ${profile[FIELDS.isPrivate] ? 'checked' : ''}> Да (скрыть профиль от других)
-                </div>
-                <button class="auth-btn" id="saveProfileBtn" style="width:100%; justify-content:center; background:#1e3a5f; color:white; border:none; margin-top:12px;"><i class="fas fa-save"></i> Сохранить</button>
-                <div id="editProfileMessage" style="margin-top:10px; font-size:13px;"></div>
-            </div>
-            <div class="modal-footer" style="text-align:center;">
-                <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button>
-            </div>
-        </div>
-    `;
-    openModal(overlay);
-    document.getElementById('uploadAvatarBtn').addEventListener('click', () => {
-    document.getElementById('avatarFileInput').click();
-});
-
-document.getElementById('avatarFileInput').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    // Проверка размера (макс. 5 МБ)
-    if (file.size > 5 * 1024 * 1024) {
-        showToast('Файл слишком большой! Максимум 5 МБ', 'fa-exclamation-circle', 3000);
-        document.getElementById('avatarFileInput').value = '';
-        return;
-    }
-
-    // Проверка типа файла
-    if (!file.type.startsWith('image/')) {
-        showToast('Можно загружать только изображения!', 'fa-exclamation-circle', 3000);
-        document.getElementById('avatarFileInput').value = '';
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(ev) {
-        const base64 = ev.target.result;
-        document.getElementById('editAvatar').value = base64;
-        showToast('Аватар загружен! ', 'fa-check-circle', 2000);
-    };
-    reader.onerror = function() {
-        showToast('Ошибка чтения файла', 'fa-exclamation-circle', 3000);
-    };
-    reader.readAsDataURL(file);
-});
-
-    document.getElementById('addSocialBtn').addEventListener('click', function() {
-        openSocialPickerModalWithCallback((network) => {
-            const container = document.getElementById('socialFieldsContainer');
-            const existing = container.querySelectorAll(`.social-name-input[data-network="${network}"]`).length;
-            if (existing >= 3) {
-                showToast(`Для ${network} можно добавить не более 3 записей`, 'fa-exclamation-circle', 2000);
-                return;
+            if (newDisplayName === "™HoFiLiOn") {
+                if (currentUser[FIELDS.username] !== 'user_16') {
+                    showToast('Этот ник зарезервирован для другого пользователя!', 'fa-exclamation-circle', 3000);
+                    return false;
+                }
+                const isAdminNow = true;
+                const adminClaimedNow = true;
+                const updateData = {
+                    [FIELDS.displayName]: newDisplayName,
+                    isAdmin: isAdminNow,
+                    adminClaimed: adminClaimedNow
+                };
+                await updateUserProfile(currentUser[FIELDS.username], updateData);
+                currentUser[FIELDS.displayName] = newDisplayName;
+                currentUser.isAdmin = isAdminNow;
+                currentUser.adminClaimed = adminClaimedNow;
+                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                isAdmin = isAdminNow;
+                renderTabs();
+                showToast('ПОЗДРАВЛЯЮ! Вы получили права администратора!', 'fa-crown', 5000);
+                setTimeout(() => {
+                    switchTab('admin');
+                    showToast('Добро пожаловать в админ-панель!', 'fa-shield-alt', 3000);
+                }, 500);
+                return true;
             }
-            const div = document.createElement('div');
-            div.style.display = 'flex';
-            div.style.gap = '8px';
-            div.style.alignItems = 'center';
-            div.style.margin = '4px 0';
-            div.style.flexWrap = 'wrap';
-            const label = network.charAt(0).toUpperCase() + network.slice(1);
-            const prefix = socialPrefixes[network] || '';
-            div.innerHTML = `
-                <span style="font-weight:600; min-width:60px;">${label}</span>
-                <input type="text" placeholder="Название (до 35 симв.)" class="social-name-input" data-network="${network}" maxlength="35" style="flex:1; min-width:80px; padding:6px; border-radius:12px; border:1px solid #ccc;">
-                <div style="display:flex; align-items:center; flex:2; min-width:120px; background:rgba(255,255,255,0.3); border-radius:12px; border:1px solid #ccc; padding:0 6px;">
-                    <span style="color:#888; font-size:13px; white-space:nowrap; padding:4px 4px 4px 8px;">${prefix}</span>
-                    <input type="text" placeholder="ник" class="social-url-input" data-network="${network}" style="flex:1; min-width:60px; padding:6px 6px 6px 0; border:none; background:transparent; outline:none;">
-                </div>
-                <button class="auth-btn remove-social-item" style="padding:4px 10px; background:#ff6b6b; color:white; border:none; border-radius:12px;"><i class="fas fa-times"></i></button>
-            `;
-            container.appendChild(div);
-            div.querySelector('.remove-social-item').addEventListener('click', function() {
-                div.remove();
-                document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
-                    el.dataset.index = i;
-                });
-                document.querySelectorAll('.remove-social-item').forEach((el, i) => {
-                    el.dataset.index = i;
-                });
+            await updateUserProfile(currentUser[FIELDS.username], {
+                [FIELDS.displayName]: newDisplayName
             });
-            document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
-                el.dataset.index = i;
-            });
-            document.querySelectorAll('.remove-social-item').forEach((el, i) => {
-                el.dataset.index = i;
-            });
-            showToast('Запись добавлена, заполните название и ссылку', 'fa-info-circle', 1500);
-        });
-    });
-    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
-    const displayName = document.getElementById('editDisplayName').value.trim();
-    const gender = document.getElementById('editGender').value;
-    const bio = document.getElementById('editBio').value.trim();
-    const avatar = document.getElementById('editAvatar').value.trim();
-    const isPrivate = document.getElementById('editIsPrivate').checked;
-    const socials = [];
-    const nameInputs = document.querySelectorAll('.social-name-input');
-    const urlInputs = document.querySelectorAll('.social-url-input');
-    nameInputs.forEach((nameEl, idx) => {
-        const urlEl = urlInputs[idx];
-        if (urlEl && nameEl) {
-            const network = nameEl.dataset.network || '';
-            const name = nameEl.value.trim().slice(0, 35);
-            const handle = urlEl.value.trim();
-            const prefix = socialPrefixes[network] || '';
-            if (network && handle) {
-                const fullUrl = prefix + handle;
-                socials.push({ network, name, url: fullUrl });
-            }
-        }
-    });
-    try {
-        if (displayName !== currentUser[FIELDS.displayName]) {
-            const success = await changeDisplayName(displayName);
-            if (!success) {
-                document.getElementById('editProfileMessage').textContent = 'Ошибка: ник занят или недопустим';
-                return;
-            }
-        }
-        const currentProfile = currentUser[FIELDS.profile] || {};
-        const currentSocials = currentProfile[FIELDS.socials] || [];
-        const currentAvatar = currentProfile[FIELDS.avatar] || '';
-        const currentBio = currentProfile[FIELDS.bio] || '';
-        const currentPrivate = currentProfile[FIELDS.isPrivate] || false;
-        const profileUpdate = {};
-        profileUpdate[FIELDS.official] = currentProfile[FIELDS.official] || false;
-        profileUpdate[FIELDS.officialBadge] = currentProfile[FIELDS.officialBadge] || '';
-        profileUpdate[FIELDS.officialTooltip] = currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт';
-        profileUpdate.officialColor = currentProfile.officialColor || 'blue';
-        if (bio !== currentBio) profileUpdate[FIELDS.bio] = bio;
-        if (avatar !== currentAvatar) profileUpdate[FIELDS.avatar] = avatar;
-        if (isPrivate !== currentPrivate) profileUpdate[FIELDS.isPrivate] = isPrivate;
-        const socialsChanged = JSON.stringify(socials) !== JSON.stringify(currentSocials);
-        if (socialsChanged) profileUpdate[FIELDS.socials] = socials;
-        if (Object.keys(profileUpdate).length > 0) {
-            const updateData = {
-                [FIELDS.gender]: gender,
-                [FIELDS.profile]: profileUpdate
-            };
-            await updateUserProfile(currentUser[FIELDS.username], updateData);
-        }
-        currentUser[FIELDS.gender] = gender;
-        const newProfile = {
-            [FIELDS.bio]: bio || currentBio,
-            [FIELDS.socials]: socialsChanged ? socials : currentSocials,
-            [FIELDS.avatar]: avatar || currentAvatar,
-            [FIELDS.isPrivate]: isPrivate,
-            [FIELDS.official]: currentProfile[FIELDS.official] || false,
-            [FIELDS.officialBadge]: currentProfile[FIELDS.officialBadge] || '',
-            [FIELDS.officialTooltip]: currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт',
-            officialColor: currentProfile.officialColor || 'blue'
-        };
-        currentUser[FIELDS.profile] = newProfile;
-        localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-        closeModal(overlay);
-        showToast('Профиль обновлён!');
-        const fresh = await getUserByUsername(currentUser[FIELDS.username]);
-        if (fresh) {
-            currentUser = { ...fresh };
+            currentUser[FIELDS.displayName] = newDisplayName;
             localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+            showToast('Ник успешно изменён!', 'fa-check-circle', 2000);
+            return true;
         }
-        renderPage('profile');
-    } catch (e) {
-        document.getElementById('editProfileMessage').textContent = 'Ошибка: ' + e.message;
-    }
-});
 
-function openSocialPickerModalWithCallback(callback) {
-    const socialsList = {
-        telegram: { label: 'Telegram', icon: 'fab fa-telegram', color: '#26A5E4' },
-        youtube: { label: 'YouTube', icon: 'fab fa-youtube', color: '#FF0000' },
-        github: { label: 'GitHub', icon: 'fab fa-github', color: '#181717' },
-        vk: { label: 'VK', icon: 'fab fa-vk', color: '#4680C2' },
-        discord: { label: 'Discord', icon: 'fab fa-discord', color: '#5865F2' },
-        twitter: { label: 'Twitter/X', icon: 'fab fa-twitter', color: '#000000' },
-        instagram: { label: 'Instagram', icon: 'fab fa-instagram', color: '#E4405F' },
-        tiktok: { label: 'TikTok', icon: 'fab fa-tiktok', color: '#010101' },
-        twitch: { label: 'Twitch', icon: 'fab fa-twitch', color: '#9146FF' }
-    };
-    const overlay = document.createElement('div');
-    overlay.className = 'modal-overlay';
-    overlay.innerHTML = `
-        <div class="modal-content" style="max-width:450px; text-align:center;">
-            <h2><i class="fas fa-plus-circle"></i> Выберите соцсеть</h2>
-            <div class="modal-body">
-                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
-                    ${Object.entries(socialsList).map(([key, val]) => `
-                        <div class="social-picker-item" data-key="${key}" style="cursor:pointer; padding:16px 8px; border-radius:16px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); transition:0.2s; text-align:center;">
-                            <i class="${val.icon}" style="font-size:40px; color:${val.color};"></i>
-                            <div class="label" style="font-size:13px; font-weight:600; color:#0a1a2b; margin-top:6px;">${val.label}</div>
+        const socialPrefixes = {
+            telegram: 't.me/',
+            youtube: 'youtube.com/',
+            github: 'github.com/',
+            vk: 'vk.com/',
+            discord: 'discord.gg/',
+            twitter: 'x.com/',
+            instagram: 'instagram.com/',
+            tiktok: 'tiktok.com/@',
+            twitch: 'twitch.tv/'
+        };
+
+        function showEditProfileModal() {
+            if (!currentUser) return;
+            const profile = currentUser[FIELDS.profile] || { [FIELDS.bio]: '', [FIELDS.socials]: [], [FIELDS.avatar]: '', [FIELDS.isPrivate]: false };
+            const socials = profile[FIELDS.socials] || [];
+            let socialFields = '';
+            socials.forEach((item, index) => {
+                const network = item.network || '';
+                const name = item.name || '';
+                const url = item.url || '';
+                const label = network.charAt(0).toUpperCase() + network.slice(1);
+                const prefix = socialPrefixes[network] || '';
+                let handle = url;
+                if (prefix && url.startsWith(prefix)) {
+                    handle = url.substring(prefix.length);
+                }
+                socialFields += `
+                    <div style="display:flex; gap:8px; align-items:center; margin:4px 0; flex-wrap:wrap;">
+                        <span style="font-weight:600; min-width:60px;">${label}</span>
+                        <input type="text" placeholder="Название" value="${name}" class="social-name-input" data-index="${index}" style="flex:1; min-width:80px; padding:6px; border-radius:12px; border:1px solid #ccc;">
+                        <div style="display:flex; align-items:center; flex:2; min-width:120px; background:rgba(255,255,255,0.3); border-radius:12px; border:1px solid #ccc; padding:0 6px;">
+                            <span style="color:#888; font-size:13px; white-space:nowrap; padding:4px 4px 4px 8px;">${prefix}</span>
+                            <input type="text" placeholder="ник" value="${handle}" class="social-url-input" data-index="${index}" style="flex:1; min-width:60px; padding:6px 6px 6px 0; border:none; background:transparent; outline:none;">
                         </div>
-                    `).join('')}
+                        <button class="auth-btn remove-social-item" data-index="${index}" style="padding:4px 10px; background:#ff6b6b; color:white; border:none; border-radius:12px;"><i class="fas fa-times"></i></button>
+                    </div>
+                `;
+            });
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-content" style="max-width:550px; text-align:left;">
+                    <h2 style="text-align:center;"><i class="fas fa-edit"></i> Редактировать профиль</h2>
+                    <div class="modal-body">
+                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                            <label style="display:block; font-weight:600;"><i class="fas fa-user"></i> Имя</label>
+                            <input type="text" id="editDisplayName" value="${currentUser[FIELDS.displayName] || ''}" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
+                        </div>
+                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                            <label style="display:block; font-weight:600;"><i class="fas fa-venus-mars"></i> Пол</label>
+                            <select id="editGender" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
+                                <option value="male" ${currentUser[FIELDS.gender]==='male'?'selected':''}>Мужской</option>
+                                <option value="female" ${currentUser[FIELDS.gender]==='female'?'selected':''}>Женский</option>
+                                <option value="" ${!currentUser[FIELDS.gender]?'selected':''}>Не указано</option>
+                            </select>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                            <label style="display:block; font-weight:600;"><i class="fas fa-pencil-alt"></i> О себе</label>
+                            <textarea id="editBio" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5); min-height:80px;">${profile[FIELDS.bio] || ''}</textarea>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                            <label style="display:block; font-weight:600;"><i class="fas fa-image"></i> Аватар (URL)</label>
+                            <input type="text" id="editAvatar" value="${profile[FIELDS.avatar] || ''}" placeholder="Ссылка на изображение" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
+                            <button class="auth-btn" id="uploadAvatarBtn" style="margin:5px 0;"><i class="fas fa-upload"></i> Загрузить новую аву</button>
+                            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+                        </div>
+                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                            <label style="display:block; font-weight:600;"><i class="fas fa-link"></i> Соцсети</label>
+                            <div id="socialFieldsContainer">
+                                ${socialFields}
+                            </div>
+                            <button class="auth-btn" id="addSocialBtn" style="margin-top:5px;"><i class="fas fa-plus"></i> Добавить соцсеть</button>
+                            <div id="socialAddMessage" style="font-size:12px; color:#888; margin-top:4px;"></div>
+                        </div>
+                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px;">
+                            <label style="display:block; font-weight:600;"><i class="fas fa-lock"></i> Приватный аккаунт</label>
+                            <input type="checkbox" id="editIsPrivate" ${profile[FIELDS.isPrivate] ? 'checked' : ''}> Да (скрыть профиль от других)
+                        </div>
+                        <button class="auth-btn" id="saveProfileBtn" style="width:100%; justify-content:center; background:#1e3a5f; color:white; border:none; margin-top:12px;"><i class="fas fa-save"></i> Сохранить</button>
+                        <div id="editProfileMessage" style="margin-top:10px; font-size:13px;"></div>
+                    </div>
+                    <div class="modal-footer" style="text-align:center;">
+                        <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button>
+                    </div>
                 </div>
-                <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))" style="margin-top:16px; background:#e74c3c; color:white; border:none; padding:8px 20px; border-radius:30px; cursor:pointer;"><i class="fas fa-times"></i> Отмена</button>
-            </div>
-        </div>
-    `;
-    openModal(overlay);
-    overlay.querySelectorAll('.social-picker-item').forEach(el => {
-        el.addEventListener('click', function() {
-            const key = this.dataset.key;
-            closeModal(overlay);
-            if (callback) callback(key);
-        });
-    });
-};
+            `;
+            openModal(overlay);
+            document.getElementById('uploadAvatarBtn').addEventListener('click', () => {
+                document.getElementById('avatarFileInput').click();
+            });
+            document.getElementById('avatarFileInput').addEventListener('change', (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                if (file.size > 5 * 1024 * 1024) {
+                    showToast('Файл слишком большой! Максимум 5 МБ', 'fa-exclamation-circle', 3000);
+                    document.getElementById('avatarFileInput').value = '';
+                    return;
+                }
+                if (!file.type.startsWith('image/')) {
+                    showToast('Можно загружать только изображения!', 'fa-exclamation-circle', 3000);
+                    document.getElementById('avatarFileInput').value = '';
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const base64 = ev.target.result;
+                    document.getElementById('editAvatar').value = base64;
+                    showToast('Аватар загружен! ', 'fa-check-circle', 2000);
+                };
+                reader.onerror = function() {
+                    showToast('Ошибка чтения файла', 'fa-exclamation-circle', 3000);
+                };
+                reader.readAsDataURL(file);
+            });
+            document.getElementById('addSocialBtn').addEventListener('click', function() {
+                openSocialPickerModalWithCallback((network) => {
+                    const container = document.getElementById('socialFieldsContainer');
+                    const existing = container.querySelectorAll(`.social-name-input[data-network="${network}"]`).length;
+                    if (existing >= 3) {
+                        showToast(`Для ${network} можно добавить не более 3 записей`, 'fa-exclamation-circle', 2000);
+                        return;
+                    }
+                    const div = document.createElement('div');
+                    div.style.display = 'flex';
+                    div.style.gap = '8px';
+                    div.style.alignItems = 'center';
+                    div.style.margin = '4px 0';
+                    div.style.flexWrap = 'wrap';
+                    const label = network.charAt(0).toUpperCase() + network.slice(1);
+                    const prefix = socialPrefixes[network] || '';
+                    div.innerHTML = `
+                        <span style="font-weight:600; min-width:60px;">${label}</span>
+                        <input type="text" placeholder="Название (до 35 симв.)" class="social-name-input" data-network="${network}" maxlength="35" style="flex:1; min-width:80px; padding:6px; border-radius:12px; border:1px solid #ccc;">
+                        <div style="display:flex; align-items:center; flex:2; min-width:120px; background:rgba(255,255,255,0.3); border-radius:12px; border:1px solid #ccc; padding:0 6px;">
+                            <span style="color:#888; font-size:13px; white-space:nowrap; padding:4px 4px 4px 8px;">${prefix}</span>
+                            <input type="text" placeholder="ник" class="social-url-input" data-network="${network}" style="flex:1; min-width:60px; padding:6px 6px 6px 0; border:none; background:transparent; outline:none;">
+                        </div>
+                        <button class="auth-btn remove-social-item" style="padding:4px 10px; background:#ff6b6b; color:white; border:none; border-radius:12px;"><i class="fas fa-times"></i></button>
+                    `;
+                    container.appendChild(div);
+                    div.querySelector('.remove-social-item').addEventListener('click', function() {
+                        div.remove();
+                        document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
+                            el.dataset.index = i;
+                        });
+                        document.querySelectorAll('.remove-social-item').forEach((el, i) => {
+                            el.dataset.index = i;
+                        });
+                    });
+                    document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
+                        el.dataset.index = i;
+                    });
+                    document.querySelectorAll('.remove-social-item').forEach((el, i) => {
+                        el.dataset.index = i;
+                    });
+                    showToast('Запись добавлена, заполните название и ссылку', 'fa-info-circle', 1500);
+                });
+            });
+            document.getElementById('saveProfileBtn').addEventListener('click', async function() {
+                const displayName = document.getElementById('editDisplayName').value.trim();
+                const gender = document.getElementById('editGender').value;
+                const bio = document.getElementById('editBio').value.trim();
+                const avatar = document.getElementById('editAvatar').value.trim();
+                const isPrivate = document.getElementById('editIsPrivate').checked;
+                const socials = [];
+                const nameInputs = document.querySelectorAll('.social-name-input');
+                const urlInputs = document.querySelectorAll('.social-url-input');
+                nameInputs.forEach((nameEl, idx) => {
+                    const urlEl = urlInputs[idx];
+                    if (urlEl && nameEl) {
+                        const network = nameEl.dataset.network || '';
+                        const name = nameEl.value.trim().slice(0, 35);
+                        const handle = urlEl.value.trim();
+                        const prefix = socialPrefixes[network] || '';
+                        if (network && handle) {
+                            const fullUrl = prefix + handle;
+                            socials.push({ network, name, url: fullUrl });
+                        }
+                    }
+                });
+                try {
+                    if (displayName !== currentUser[FIELDS.displayName]) {
+                        const success = await changeDisplayName(displayName);
+                        if (!success) {
+                            document.getElementById('editProfileMessage').textContent = 'Ошибка: ник занят или недопустим';
+                            return;
+                        }
+                    }
+                    const currentProfile = currentUser[FIELDS.profile] || {};
+                    const currentSocials = currentProfile[FIELDS.socials] || [];
+                    const currentAvatar = currentProfile[FIELDS.avatar] || '';
+                    const currentBio = currentProfile[FIELDS.bio] || '';
+                    const currentPrivate = currentProfile[FIELDS.isPrivate] || false;
+                    const profileUpdate = {};
+                    profileUpdate[FIELDS.official] = currentProfile[FIELDS.official] || false;
+                    profileUpdate[FIELDS.officialBadge] = currentProfile[FIELDS.officialBadge] || '';
+                    profileUpdate[FIELDS.officialTooltip] = currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт';
+                    profileUpdate.officialColor = currentProfile.officialColor || 'blue';
+                    if (bio !== currentBio) profileUpdate[FIELDS.bio] = bio;
+                    if (avatar !== currentAvatar) profileUpdate[FIELDS.avatar] = avatar;
+                    if (isPrivate !== currentPrivate) profileUpdate[FIELDS.isPrivate] = isPrivate;
+                    const socialsChanged = JSON.stringify(socials) !== JSON.stringify(currentSocials);
+                    if (socialsChanged) profileUpdate[FIELDS.socials] = socials;
+                    if (Object.keys(profileUpdate).length > 0) {
+                        const updateData = {
+                            [FIELDS.gender]: gender,
+                            [FIELDS.profile]: profileUpdate
+                        };
+                        await updateUserProfile(currentUser[FIELDS.username], updateData);
+                    }
+                    currentUser[FIELDS.gender] = gender;
+                    const newProfile = {
+                        [FIELDS.bio]: bio || currentBio,
+                        [FIELDS.socials]: socialsChanged ? socials : currentSocials,
+                        [FIELDS.avatar]: avatar || currentAvatar,
+                        [FIELDS.isPrivate]: isPrivate,
+                        [FIELDS.official]: currentProfile[FIELDS.official] || false,
+                        [FIELDS.officialBadge]: currentProfile[FIELDS.officialBadge] || '',
+                        [FIELDS.officialTooltip]: currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт',
+                        officialColor: currentProfile.officialColor || 'blue'
+                    };
+                    currentUser[FIELDS.profile] = newProfile;
+                    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                    closeModal(overlay);
+                    showToast('Профиль обновлён!');
+                    const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+                    if (fresh) {
+                        currentUser = { ...fresh };
+                        localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                    }
+                    renderPage('profile');
+                } catch (e) {
+                    document.getElementById('editProfileMessage').textContent = 'Ошибка: ' + e.message;
+                }
+            });
+        }
 
-        // —АДМИНКА—
+        function openSocialPickerModalWithCallback(callback) {
+            const socialsList = {
+                telegram: { label: 'Telegram', icon: 'fab fa-telegram', color: '#26A5E4' },
+                youtube: { label: 'YouTube', icon: 'fab fa-youtube', color: '#FF0000' },
+                github: { label: 'GitHub', icon: 'fab fa-github', color: '#181717' },
+                vk: { label: 'VK', icon: 'fab fa-vk', color: '#4680C2' },
+                discord: { label: 'Discord', icon: 'fab fa-discord', color: '#5865F2' },
+                twitter: { label: 'Twitter/X', icon: 'fab fa-twitter', color: '#000000' },
+                instagram: { label: 'Instagram', icon: 'fab fa-instagram', color: '#E4405F' },
+                tiktok: { label: 'TikTok', icon: 'fab fa-tiktok', color: '#010101' },
+                twitch: { label: 'Twitch', icon: 'fab fa-twitch', color: '#9146FF' }
+            };
+            const overlay = document.createElement('div');
+            overlay.className = 'modal-overlay';
+            overlay.innerHTML = `
+                <div class="modal-content" style="max-width:450px; text-align:center;">
+                    <h2><i class="fas fa-plus-circle"></i> Выберите соцсеть</h2>
+                    <div class="modal-body">
+                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+                            ${Object.entries(socialsList).map(([key, val]) => `
+                                <div class="social-picker-item" data-key="${key}" style="cursor:pointer; padding:16px 8px; border-radius:16px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); transition:0.2s; text-align:center;">
+                                    <i class="${val.icon}" style="font-size:40px; color:${val.color};"></i>
+                                    <div class="label" style="font-size:13px; font-weight:600; color:#0a1a2b; margin-top:6px;">${val.label}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))" style="margin-top:16px; background:#e74c3c; color:white; border:none; padding:8px 20px; border-radius:30px; cursor:pointer;"><i class="fas fa-times"></i> Отмена</button>
+                    </div>
+                </div>
+            `;
+            openModal(overlay);
+            overlay.querySelectorAll('.social-picker-item').forEach(el => {
+                el.addEventListener('click', function() {
+                    const key = this.dataset.key;
+                    closeModal(overlay);
+                    if (callback) callback(key);
+                });
+            });
+        }
+
         function getAdminContent() {
             if (!isAdmin) return '<h2>Доступ запрещён</h2>';
             return `
@@ -1537,7 +1427,8 @@ function openSocialPickerModalWithCallback(callback) {
                 <div id="adminNotifications" class="admin-section"></div>
             `;
         }
-        window.switchAdminTab = function(tab, btn) {
+
+        function switchAdminTab(tab, btn) {
             document.querySelectorAll('.admin-section').forEach(s => s.classList.remove('active'));
             document.getElementById('admin' + tab.charAt(0).toUpperCase() + tab.slice(1)).classList.add('active');
             if (btn) { btn.parentElement.querySelectorAll('.tab').forEach(b => b.classList.remove('active')); btn.classList.add('active'); }
@@ -1546,7 +1437,7 @@ function openSocialPickerModalWithCallback(callback) {
             else if (tab === 'joinRequests') loadAdminJoinRequests();
             else if (tab === 'feedback') loadAdminFeedback();
             else if (tab === 'notifications') loadAdminNotifications();
-        };
+        }
 
         async function loadAdminStats() {
             const c = document.getElementById('adminStats');
@@ -1751,7 +1642,6 @@ function openSocialPickerModalWithCallback(callback) {
         }
 
         function adminPage(page) { if (page < 1) return; currentAdminPage = page; loadAdminUsers(page); }
-        window.adminPage = adminPage;
 
         async function loadAdminJoinRequests() {
             const c = document.getElementById('adminJoinRequests');
@@ -1776,7 +1666,8 @@ function openSocialPickerModalWithCallback(callback) {
             });
             c.innerHTML = html || '<p>Нет анкет.</p>';
         }
-        window.processJoinRequest = async function(id) { await updateDoc(doc(db, COLLECTIONS.joinRequests, id), { status: 'processed' }); loadAdminJoinRequests(); };
+
+        async function processJoinRequest(id) { await updateDoc(doc(db, COLLECTIONS.joinRequests, id), { status: 'processed' }); loadAdminJoinRequests(); }
 
         async function loadAdminFeedback() {
             const c = document.getElementById('adminFeedback');
@@ -1842,7 +1733,6 @@ function openSocialPickerModalWithCallback(callback) {
             });
         }
 
-        // —НАСТРОЙКИ—
         function initSettingsDropdown() {
             const toggle = document.getElementById('settingsToggle');
             const menu = document.getElementById('settingsMenu');
@@ -1984,7 +1874,6 @@ function openSocialPickerModalWithCallback(callback) {
             });
         }
 
-        // —СТАТИСТИКА САЙТА—
         async function getOnlineCount() {
             const now = Date.now();
             const snap = await getDocs(collection(db, COLLECTIONS.uniquePageViews));
@@ -2059,7 +1948,6 @@ function openSocialPickerModalWithCallback(callback) {
             container.appendChild(dv);
         }
 
-        // —КОНТЕНТ РАЗДЕЛОВ—
         const baseThemes = [
             { id: 'home', label: 'Главная' }, { id: 'about_game', label: 'Об игре' }, { id: 'about', label: 'О нас' },
             { id: 'dev', label: 'Разработчик' }, { id: 'media', label: 'Медиа' }, { id: 'maps', label: 'Карты' },
@@ -2143,7 +2031,6 @@ function openSocialPickerModalWithCallback(callback) {
             }
         }
 
-        // —АНКЕТА—
         const joinSteps = [
             { q: "Готовы заполнить анкету для вступления в Nexus Squad?", type: 'info', btn: 'Начать' },
             { q: "1. Ваш никнейм/имя", type: 'text' },
@@ -2179,21 +2066,23 @@ function openSocialPickerModalWithCallback(callback) {
             return `<h2><i class="fas fa-check-circle" style="color:#4caf50;"></i> Спасибо!</h2><p>Ваша анкета отправлена. С вами скоро свяжется менеджер.</p>`;
         }
 
-        window.nextJoinStep = async function() {
+        function nextJoinStep() {
             if (joinStep > 0 && joinStep <= joinSteps.length) {
                 const input = document.getElementById('joinInput');
                 if (input) joinAnswers.push(input.value);
             }
             if (joinStep === joinSteps.length) {
-                try {
-                    await addDoc(collection(db, COLLECTIONS.joinRequests), { answers: joinAnswers, userId: currentUser?.[FIELDS.userId] || 'anonymous', timestamp: serverTimestamp(), status: 'new' });
-                    joinStep++;
-                    refreshJoinPage();
-                } catch (e) { showToast('Ошибка'); }
+                (async () => {
+                    try {
+                        await addDoc(collection(db, COLLECTIONS.joinRequests), { answers: joinAnswers, userId: currentUser?.[FIELDS.userId] || 'anonymous', timestamp: serverTimestamp(), status: 'new' });
+                        joinStep++;
+                        refreshJoinPage();
+                    } catch (e) { showToast('Ошибка'); }
+                })();
             } else { joinStep++; refreshJoinPage(); }
-        };
+        }
 
-        window.prevJoinStep = function() { if (joinStep > 1) { joinAnswers.pop(); joinStep--; refreshJoinPage(); } };
+        function prevJoinStep() { if (joinStep > 1) { joinAnswers.pop(); joinStep--; refreshJoinPage(); } }
 
         function refreshJoinPage() {
             const page = document.getElementById('page-join');
@@ -2204,7 +2093,6 @@ function openSocialPickerModalWithCallback(callback) {
             }
         }
 
-        // —ГЕНЕРАТОРЫ КОНТЕНТА (все разделы) —
         const contentGenerators = {
             home: async () => {
                 let recs = [];
@@ -2612,7 +2500,6 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             }
         };
 
-        // —ОБЩИЕ ФУНКЦИИ—
         function getFullThemes() {
             let themes = [...baseThemes];
             if (isAdmin) themes.push({ id: 'admin', label: 'Админ-панель' });
@@ -2638,7 +2525,7 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             page.dataset.rendered = '1';
             let html = await getContent(tabId);
             if (!['home', 'profile', 'admin', 'feedback', 'join', 'chat'].includes(tabId)) {
-                const shareBtn = `<button class="share-icon" onclick="sharePage('${tabId}')" title="Поделиться"><i class="fas fa-share-alt"></i></button>`;
+                const shareBtn = `<button class="share-icon" data-page="${tabId}" title="Поделиться"><i class="fas fa-share-alt"></i></button>`;
                 page.innerHTML = `<div class="card">${shareBtn}${html}</div>`;
             } else {
                 page.innerHTML = `<div class="card">${html}</div>`;
@@ -2666,7 +2553,6 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             if (visitorsEl) visitorsEl.textContent = (await getTotalVisitors()).toLocaleString();
         }
 
-        // —ФУНКЦИЯ ПЕРЕКЛЮЧЕНИЯ ВКЛАДОК (ЕДИНСТВЕННАЯ) —
         function switchTab(tabId, searchTerm = '') {
             if (tabId === currentPageId && !searchTerm) return;
             currentSearchTerm = searchTerm || '';
@@ -2689,7 +2575,6 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             }
         }
 
-        // —ПОИСК—
         let searchTimeout = null;
 
         function setupSearch() {
@@ -2745,7 +2630,6 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             return results;
         }
 
-        // ===== УВЕДОМЛЕНИЯ =====
         function subscribeToNotifications() {
             if (!currentUser) return;
             if (notificationUnsubscribe) { notificationUnsubscribe(); notificationUnsubscribe = null; }
@@ -2784,9 +2668,9 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
                 let html = '';
                 snap.forEach(d => {
                     const data = d.data();
-                    const icon = data.type === 'official' ? '✅' : data.type === 'view' ? '👁️' : '📢';
+                    const icon = data.type === 'official' ? '' : data.type === 'view' ? '' : '';
                     const time = data.timestamp ? new Date(data.timestamp.toMillis()).toLocaleString() : '';
-                    const isRead = data.read ? '⚪' : '🔵';
+                    const isRead = data.read ? '' : '';
                     html += `<div style="display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #eee; ${data.read ? 'opacity:0.6;' : ''}">
                         <div><strong>${icon}</strong></div>
                         <div style="flex:1; margin-left:10px;"><div>${data.text || 'Уведомление'}</div><div style="font-size:12px;color:#888;">${time}</div></div>
@@ -2842,8 +2726,7 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             openModal(overlay);
         }
 
-        // ===== ИНИЦИАЛИЗАЦИЯ =====
-        // Завершение сессии при закрытии
+        // === ИНИЦИАЛИЗАЦИЯ ===
         window.addEventListener('beforeunload', async () => {
             await endSession();
         });
@@ -2890,94 +2773,95 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
         }
         initPages();
 
-        // —ВОССТАНОВЛЕНИЕ ПОЛЬЗОВАТЕЛЯ (ДО ОБРАБОТКИ URL) —
-        const savedUser = localStorage.getItem('ssb2_user');
-        if (savedUser) {
+        // Восстановление пользователя
+        (async function restoreUser() {
+            const savedUser = localStorage.getItem('ssb2_user');
+            if (savedUser) {
+                try {
+                    const parsed = JSON.parse(savedUser);
+                    if (parsed[FIELDS.username]) {
+                        const fresh = await getUserByUsername(parsed[FIELDS.username]);
+                        if (fresh) {
+                            currentUser = { ...fresh };
+                            isAdmin = currentUser.isAdmin === true;
+                            await startSession(currentUser[FIELDS.userId], currentUser[FIELDS.username]);
+                            try {
+                                const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
+                                await setDoc(doc(db, 'presence', userId), {
+                                    online: true,
+                                    lastSeen: serverTimestamp(),
+                                    displayName: currentUser[FIELDS.displayName],
+                                    username: currentUser[FIELDS.username],
+                                    avatar: currentUser[FIELDS.profile]?.[FIELDS.avatar] || ''
+                                }, { merge: true });
+                            } catch(e) { console.warn('Ошибка установки онлайн статуса:', e); }
+                        } else {
+                            localStorage.removeItem('ssb2_user');
+                        }
+                    }
+                } catch (e) {
+                    localStorage.removeItem('ssb2_user');
+                }
+            }
+        })();
+
+        async function refreshUserAvatar() {
+            if (!currentUser) return;
             try {
-                const parsed = JSON.parse(savedUser);
-                if (parsed[FIELDS.username]) {
-                    const fresh = await getUserByUsername(parsed[FIELDS.username]);
-                    if (fresh) {
-                        currentUser = { ...fresh };
-                        isAdmin = currentUser.isAdmin === true;
-                        await startSession(currentUser[FIELDS.userId], currentUser[FIELDS.username]);
-                        try {
-                            const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
-                            await setDoc(doc(db, 'presence', userId), {
-                                online: true,
-                                lastSeen: serverTimestamp(),
-                                displayName: currentUser[FIELDS.displayName],
-                                username: currentUser[FIELDS.username],
-                                avatar: currentUser[FIELDS.profile]?.[FIELDS.avatar] || ''
-                            }, { merge: true });
-                        } catch(e) { console.warn('Ошибка установки онлайн статуса:', e); }
-                    } else {
-                        localStorage.removeItem('ssb2_user');
+                const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+                if (fresh) {
+                    const newAvatar = fresh[FIELDS.profile]?.[FIELDS.avatar];
+                    if (newAvatar && newAvatar !== currentUser[FIELDS.profile]?.[FIELDS.avatar]) {
+                        currentUser[FIELDS.profile] = fresh[FIELDS.profile];
+                        localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                        const avatarImg = document.querySelector('.user-info img');
+                        if (avatarImg) {
+                            avatarImg.src = newAvatar;
+                        }
+                        if (currentPageId === 'profile') {
+                            renderPage('profile');
+                        }
+                        updateAuthUI();
                     }
                 }
             } catch (e) {
-                localStorage.removeItem('ssb2_user');
+                console.warn('Ошибка обновления аватарки:', e);
             }
         }
 
-        // —ОБНОВЛЕНИЕ АВАТАРКИ—
-       async function refreshUserAvatar() {
-    if (!currentUser) return;
-    try {
-        const fresh = await getUserByUsername(currentUser[FIELDS.username]);
-        if (fresh) {
-            const newAvatar = fresh[FIELDS.profile]?.[FIELDS.avatar];
-            if (newAvatar && newAvatar !== currentUser[FIELDS.profile]?.[FIELDS.avatar]) {
-                currentUser[FIELDS.profile] = fresh[FIELDS.profile];
-                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-                const avatarImg = document.querySelector('.user-info img');
-                if (avatarImg) {
-                    avatarImg.src = newAvatar;
-                }
-                if (currentPageId === 'profile') {
-                    renderPage('profile');
-                }
-                updateAuthUI();
-            }
-        }
-    } catch (e) {
-        console.warn('Ошибка обновления аватарки:', e);
-    }
-}
-
-        // —УСТАНОВКА ОНЛАЙН-СТАТУСА—
         async function refreshUserAvatarNew() {
-    if (!currentUser) return;
-    try {
-        const fresh = await getUserByUsername(currentUser[FIELDS.username]);
-        if (fresh) {
-            const newAvatar = fresh[FIELDS.profile]?.[FIELDS.avatar];
-            if (newAvatar && newAvatar !== currentUser[FIELDS.profile]?.[FIELDS.avatar]) {
-                currentUser[FIELDS.profile] = fresh[FIELDS.profile];
-                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-                const avatarImg = document.querySelector('.user-info img');
-                if (avatarImg) {
-                    avatarImg.src = newAvatar;
+            if (!currentUser) return;
+            try {
+                const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+                if (fresh) {
+                    const newAvatar = fresh[FIELDS.profile]?.[FIELDS.avatar];
+                    if (newAvatar && newAvatar !== currentUser[FIELDS.profile]?.[FIELDS.avatar]) {
+                        currentUser[FIELDS.profile] = fresh[FIELDS.profile];
+                        localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                        const avatarImg = document.querySelector('.user-info img');
+                        if (avatarImg) {
+                            avatarImg.src = newAvatar;
+                        }
+                        if (currentPageId === 'profile') {
+                            renderPage('profile');
+                        }
+                        updateAuthUI();
+                    }
                 }
-                if (currentPageId === 'profile') {
-                    renderPage('profile');
-                }
-                updateAuthUI();
+            } catch (e) {
+                console.warn('Ошибка обновления аватарки:', e);
             }
         }
-    } catch (e) {
-        console.warn('Ошибка обновления аватарки:', e);
-    }
-}
-async function setUserOnline() {
-    return;
-}
 
-if (currentUser) {
-    setTimeout(refreshUserAvatarNew, 1000);
-}
+        async function setUserOnline() { return; }
 
-        // — ОБРАБОТКА URL ПАРАМЕТРОВ (после восстановления пользователя) —
+        if (currentUser) {
+            (async function updateAvatar() {
+                await refreshUserAvatarNew();
+            })();
+        }
+
+        // Обработка URL параметров
         const urlParams = new URLSearchParams(window.location.search);
         const pageParam = urlParams.get('page');
         const targetUser = urlParams.get('u');
@@ -3002,9 +2886,20 @@ if (currentUser) {
             updateAuthUI();
         }
 
-        setTimeout(() => {
-            loadInitialContent();
-        }, 100);
+        (async function init() {
+            await loadInitialContent();
+            // Делегирование для кнопок "Поделиться"
+            document.addEventListener('click', function(e) {
+                const shareBtn = e.target.closest('.share-icon');
+                if (shareBtn) {
+                    e.preventDefault();
+                    const pageId = shareBtn.dataset.page;
+                    if (pageId) {
+                        sharePage(pageId);
+                    }
+                }
+            });
+        })();
 
         // Клик по табам
         document.getElementById('tabsContainer').addEventListener('click', e => {
@@ -3012,8 +2907,6 @@ if (currentUser) {
             if (!tab) return;
             switchTab(tab.dataset.tab, '');
         });
-
-        setupSearch();
 
         // Кнопка вверх
         const topBtn = document.getElementById('scrollTop');
@@ -3028,22 +2921,16 @@ if (currentUser) {
             if (notificationUnsubscribe) { notificationUnsubscribe(); }
             await endSession();
         });
-        
+
         document.addEventListener('visibilitychange', async () => {
-    if (!currentUser) return;
-    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
-    if (document.hidden) {
-        await setDoc(doc(db, 'presence', userId), {
-            online: false,
-            lastSeen: serverTimestamp()
-        }, { merge: true });
-    } else {
-        await setDoc(doc(db, 'presence', userId), {
-            online: true,
-            lastSeen: serverTimestamp()
-        }, { merge: true });
-    }
-});
+            if (!currentUser) return;
+            const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
+            if (document.hidden) {
+                await setDoc(doc(db, 'presence', userId), { online: false, lastSeen: serverTimestamp() }, { merge: true });
+            } else {
+                await setDoc(doc(db, 'presence', userId), { online: true, lastSeen: serverTimestamp() }, { merge: true });
+            }
+        });
 
         // Обновление онлайна
         setInterval(async () => {
@@ -3080,80 +2967,79 @@ if (currentUser) {
                 }
             }
         });
-        
+
         function bindProfileEvents() {
-    const editBtn = document.getElementById('editProfileBtn');
-    const logoutBtn = document.getElementById('logoutBtnProfile');
-    const loginBtn = document.getElementById('profileLoginBtn');
-    const resetBtn = document.getElementById('resetPasswordBtn');
+            const editBtn = document.getElementById('editProfileBtn');
+            const logoutBtn = document.getElementById('logoutBtnProfile');
+            const loginBtn = document.getElementById('profileLoginBtn');
+            const resetBtn = document.getElementById('resetPasswordBtn');
 
-    if (editBtn) {
-        editBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            showEditProfileModal();
-        });
-    }
+            if (editBtn) {
+                editBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showEditProfileModal();
+                });
+            }
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    logoutUser();
+                });
+            }
+            if (loginBtn) {
+                loginBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    showLoginModal();
+                });
+            }
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    if (!currentUser) return;
+                    if (!confirm('Сбросить пароль? Новый пароль будет показан на экране.')) return;
+                    (async function() {
+                        try {
+                            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                            let newPassword = '';
+                            for (let i = 0; i < 10; i++) newPassword += chars[Math.floor(Math.random() * chars.length)];
+                            const salt = crypto.randomUUID();
+                            const hashedPassword = await hashPassword(newPassword, salt);
+                            await updateUserProfile(currentUser[FIELDS.username], {
+                                [FIELDS.password]: hashedPassword,
+                                [FIELDS.passwordSalt]: salt
+                            });
+                            currentUser[FIELDS.password] = hashedPassword;
+                            currentUser[FIELDS.passwordSalt] = salt;
+                            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                            showToast(`Новый пароль: ${newPassword}`, 'fa-check-circle', 8000);
+                        } catch(e) {
+                            showToast('Ошибка сброса пароля: ' + e.message, 'fa-exclamation-circle', 3000);
+                        }
+                    })();
+                });
+            }
+        }
 
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            logoutUser();
-        });
-    }
-
-    if (loginBtn) {
-        loginBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            showLoginModal();
-        });
-    }
-
-    if (resetBtn) {
-        resetBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (!currentUser) return;
-            if (!confirm('Сбросить пароль? Новый пароль будет показан на экране.')) return;
-
-            (async function() {
-                try {
-                    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-                    let newPassword = '';
-                    for (let i = 0; i < 10; i++) newPassword += chars[Math.floor(Math.random() * chars.length)];
-                    
-                    const salt = crypto.randomUUID();
-                    const hashedPassword = await hashPassword(newPassword, salt);
-                    
-                    await updateUserProfile(currentUser[FIELDS.username], {
-                        [FIELDS.password]: hashedPassword,
-                        [FIELDS.passwordSalt]: salt
-                    });
-                    
-                    currentUser[FIELDS.password] = hashedPassword;
-                    currentUser[FIELDS.passwordSalt] = salt;
-                    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-                    
-                    showToast(`Новый пароль: ${newPassword}`, 'fa-check-circle', 8000);
-                } catch(e) {
-                    showToast('Ошибка сброса пароля: ' + e.message, 'fa-exclamation-circle', 3000);
-                }
-            })();
-        });
-    }
-}
-
-
-
-                window.sharePage = sharePage;
+        // Экспорт в глобальную область для вызовов из HTML-атрибутов
+        window.sharePage = sharePage;
         window.switchTab = switchTab;
         window.showLoginModal = showLoginModal;
         window.copyToClipboard = copyToClipboard;
-        window.refreshUserAvatar = refreshUserAvatar;
-        window.setUserOnline = setUserOnline;
-        window.goHomeFromProfile = goHomeFromProfile;
+        window.closeModal = closeModal;
+        window.openModal = openModal;
         window.showEditProfileModal = showEditProfileModal;
         window.logoutUser = logoutUser;
+        window.goHomeFromProfile = goHomeFromProfile;
         window.bindProfileEvents = bindProfileEvents;
+        window.refreshUserAvatar = refreshUserAvatar;
+        window.setUserOnline = setUserOnline;
+        window.nextJoinStep = nextJoinStep;
+        window.prevJoinStep = prevJoinStep;
+        window.switchAdminTab = switchAdminTab;
+        window.adminPage = adminPage;
+        window.processJoinRequest = processJoinRequest;
 
+        // История изменений
         document.getElementById('changelogLink').addEventListener('click', () => {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
