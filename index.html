@@ -1295,7 +1295,8 @@
     const gender = document.getElementById('editGender').value;
     const bio = document.getElementById('editBio').value.trim();
     const avatar = document.getElementById('editAvatar').value.trim();
-    const isPrivate = document.getElementById('editIsPrivate').checked; 
+    const isPrivate = document.getElementById('editIsPrivate').checked;
+    
     const socials = [];
     const nameInputs = document.querySelectorAll('.social-name-input');
     const urlInputs = document.querySelectorAll('.social-url-input');
@@ -1314,7 +1315,6 @@
     });
 
     try {
-
         if (displayName !== currentUser[FIELDS.displayName]) {
             const success = await changeDisplayName(displayName);
             if (!success) {
@@ -1324,19 +1324,8 @@
         }
 
         const currentProfile = currentUser[FIELDS.profile] || {};
+        const updatedProfile = { ...currentProfile };
         
-        const updatedProfile = {
-            [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
-            [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
-            [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
-            [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
-            [FIELDS.official]: currentProfile[FIELDS.official] || false,
-            [FIELDS.officialBadge]: currentProfile[FIELDS.officialBadge] || '',
-            [FIELDS.officialTooltip]: currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт',
-            officialColor: currentProfile.officialColor || 'blue',
-            [FIELDS.views]: currentProfile[FIELDS.views] || 0
-        };
-
         if (bio !== currentProfile[FIELDS.bio]) updatedProfile[FIELDS.bio] = bio;
         if (avatar !== currentProfile[FIELDS.avatar]) updatedProfile[FIELDS.avatar] = avatar;
         if (isPrivate !== currentProfile[FIELDS.isPrivate]) updatedProfile[FIELDS.isPrivate] = isPrivate;
