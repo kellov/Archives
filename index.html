@@ -942,6 +942,20 @@
             html += '</div>';
             return html;
         }
+        
+        function copyToClipboard(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        showToast('Ссылка скопирована!', 'fa-check-circle', 2000);
+    }).catch(() => {
+        const input = document.createElement('input');
+        input.value = text;
+        document.body.appendChild(input);
+        input.select();
+        document.execCommand('copy');
+        document.body.removeChild(input);
+        showToast('Ссылка скопирована!', 'fa-check-circle', 2000);
+    });
+}
 
         function renderPublicProfile(userData) {
             const profile = userData[FIELDS.profile] || {};
@@ -3047,6 +3061,66 @@
                 }
             }
         });
+        
+        function bindProfileEvents() {
+    const editBtn = document.getElementById('editProfileBtn');
+    const logoutBtn = document.getElementById('logoutBtnProfile');
+    const loginBtn = document.getElementById('profileLoginBtn');
+    const resetBtn = document.getElementById('resetPasswordBtn');
+
+    if (editBtn) {
+        editBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showEditProfileModal();
+        });
+    }
+
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            logoutUser();
+        });
+    }
+
+    if (loginBtn) {
+        loginBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            showLoginModal();
+        });
+    }
+
+    if (resetBtn) {
+        resetBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (!currentUser) return;
+            if (!confirm('Сбросить пароль? Новый пароль будет показан на экране.')) return;
+
+            (async function() {
+                try {
+                    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                    let newPassword = '';
+                    for (let i = 0; i < 10; i++) newPassword += chars[Math.floor(Math.random() * chars.length)];
+                    
+                    const salt = crypto.randomUUID();
+                    const hashedPassword = await hashPassword(newPassword, salt);
+                    
+                    await updateUserProfile(currentUser[FIELDS.username], {
+                        [FIELDS.password]: hashedPassword,
+                        [FIELDS.passwordSalt]: salt
+                    });
+                    
+                    currentUser[FIELDS.password] = hashedPassword;
+                    currentUser[FIELDS.passwordSalt] = salt;
+                    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                    
+                    showToast(`Новый пароль: ${newPassword}`, 'fa-check-circle', 8000);
+                } catch(e) {
+                    showToast('Ошибка сброса пароля: ' + e.message, 'fa-exclamation-circle', 3000);
+                }
+            })();
+        });
+    }
+}
 
 window.sharePage = sharePage;
 window.switchTab = switchTab;
