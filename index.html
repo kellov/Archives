@@ -1249,303 +1249,294 @@
 
         // Префиксы для соцсетей
         const socialPrefixes = {
-            telegram: 't.me/',
-            youtube: 'youtube.com/',
-            github: 'github.com/',
-            vk: 'vk.com/',
-            discord: 'discord.gg/',
-            twitter: 'x.com/',
-            instagram: 'instagram.com/',
-            tiktok: 'tiktok.com/@',
-            twitch: 'twitch.tv/'
-        };
+    telegram: 't.me/',
+    youtube: 'youtube.com/',
+    github: 'github.com/',
+    vk: 'vk.com/',
+    discord: 'discord.gg/',
+    twitter: 'x.com/',
+    instagram: 'instagram.com/',
+    tiktok: 'tiktok.com/@',
+    twitch: 'twitch.tv/'
+};
 
-        function showEditProfileModal() {
-            if (!currentUser) return;
-            const profile = currentUser[FIELDS.profile] || { [FIELDS.bio]: '', [FIELDS.socials]: [], [FIELDS.avatar]: '', [FIELDS.isPrivate]: false };
-            const socials = profile[FIELDS.socials] || [];
-            let socialFields = '';
-            socials.forEach((item, index) => {
-                const network = item.network || '';
-                const name = item.name || '';
-                const url = item.url || '';
-                const label = network.charAt(0).toUpperCase() + network.slice(1);
-                const prefix = socialPrefixes[network] || '';
-                let handle = url;
-                if (prefix && url.startsWith(prefix)) {
-                    handle = url.substring(prefix.length);
-                }
-                socialFields += `
-                    <div style="display:flex; gap:8px; align-items:center; margin:4px 0; flex-wrap:wrap;">
-                        <span style="font-weight:600; min-width:60px;">${label}</span>
-                        <input type="text" placeholder="Название" value="${name}" class="social-name-input" data-index="${index}" style="flex:1; min-width:80px; padding:6px; border-radius:12px; border:1px solid #ccc;">
-                        <div style="display:flex; align-items:center; flex:2; min-width:120px; background:rgba(255,255,255,0.3); border-radius:12px; border:1px solid #ccc; padding:0 6px;">
-                            <span style="color:#888; font-size:13px; white-space:nowrap; padding:4px 4px 4px 8px;">${prefix}</span>
-                            <input type="text" placeholder="ник" value="${handle}" class="social-url-input" data-index="${index}" style="flex:1; min-width:60px; padding:6px 6px 6px 0; border:none; background:transparent; outline:none;">
-                        </div>
-                        <button class="auth-btn remove-social-item" data-index="${index}" style="padding:4px 10px; background:#ff6b6b; color:white; border:none; border-radius:12px;"><i class="fas fa-times"></i></button>
-                    </div>
-                `;
-            });
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content" style="max-width:550px; text-align:left;">
-                    <h2 style="text-align:center;"><i class="fas fa-edit"></i> Редактировать профиль</h2>
-                    <div class="modal-body">
-                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                            <label style="display:block; font-weight:600;"><i class="fas fa-user"></i> Имя</label>
-                            <input type="text" id="editDisplayName" value="${currentUser[FIELDS.displayName] || ''}" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
-                        </div>
-                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                            <label style="display:block; font-weight:600;"><i class="fas fa-venus-mars"></i> Пол</label>
-                            <select id="editGender" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
-                                <option value="male" ${currentUser[FIELDS.gender]==='male'?'selected':''}>Мужской</option>
-                                <option value="female" ${currentUser[FIELDS.gender]==='female'?'selected':''}>Женский</option>
-                                <option value="" ${!currentUser[FIELDS.gender]?'selected':''}>Не указано</option>
-                            </select>
-                        </div>
-                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                            <label style="display:block; font-weight:600;"><i class="fas fa-pencil-alt"></i> О себе</label>
-                            <textarea id="editBio" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5); min-height:80px;">${profile[FIELDS.bio] || ''}</textarea>
-                        </div>
-                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                            <label style="display:block; font-weight:600;"><i class="fas fa-image"></i> Аватар (URL)</label>
-                            <input type="text" id="editAvatar" value="${profile[FIELDS.avatar] || ''}" placeholder="Ссылка на изображение" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
-                            <button class="auth-btn" id="uploadAvatarBtn" style="margin:5px 0;"><i class="fas fa-upload"></i> Загрузить новую аву</button>
-                            <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
-                        </div>
-                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
-                            <label style="display:block; font-weight:600;"><i class="fas fa-link"></i> Соцсети</label>
-                            <div id="socialFieldsContainer">
-                                ${socialFields}
-                            </div>
-                            <button class="auth-btn" id="addSocialBtn" style="margin-top:5px;"><i class="fas fa-plus"></i> Добавить соцсеть</button>
-                            <div id="socialAddMessage" style="font-size:12px; color:#888; margin-top:4px;"></div>
-                        </div>
-                        <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px;">
-                            <label style="display:block; font-weight:600;"><i class="fas fa-lock"></i> Приватный аккаунт</label>
-                            <input type="checkbox" id="editIsPrivate" ${profile[FIELDS.isPrivate] ? 'checked' : ''}> Да (скрыть профиль от других)
-                        </div>
-                        <button class="auth-btn" id="saveProfileBtn" style="width:100%; justify-content:center; background:#1e3a5f; color:white; border:none; margin-top:12px;"><i class="fas fa-save"></i> Сохранить</button>
-                        <div id="editProfileMessage" style="margin-top:10px; font-size:13px;"></div>
-                    </div>
-                    <div class="modal-footer" style="text-align:center;">
-                        <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button>
-                    </div>
+function showEditProfileModal() {
+    if (!currentUser) return;
+    const profile = currentUser[FIELDS.profile] || { [FIELDS.bio]: '', [FIELDS.socials]: [], [FIELDS.avatar]: '', [FIELDS.isPrivate]: false };
+    const socials = profile[FIELDS.socials] || [];
+    let socialFields = '';
+    socials.forEach((item, index) => {
+        const network = item.network || '';
+        const name = item.name || '';
+        const url = item.url || '';
+        const label = network.charAt(0).toUpperCase() + network.slice(1);
+        const prefix = socialPrefixes[network] || '';
+        let handle = url;
+        if (prefix && url.startsWith(prefix)) {
+            handle = url.substring(prefix.length);
+        }
+        socialFields += `
+            <div style="display:flex; gap:8px; align-items:center; margin:4px 0; flex-wrap:wrap;">
+                <span style="font-weight:600; min-width:60px;">${label}</span>
+                <input type="text" placeholder="Название" value="${name}" class="social-name-input" data-index="${index}" style="flex:1; min-width:80px; padding:6px; border-radius:12px; border:1px solid #ccc;">
+                <div style="display:flex; align-items:center; flex:2; min-width:120px; background:rgba(255,255,255,0.3); border-radius:12px; border:1px solid #ccc; padding:0 6px;">
+                    <span style="color:#888; font-size:13px; white-space:nowrap; padding:4px 4px 4px 8px;">${prefix}</span>
+                    <input type="text" placeholder="ник" value="${handle}" class="social-url-input" data-index="${index}" style="flex:1; min-width:60px; padding:6px 6px 6px 0; border:none; background:transparent; outline:none;">
                 </div>
+                <button class="auth-btn remove-social-item" data-index="${index}" style="padding:4px 10px; background:#ff6b6b; color:white; border:none; border-radius:12px;"><i class="fas fa-times"></i></button>
+            </div>
+        `;
+    });
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-content" style="max-width:550px; text-align:left;">
+            <h2 style="text-align:center;"><i class="fas fa-edit"></i> Редактировать профиль</h2>
+            <div class="modal-body">
+                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                    <label style="display:block; font-weight:600;"><i class="fas fa-user"></i> Имя</label>
+                    <input type="text" id="editDisplayName" value="${currentUser[FIELDS.displayName] || ''}" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
+                </div>
+                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                    <label style="display:block; font-weight:600;"><i class="fas fa-venus-mars"></i> Пол</label>
+                    <select id="editGender" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
+                        <option value="male" ${currentUser[FIELDS.gender]==='male'?'selected':''}>Мужской</option>
+                        <option value="female" ${currentUser[FIELDS.gender]==='female'?'selected':''}>Женский</option>
+                        <option value="" ${!currentUser[FIELDS.gender]?'selected':''}>Не указано</option>
+                    </select>
+                </div>
+                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                    <label style="display:block; font-weight:600;"><i class="fas fa-pencil-alt"></i> О себе</label>
+                    <textarea id="editBio" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5); min-height:80px;">${profile[FIELDS.bio] || ''}</textarea>
+                </div>
+                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                    <label style="display:block; font-weight:600;"><i class="fas fa-image"></i> Аватар (URL)</label>
+                    <input type="text" id="editAvatar" value="${profile[FIELDS.avatar] || ''}" placeholder="Ссылка на изображение" style="width:100%; padding:10px; border-radius:20px; border:1px solid rgba(0,0,0,0.1); background:rgba(255,255,255,0.5);">
+                    <button class="auth-btn" id="uploadAvatarBtn" style="margin:5px 0;"><i class="fas fa-upload"></i> Загрузить новую аву</button>
+                    <input type="file" id="avatarFileInput" accept="image/*" style="display:none;">
+                </div>
+                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px; margin-bottom:10px;">
+                    <label style="display:block; font-weight:600;"><i class="fas fa-link"></i> Соцсети</label>
+                    <div id="socialFieldsContainer">
+                        ${socialFields}
+                    </div>
+                    <button class="auth-btn" id="addSocialBtn" style="margin-top:5px;"><i class="fas fa-plus"></i> Добавить соцсеть</button>
+                    <div id="socialAddMessage" style="font-size:12px; color:#888; margin-top:4px;"></div>
+                </div>
+                <div style="background:rgba(255,255,255,0.2); backdrop-filter:blur(10px); border-radius:16px; padding:12px;">
+                    <label style="display:block; font-weight:600;"><i class="fas fa-lock"></i> Приватный аккаунт</label>
+                    <input type="checkbox" id="editIsPrivate" ${profile[FIELDS.isPrivate] ? 'checked' : ''}> Да (скрыть профиль от других)
+                </div>
+                <button class="auth-btn" id="saveProfileBtn" style="width:100%; justify-content:center; background:#1e3a5f; color:white; border:none; margin-top:12px;"><i class="fas fa-save"></i> Сохранить</button>
+                <div id="editProfileMessage" style="margin-top:10px; font-size:13px;"></div>
+            </div>
+            <div class="modal-footer" style="text-align:center;">
+                <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button>
+            </div>
+        </div>
+    `;
+    openModal(overlay);
+    document.getElementById('uploadAvatarBtn').addEventListener('click', () => { document.getElementById('avatarFileInput').click(); });
+    document.getElementById('avatarFileInput').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append('image', file);
+        try {
+            const res = await fetch('https://api.imgbb.com/1/upload?key=e28081201a4b7f1d08f91f104127323f', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('editAvatar').value = data.data.url;
+                showToast('Аватар загружен!');
+            } else {
+                showToast('Ошибка загрузки');
+            }
+        } catch (err) {
+            showToast('Ошибка загрузки');
+        }
+    });
+    document.querySelectorAll('.remove-social-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const index = parseInt(this.dataset.index);
+            if (!isNaN(index)) {
+                const container = document.getElementById('socialFieldsContainer');
+                const items = container.querySelectorAll('div');
+                if (items[index]) items[index].remove();
+                document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
+                    el.dataset.index = i;
+                });
+                document.querySelectorAll('.remove-social-item').forEach((el, i) => {
+                    el.dataset.index = i;
+                });
+            }
+        });
+    });
+    document.getElementById('addSocialBtn').addEventListener('click', function() {
+        openSocialPickerModalWithCallback((network) => {
+            const container = document.getElementById('socialFieldsContainer');
+            const existing = container.querySelectorAll(`.social-name-input[data-network="${network}"]`).length;
+            if (existing >= 3) {
+                showToast(`Для ${network} можно добавить не более 3 записей`, 'fa-exclamation-circle', 2000);
+                return;
+            }
+            const div = document.createElement('div');
+            div.style.display = 'flex';
+            div.style.gap = '8px';
+            div.style.alignItems = 'center';
+            div.style.margin = '4px 0';
+            div.style.flexWrap = 'wrap';
+            const label = network.charAt(0).toUpperCase() + network.slice(1);
+            const prefix = socialPrefixes[network] || '';
+            div.innerHTML = `
+                <span style="font-weight:600; min-width:60px;">${label}</span>
+                <input type="text" placeholder="Название (до 35 симв.)" class="social-name-input" data-network="${network}" maxlength="35" style="flex:1; min-width:80px; padding:6px; border-radius:12px; border:1px solid #ccc;">
+                <div style="display:flex; align-items:center; flex:2; min-width:120px; background:rgba(255,255,255,0.3); border-radius:12px; border:1px solid #ccc; padding:0 6px;">
+                    <span style="color:#888; font-size:13px; white-space:nowrap; padding:4px 4px 4px 8px;">${prefix}</span>
+                    <input type="text" placeholder="ник" class="social-url-input" data-network="${network}" style="flex:1; min-width:60px; padding:6px 6px 6px 0; border:none; background:transparent; outline:none;">
+                </div>
+                <button class="auth-btn remove-social-item" style="padding:4px 10px; background:#ff6b6b; color:white; border:none; border-radius:12px;"><i class="fas fa-times"></i></button>
             `;
-            openModal(overlay);
-            document.getElementById('uploadAvatarBtn').addEventListener('click', () => { document.getElementById('avatarFileInput').click(); });
-            document.getElementById('avatarFileInput').addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const formData = new FormData();
-                formData.append('image', file);
-                try {
-                    const res = await fetch('https://api.imgbb.com/1/upload?key=e28081201a4b7f1d08f91f104127323f', { method: 'POST', body: formData });
-                    const data = await res.json();
-                    if (data.success) {
-                        document.getElementById('editAvatar').value = data.data.url;
-                        showToast('Аватар загружен!');
-                    } else {
-                        showToast('Ошибка загрузки');
-                    }
-                } catch (err) {
-                    showToast('Ошибка загрузки');
+            container.appendChild(div);
+            div.querySelector('.remove-social-item').addEventListener('click', function() {
+                div.remove();
+                document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
+                    el.dataset.index = i;
+                });
+                document.querySelectorAll('.remove-social-item').forEach((el, i) => {
+                    el.dataset.index = i;
+                });
+            });
+            document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
+                el.dataset.index = i;
+            });
+            document.querySelectorAll('.remove-social-item').forEach((el, i) => {
+                el.dataset.index = i;
+            });
+            showToast('Запись добавлена, заполните название и ссылку', 'fa-info-circle', 1500);
+        });
+    });
+    document.getElementById('saveProfileBtn').addEventListener('click', async () => {
+        const displayName = document.getElementById('editDisplayName').value.trim();
+        const gender = document.getElementById('editGender').value;
+        const bio = document.getElementById('editBio').value.trim();
+        const avatar = document.getElementById('editAvatar').value.trim();
+        const isPrivate = document.getElementById('editIsPrivate').checked;
+        const socials = [];
+        const nameInputs = document.querySelectorAll('.social-name-input');
+        const urlInputs = document.querySelectorAll('.social-url-input');
+        nameInputs.forEach((nameEl, idx) => {
+            const urlEl = urlInputs[idx];
+            if (urlEl && nameEl) {
+                const network = nameEl.dataset.network || '';
+                const name = nameEl.value.trim().slice(0, 35);
+                const handle = urlEl.value.trim();
+                const prefix = socialPrefixes[network] || '';
+                if (network && handle) {
+                    const fullUrl = prefix + handle;
+                    socials.push({ network, name, url: fullUrl });
                 }
-            });
-            document.querySelectorAll('.remove-social-item').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.dataset.index);
-                    if (!isNaN(index)) {
-                        const container = document.getElementById('socialFieldsContainer');
-                        const items = container.querySelectorAll('div');
-                        if (items[index]) items[index].remove();
-                        document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
-                            el.dataset.index = i;
-                        });
-                        document.querySelectorAll('.remove-social-item').forEach((el, i) => {
-                            el.dataset.index = i;
-                        });
-                    }
-                });
-            });
-            document.getElementById('addSocialBtn').addEventListener('click', function() {
-                openSocialPickerModalWithCallback((network) => {
-                    const container = document.getElementById('socialFieldsContainer');
-                    const existing = container.querySelectorAll(`.social-name-input[data-network="${network}"]`).length;
-                    if (existing >= 3) {
-                        showToast(`Для ${network} можно добавить не более 3 записей`, 'fa-exclamation-circle', 2000);
-                        return;
-                    }
-                    const div = document.createElement('div');
-                    div.style.display = 'flex';
-                    div.style.gap = '8px';
-                    div.style.alignItems = 'center';
-                    div.style.margin = '4px 0';
-                    div.style.flexWrap = 'wrap';
-                    const label = network.charAt(0).toUpperCase() + network.slice(1);
-                    const prefix = socialPrefixes[network] || '';
-                    div.innerHTML = `
-                        <span style="font-weight:600; min-width:60px;">${label}</span>
-                        <input type="text" placeholder="Название (до 35 симв.)" class="social-name-input" data-network="${network}" maxlength="35" style="flex:1; min-width:80px; padding:6px; border-radius:12px; border:1px solid #ccc;">
-                        <div style="display:flex; align-items:center; flex:2; min-width:120px; background:rgba(255,255,255,0.3); border-radius:12px; border:1px solid #ccc; padding:0 6px;">
-                            <span style="color:#888; font-size:13px; white-space:nowrap; padding:4px 4px 4px 8px;">${prefix}</span>
-                            <input type="text" placeholder="ник" class="social-url-input" data-network="${network}" style="flex:1; min-width:60px; padding:6px 6px 6px 0; border:none; background:transparent; outline:none;">
-                        </div>
-                        <button class="auth-btn remove-social-item" style="padding:4px 10px; background:#ff6b6b; color:white; border:none; border-radius:12px;"><i class="fas fa-times"></i></button>
-                    `;
-                    container.appendChild(div);
-                    div.querySelector('.remove-social-item').addEventListener('click', function() {
-                        div.remove();
-                        document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
-                            el.dataset.index = i;
-                        });
-                        document.querySelectorAll('.remove-social-item').forEach((el, i) => {
-                            el.dataset.index = i;
-                        });
-                    });
-                    document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
-                        el.dataset.index = i;
-                    });
-                    document.querySelectorAll('.remove-social-item').forEach((el, i) => {
-                        el.dataset.index = i;
-                    });
-                    showToast('Запись добавлена, заполните название и ссылку', 'fa-info-circle', 1500);
-                });
-            });
-            document.getElementById('saveProfileBtn').addEventListener('click', async () => {
-                const displayName = document.getElementById('editDisplayName').value.trim();
-                const gender = document.getElementById('editGender').value;
-                const bio = document.getElementById('editBio').value.trim();
-                const avatar = document.getElementById('editAvatar').value.trim();
-                const isPrivate = document.getElementById('editIsPrivate').checked;
-
-                const socials = [];
-                const nameInputs = document.querySelectorAll('.social-name-input');
-                const urlInputs = document.querySelectorAll('.social-url-input');
-                nameInputs.forEach((nameEl, idx) => {
-                    const urlEl = urlInputs[idx];
-                    if (urlEl && nameEl) {
-                        const network = nameEl.dataset.network || '';
-                        const name = nameEl.value.trim().slice(0, 35);
-                        const handle = urlEl.value.trim();
-                        const prefix = socialPrefixes[network] || '';
-                        if (network && handle) {
-                            const fullUrl = prefix + handle;
-                            socials.push({ network, name, url: fullUrl });
-                        }
-                    }
-                });
-
-                try {
-                    if (displayName !== currentUser[FIELDS.displayName]) {
-                        const success = await changeDisplayName(displayName);
-                        if (!success) {
-                            document.getElementById('editProfileMessage').textContent = 'Ошибка: ник занят или недопустим';
-                            return;
-                        }
-                    }
-                    const currentProfile = currentUser[FIELDS.profile] || {};
-                    const currentSocials = currentProfile[FIELDS.socials] || [];
-                    const currentAvatar = currentProfile[FIELDS.avatar] || '';
-                    const currentBio = currentProfile[FIELDS.bio] || '';
-                    const currentPrivate = currentProfile[FIELDS.isPrivate] || false;
-                    const currentOfficial = currentProfile[FIELDS.official] || false;
-                    const currentOfficialBadge = currentProfile[FIELDS.officialBadge] || '';
-                    const currentOfficialTooltip = currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт';
-                    const currentOfficialColor = currentProfile.officialColor || 'blue';
-
-                    const profileUpdate = {};
-                    profileUpdate[FIELDS.official] = currentOfficial;
-                    profileUpdate[FIELDS.officialBadge] = currentOfficialBadge;
-                    profileUpdate[FIELDS.officialTooltip] = currentOfficialTooltip;
-                    profileUpdate.officialColor = currentOfficialColor;
-
-                    if (bio !== currentBio) profileUpdate[FIELDS.bio] = bio;
-                    if (avatar !== currentAvatar) profileUpdate[FIELDS.avatar] = avatar;
-                    if (isPrivate !== currentPrivate) profileUpdate[FIELDS.isPrivate] = isPrivate;
-
-                    const socialsChanged = JSON.stringify(socials) !== JSON.stringify(currentSocials);
-                    if (socialsChanged) profileUpdate[FIELDS.socials] = socials;
-
-                    if (Object.keys(profileUpdate).length > 0) {
-                        const updateData = {
-                            [FIELDS.gender]: gender,
-                            [FIELDS.profile]: profileUpdate
-                        };
-                        await updateUserProfile(currentUser[FIELDS.username], updateData);
-                    }
-
-                    currentUser[FIELDS.gender] = gender;
-                    const newProfile = {
-                        [FIELDS.bio]: bio || currentBio,
-                        [FIELDS.socials]: socialsChanged ? socials : currentSocials,
-                        [FIELDS.avatar]: avatar || currentAvatar,
-                        [FIELDS.isPrivate]: isPrivate,
-                        [FIELDS.official]: currentOfficial,
-                        [FIELDS.officialBadge]: currentOfficialBadge,
-                        [FIELDS.officialTooltip]: currentOfficialTooltip,
-                        officialColor: currentOfficialColor
-                    };
-                    currentUser[FIELDS.profile] = newProfile;
-                    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-
-                    closeModal(overlay);
-showToast('Профиль обновлён!');
-
-const fresh = await getUserByUsername(currentUser[FIELDS.username]);
-if (fresh) {
-    currentUser = { ...fresh };
-    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+            }
+        });
+        try {
+            if (displayName !== currentUser[FIELDS.displayName]) {
+                const success = await changeDisplayName(displayName);
+                if (!success) {
+                    document.getElementById('editProfileMessage').textContent = 'Ошибка: ник занят или недопустим';
+                    return;
+                }
+            }
+            const currentProfile = currentUser[FIELDS.profile] || {};
+            const currentSocials = currentProfile[FIELDS.socials] || [];
+            const currentAvatar = currentProfile[FIELDS.avatar] || '';
+            const currentBio = currentProfile[FIELDS.bio] || '';
+            const currentPrivate = currentProfile[FIELDS.isPrivate] || false;
+            const currentOfficial = currentProfile[FIELDS.official] || false;
+            const currentOfficialBadge = currentProfile[FIELDS.officialBadge] || '';
+            const currentOfficialTooltip = currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт';
+            const currentOfficialColor = currentProfile.officialColor || 'blue';
+            const profileUpdate = {};
+            profileUpdate[FIELDS.official] = currentOfficial;
+            profileUpdate[FIELDS.officialBadge] = currentOfficialBadge;
+            profileUpdate[FIELDS.officialTooltip] = currentOfficialTooltip;
+            profileUpdate.officialColor = currentOfficialColor;
+            if (bio !== currentBio) profileUpdate[FIELDS.bio] = bio;
+            if (avatar !== currentAvatar) profileUpdate[FIELDS.avatar] = avatar;
+            if (isPrivate !== currentPrivate) profileUpdate[FIELDS.isPrivate] = isPrivate;
+            const socialsChanged = JSON.stringify(socials) !== JSON.stringify(currentSocials);
+            if (socialsChanged) profileUpdate[FIELDS.socials] = socials;
+            if (Object.keys(profileUpdate).length > 0) {
+                const updateData = {
+                    [FIELDS.gender]: gender,
+                    [FIELDS.profile]: profileUpdate
+                };
+                await updateUserProfile(currentUser[FIELDS.username], updateData);
+            }
+            currentUser[FIELDS.gender] = gender;
+            const newProfile = {
+                [FIELDS.bio]: bio || currentBio,
+                [FIELDS.socials]: socialsChanged ? socials : currentSocials,
+                [FIELDS.avatar]: avatar || currentAvatar,
+                [FIELDS.isPrivate]: isPrivate,
+                [FIELDS.official]: currentOfficial,
+                [FIELDS.officialBadge]: currentOfficialBadge,
+                [FIELDS.officialTooltip]: currentOfficialTooltip,
+                officialColor: currentOfficialColor
+            };
+            currentUser[FIELDS.profile] = newProfile;
+            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+            closeModal(overlay);
+            showToast('Профиль обновлён!');
+            const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+            if (fresh) {
+                currentUser = { ...fresh };
+                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+            }
+            renderPage('profile');
+        } catch (e) {
+            document.getElementById('editProfileMessage').textContent = 'Ошибка: ' + e.message;
+        }
+    });
 }
 
-await refreshUserAvatar();
-renderPage('profile');
-                }
-            });
-        }
-
-        function openSocialPickerModalWithCallback(callback) {
-            const socialsList = {
-                telegram: { label: 'Telegram', icon: 'fab fa-telegram', color: '#26A5E4' },
-                youtube: { label: 'YouTube', icon: 'fab fa-youtube', color: '#FF0000' },
-                github: { label: 'GitHub', icon: 'fab fa-github', color: '#181717' },
-                vk: { label: 'VK', icon: 'fab fa-vk', color: '#4680C2' },
-                discord: { label: 'Discord', icon: 'fab fa-discord', color: '#5865F2' },
-                twitter: { label: 'Twitter/X', icon: 'fab fa-twitter', color: '#000000' },
-                instagram: { label: 'Instagram', icon: 'fab fa-instagram', color: '#E4405F' },
-                tiktok: { label: 'TikTok', icon: 'fab fa-tiktok', color: '#010101' },
-                twitch: { label: 'Twitch', icon: 'fab fa-twitch', color: '#9146FF' }
-            };
-            const overlay = document.createElement('div');
-            overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content" style="max-width:450px; text-align:center;">
-                    <h2><i class="fas fa-plus-circle"></i> Выберите соцсеть</h2>
-                    <div class="modal-body">
-                        <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
-                            ${Object.entries(socialsList).map(([key, val]) => `
-                                <div class="social-picker-item" data-key="${key}" style="cursor:pointer; padding:16px 8px; border-radius:16px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); transition:0.2s; text-align:center;">
-                                    <i class="${val.icon}" style="font-size:40px; color:${val.color};"></i>
-                                    <div class="label" style="font-size:13px; font-weight:600; color:#0a1a2b; margin-top:6px;">${val.label}</div>
-                                </div>
-                            `).join('')}
+function openSocialPickerModalWithCallback(callback) {
+    const socialsList = {
+        telegram: { label: 'Telegram', icon: 'fab fa-telegram', color: '#26A5E4' },
+        youtube: { label: 'YouTube', icon: 'fab fa-youtube', color: '#FF0000' },
+        github: { label: 'GitHub', icon: 'fab fa-github', color: '#181717' },
+        vk: { label: 'VK', icon: 'fab fa-vk', color: '#4680C2' },
+        discord: { label: 'Discord', icon: 'fab fa-discord', color: '#5865F2' },
+        twitter: { label: 'Twitter/X', icon: 'fab fa-twitter', color: '#000000' },
+        instagram: { label: 'Instagram', icon: 'fab fa-instagram', color: '#E4405F' },
+        tiktok: { label: 'TikTok', icon: 'fab fa-tiktok', color: '#010101' },
+        twitch: { label: 'Twitch', icon: 'fab fa-twitch', color: '#9146FF' }
+    };
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-content" style="max-width:450px; text-align:center;">
+            <h2><i class="fas fa-plus-circle"></i> Выберите соцсеть</h2>
+            <div class="modal-body">
+                <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px;">
+                    ${Object.entries(socialsList).map(([key, val]) => `
+                        <div class="social-picker-item" data-key="${key}" style="cursor:pointer; padding:16px 8px; border-radius:16px; background:rgba(255,255,255,0.2); border:1px solid rgba(255,255,255,0.3); transition:0.2s; text-align:center;">
+                            <i class="${val.icon}" style="font-size:40px; color:${val.color};"></i>
+                            <div class="label" style="font-size:13px; font-weight:600; color:#0a1a2b; margin-top:6px;">${val.label}</div>
                         </div>
-                        <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))" style="margin-top:16px; background:#e74c3c; color:white; border:none; padding:8px 20px; border-radius:30px; cursor:pointer;"><i class="fas fa-times"></i> Отмена</button>
-                    </div>
+                    `).join('')}
                 </div>
-            `;
-            openModal(overlay);
-            overlay.querySelectorAll('.social-picker-item').forEach(el => {
-                el.addEventListener('click', function() {
-                    const key = this.dataset.key;
-                    closeModal(overlay);
-                    if (callback) callback(key);
-                });
-            });
-        }
+                <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))" style="margin-top:16px; background:#e74c3c; color:white; border:none; padding:8px 20px; border-radius:30px; cursor:pointer;"><i class="fas fa-times"></i> Отмена</button>
+            </div>
+        </div>
+    `;
+    openModal(overlay);
+    overlay.querySelectorAll('.social-picker-item').forEach(el => {
+        el.addEventListener('click', function() {
+            const key = this.dataset.key;
+            closeModal(overlay);
+            if (callback) callback(key);
+        });
+    });
+};
 
         // —АДМИНКА—
         function getAdminContent() {
@@ -3142,112 +3133,108 @@ renderPage('profile');
     }
 }
 
-window.sharePage = sharePage;
-window.switchTab = switchTab;
-window.showLoginModal = showLoginModal;
-window.copyToClipboard = copyToClipboard;
-window.refreshUserAvatar = refreshUserAvatar;
-window.setUserOnline = setUserOnline;
-window.goHomeFromProfile = goHomeFromProfile;
-window.showEditProfileModal = showEditProfileModal;
-window.logoutUser = logoutUser;
-window.bindProfileEvents = bindProfileEvents;
+                window.sharePage = sharePage;
+        window.switchTab = switchTab;
+        window.showLoginModal = showLoginModal;
+        window.copyToClipboard = copyToClipboard;
+        window.refreshUserAvatar = refreshUserAvatar;
+        window.setUserOnline = setUserOnline;
+        window.goHomeFromProfile = goHomeFromProfile;
+        window.showEditProfileModal = showEditProfileModal;
+        window.logoutUser = logoutUser;
+        window.bindProfileEvents = bindProfileEvents;
 
-        // Список изменений (кнопка в шапке)
         document.getElementById('changelogLink').addEventListener('click', () => {
             const overlay = document.createElement('div');
             overlay.className = 'modal-overlay';
-            overlay.innerHTML = `
-                <div class="modal-content" style="max-width:550px; text-align:left; max-height:80vh; overflow-y:auto;">
-                    <h2 style="text-align:center;"><i class="fas fa-history"></i> История изменений</h2>
-                    <h3><i class="fas fa-shield-alt"></i> Версия 1.0.7 Beta</h3>
-                    <ul>
-                        <li>Внедрена собственная система регистрации с логином и паролем вместо Google-авторизации</li>
-                        <li>Пароли хранятся в зашифрованном виде (PBKDF2 + соль) — администратор не имеет к ним доступа</li>
-                        <li>Добавлена защита от брутфорс-атак — временная блокировка при множестве неудачных попыток входа</li>
-                        <li>Введено правило «один IP — один аккаунт» для борьбы с мультиаккаунтингом</li>
-                        <li>Добавлена функция сброса пароля прямо из профиля</li>
-                        <li>Созданы личные профили пользователей с аватаркой, информацией о себе, полом и соцсетями</li>
-                        <li>Добавлен приватный режим для скрытия профиля от других пользователей</li>
-                        <li>В профиле отображается онлайн-статус, счётчик просмотров и дата регистрации</li>
-                        <li>Внедрена система личных уведомлений о просмотрах профиля и важных анонсах</li>
-                        <li>Появились рекомендации популярных разделов на главной странице</li>
-                        <li>Добавлена кнопка «Поделиться» на каждой странице</li>
-                        <li>Улучшен поиск — подсвечивает найденные слова в результатах</li>
-                        <li>Добавлены плавные анимации появления карточек и модальных окон</li>
-                        <li>Улучшена адаптация для мобильных устройств</li>
-                        <li>Проведена общая оптимизация производительности сайта</li>
-                        <li>Введена система официального статуса (синяя галочка) для YouTube-блогеров, Telegram-каналов и студий</li>
-                    </ul>
-                    <h3><i class="fas fa-star"></i> Версия 1.0.6 Patch</h3>
-                    <ul>
-                        <li>Полная замена эмодзи на SVG-иконки</li>
-                        <li>Добавлен счётчик рекордного онлайна на главной странице</li>
-                        <li>Вернули раздел «Сообщить об ошибке» с формой обратной связи</li>
-                        <li>Приветственное уведомление о Telegram-канале</li>
-                        <li>Добавлена новая хронология событий о недавнем чите</li>
-                        <li>Исправлены мелкие баги и улучшена производительность</li>
-                    </ul>
-                    <h3><i class="fas fa-code-branch"></i> Версия 1.0.6 Beta</h3>
-                    <ul>
-                        <li>Обновленный поиск с подсветкой совпадений</li>
-                        <li>Авторизация через Google</li>
-                        <li>Уникальные просмотры разделов</li>
-                        <li>Анкета для вступления в Nexus Squad (15 вопросов)</li>
-                        <li>Главная страница: онлайн, общее количество просмотров, всего посетителей</li>
-                        <li>FAQ в виде аккордеона</li>
-                        <li>Раздел «О нас» о команде Nexus Squad (11 участников)</li>
-                        <li>Добавлены разделы «Читы» (Epilog, Vexor cheats) и хронология событий мая-июня 2026</li>
-                        <li>Toast-уведомления</li>
-                        <li>Множество плавных анимаций появления</li>
-                        <li>Улучшена адаптация под мобильные устройства</li>
-                        <li>Исправлены баги переключения вкладок</li>
-                    </ul>
-                    <h3><i class="fas fa-book"></i> Версия 1.0.5 Beta</h3>
-                    <ul>
-                        <li>Добавлена вкладка «Руководство» с инструкциями</li>
-                        <li>Добавлены гайды: как установить карту, настроить сервер, пожаловаться на игрока</li>
-                        <li>Добавлена информация о безопасном режиме, граундах, улучшении транспорта</li>
-                        <li>Добавлен раздел о восстановлении колёс и смене Google-аккаунта</li>
-                    </ul>
-                    <h3><i class="fas fa-trash-alt"></i> Версия 1.0.4 Beta</h3>
-                    <ul>
-                        <li>Убрана информация о кейсах (появится позже)</li>
-                    </ul>
-                    <h3><i class="fas fa-film"></i> Версия 1.0.3 Beta</h3>
-                    <ul>
-                        <li>Добавлена информация о студии SSB FILMS STUDIO</li>
-                        <li>Исправлено отображение списка изменений</li>
-                        <li>Форма обратной связи теперь уведомляет об ответе на почту</li>
-                        <li>Обновлена контактная почта (hofilionclkc@gmail.com)</li>
-                    </ul>
-                    <h3><i class="fas fa-egg"></i> Версия 1.0.2 Beta</h3>
-                    <ul>
-                        <li>Добавлен раздел «Пасхалки» с подробным списком</li>
-                        <li>Добавлен раздел «Донат» с ценами и наборами</li>
-                        <li>Добавлен раздел «FAQ» с частыми вопросами</li>
-                        <li>Соглашение больше не блокирует скролл страницы</li>
-                    </ul>
-                    <h3><i class="fas fa-users"></i> Версия 1.0.1 Beta</h3>
-                    <ul>
-                        <li>Добавлен раздел «Кланы» с историей ARES, SPRS, NAR и других</li>
-                        <li>Добавлен раздел «Моды» (Polar Patcher, GAZ Mod)</li>
-                        <li>Исправлены стили жидкого стекла</li>
-                    </ul>
-                    <h3><i class="fas fa-rocket"></i> Версия 1.0.0 Beta</h3>
-                    <ul>
-                        <li>Первый публичный релиз</li>
-                        <li>Разделы: Об игре, Разработчик, Медиа, Карты, Пропы, Скины, Оружие, Транспорт, Факты, Версии, Требования</li>
-                        <li>Система избранного (звёздочки)</li>
-                        <li>Поиск по вкладкам</li>
-                        <li>Пользовательское соглашение при первом заходе</li>
-                        <li>Стеклянный дизайн (glassmorphism)</li>
-                    </ul>
-                    <div class="modal-footer" style="text-align:center; padding-top:16px; border-top:1px solid rgba(0,0,0,0.05);">
-                        <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))" style="padding:10px 30px; border-radius:30px; background:#1e3a5f; color:white; border:none; cursor:pointer; font-weight:600;">Закрыть</button>
-                    </div>
-                </div>
-            `;
+            overlay.innerHTML = '<div class="modal-content" style="max-width:550px; text-align:left; max-height:80vh; overflow-y:auto;">' +
+                '<h2 style="text-align:center;"><i class="fas fa-history"></i> История изменений</h2>' +
+                '<h3><i class="fas fa-shield-alt"></i> Версия 1.0.7 Beta</h3>' +
+                '<ul>' +
+                '<li>Внедрена собственная система регистрации с логином и паролем вместо Google-авторизации</li>' +
+                '<li>Пароли хранятся в зашифрованном виде (PBKDF2 + соль) — администратор не имеет к ним доступа</li>' +
+                '<li>Добавлена защита от брутфорс-атак — временная блокировка при множестве неудачных попыток входа</li>' +
+                '<li>Введено правило «один IP — один аккаунт» для борьбы с мультиаккаунтингом</li>' +
+                '<li>Добавлена функция сброса пароля прямо из профиля</li>' +
+                '<li>Созданы личные профили пользователей с аватаркой, информацией о себе, полом и соцсетями</li>' +
+                '<li>Добавлен приватный режим для скрытия профиля от других пользователей</li>' +
+                '<li>В профиле отображается онлайн-статус, счётчик просмотров и дата регистрации</li>' +
+                '<li>Внедрена система личных уведомлений о просмотрах профиля и важных анонсах</li>' +
+                '<li>Появились рекомендации популярных разделов на главной странице</li>' +
+                '<li>Добавлена кнопка «Поделиться» на каждой странице</li>' +
+                '<li>Улучшен поиск — подсвечивает найденные слова в результатах</li>' +
+                '<li>Добавлены плавные анимации появления карточек и модальных окон</li>' +
+                '<li>Улучшена адаптация для мобильных устройств</li>' +
+                '<li>Проведена общая оптимизация производительности сайта</li>' +
+                '<li>Введена система официального статуса (синяя галочка) для YouTube-блогеров, Telegram-каналов и студий</li>' +
+                '</ul>' +
+                '<h3><i class="fas fa-star"></i> Версия 1.0.6 Patch</h3>' +
+                '<ul>' +
+                '<li>Полная замена эмодзи на SVG-иконки</li>' +
+                '<li>Добавлен счётчик рекордного онлайна на главной странице</li>' +
+                '<li>Вернули раздел «Сообщить об ошибке» с формой обратной связи</li>' +
+                '<li>Приветственное уведомление о Telegram-канале</li>' +
+                '<li>Добавлена новая хронология событий о недавнем чите</li>' +
+                '<li>Исправлены мелкие баги и улучшена производительность</li>' +
+                '</ul>' +
+                '<h3><i class="fas fa-code-branch"></i> Версия 1.0.6 Beta</h3>' +
+                '<ul>' +
+                '<li>Обновленный поиск с подсветкой совпадений</li>' +
+                '<li>Авторизация через Google</li>' +
+                '<li>Уникальные просмотры разделов</li>' +
+                '<li>Анкета для вступления в Nexus Squad (15 вопросов)</li>' +
+                '<li>Главная страница: онлайн, общее количество просмотров, всего посетителей</li>' +
+                '<li>FAQ в виде аккордеона</li>' +
+                '<li>Раздел «О нас» о команде Nexus Squad (11 участников)</li>' +
+                '<li>Добавлены разделы «Читы» (Epilog, Vexor cheats) и хронология событий мая-июня 2026</li>' +
+                '<li>Toast-уведомления</li>' +
+                '<li>Множество плавных анимаций появления</li>' +
+                '<li>Улучшена адаптация под мобильные устройства</li>' +
+                '<li>Исправлены баги переключения вкладок</li>' +
+                '</ul>' +
+                '<h3><i class="fas fa-book"></i> Версия 1.0.5 Beta</h3>' +
+                '<ul>' +
+                '<li>Добавлена вкладка «Руководство» с инструкциями</li>' +
+                '<li>Добавлены гайды: как установить карту, настроить сервер, пожаловаться на игрока</li>' +
+                '<li>Добавлена информация о безопасном режиме, граундах, улучшении транспорта</li>' +
+                '<li>Добавлен раздел о восстановлении колёс и смене Google-аккаунта</li>' +
+                '</ul>' +
+                '<h3><i class="fas fa-trash-alt"></i> Версия 1.0.4 Beta</h3>' +
+                '<ul>' +
+                '<li>Убрана информация о кейсах (появится позже)</li>' +
+                '</ul>' +
+                '<h3><i class="fas fa-film"></i> Версия 1.0.3 Beta</h3>' +
+                '<ul>' +
+                '<li>Добавлена информация о студии SSB FILMS STUDIO</li>' +
+                '<li>Исправлено отображение списка изменений</li>' +
+                '<li>Форма обратной связи теперь уведомляет об ответе на почту</li>' +
+                '<li>Обновлена контактная почта (hofilionclkc@gmail.com)</li>' +
+                '</ul>' +
+                '<h3><i class="fas fa-egg"></i> Версия 1.0.2 Beta</h3>' +
+                '<ul>' +
+                '<li>Добавлен раздел «Пасхалки» с подробным списком</li>' +
+                '<li>Добавлен раздел «Донат» с ценами и наборами</li>' +
+                '<li>Добавлен раздел «FAQ» с частыми вопросами</li>' +
+                '<li>Соглашение больше не блокирует скролл страницы</li>' +
+                '</ul>' +
+                '<h3><i class="fas fa-users"></i> Версия 1.0.1 Beta</h3>' +
+                '<ul>' +
+                '<li>Добавлен раздел «Кланы» с историей ARES, SPRS, NAR и других</li>' +
+                '<li>Добавлен раздел «Моды» (Polar Patcher, GAZ Mod)</li>' +
+                '<li>Исправлены стили жидкого стекла</li>' +
+                '</ul>' +
+                '<h3><i class="fas fa-rocket"></i> Версия 1.0.0 Beta</h3>' +
+                '<ul>' +
+                '<li>Первый публичный релиз</li>' +
+                '<li>Разделы: Об игре, Разработчик, Медиа, Карты, Пропы, Скины, Оружие, Транспорт, Факты, Версии, Требования</li>' +
+                '<li>Система избранного (звёздочки)</li>' +
+                '<li>Поиск по вкладкам</li>' +
+                '<li>Пользовательское соглашение при первом заходе</li>' +
+                '<li>Стеклянный дизайн (glassmorphism)</li>' +
+                '</ul>' +
+                '<div class="modal-footer" style="text-align:center; padding-top:16px; border-top:1px solid rgba(0,0,0,0.05);">' +
+                '<button class="auth-btn" onclick="closeModal(this.closest(\'.modal-overlay\'))" style="padding:10px 30px; border-radius:30px; background:#1e3a5f; color:white; border:none; cursor:pointer; font-weight:600;">Закрыть</button>' +
+                '</div></div>';
             openModal(overlay);
         });
 
