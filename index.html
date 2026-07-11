@@ -511,19 +511,32 @@
         }
 
         async function loginUser(usernameOrDisplay, password) {
-            const snap = await getDocs(collection(db, COLLECTIONS.users));
-            let found = null;
-            snap.forEach(d => {
-                const data = d.data();
-                if ((data[FIELDS.username] === usernameOrDisplay || data[FIELDS.displayName] === usernameOrDisplay) && data.banned !== true) {
-                    found = { id: d.id, ...data };
-                }
-            });
-            if (!found) return null;
-            const hashedInput = await hashPassword(password, found[FIELDS.passwordSalt]);
-            if (found[FIELDS.password] !== hashedInput) return null;
-            return found;
+    const snap = await getDocs(collection(db, COLLECTIONS.users));
+    let found = null;
+    snap.forEach(d => {
+        const data = d.data();
+        if ((data[FIELDS.username] === usernameOrDisplay || data[FIELDS.displayName] === usernameOrDisplay) && data.banned !== true) {
+            found = { id: d.id, ...data };
         }
+    });
+    if (!found) return null;
+    
+    if (!found[FIELDS.passwordSalt]) {
+        const salt = crypto.randomUUID();
+        const hashedPassword = await hashPassword(found[FIELDS.password], salt);
+        await updateDoc(doc(db, COLLECTIONS.users, found[FIELDS.username]), {
+            password: hashedPassword,
+            passwordSalt: salt
+        });
+        found[FIELDS.password] = hashedPassword;
+        found[FIELDS.passwordSalt] = salt;
+    }
+    
+    const hashedInput = await hashPassword(password, found[FIELDS.passwordSalt]);
+    if (found[FIELDS.password] !== hashedInput) return null;
+    
+    return found;
+}
 
         async function getUserByUsername(username) {
             const snap = await getDoc(doc(db, COLLECTIONS.users, username));
