@@ -1344,7 +1344,8 @@ function showEditProfileModal() {
     }
     
     const formData = new FormData();
-    formData.append('file', file);
+    formData.append('image', file);
+    formData.append('type', 'file');
     
     const msg = document.getElementById('editProfileMessage');
     const avatarInput = document.getElementById('editAvatar');
@@ -1370,30 +1371,41 @@ function showEditProfileModal() {
     reader.readAsDataURL(file);
     
     try {
-        const response = await fetch('https://0x0.st', {
+        const response = await fetch('https://postimage.me/api/1/upload?key=pp_Ur2O7Mb0VLCg7dUVKoWsTtvmvL_qB5VU8xcEwihtMMI', {
             method: 'POST',
             body: formData
         });
         
-        const url = await response.text();
+        if (!response.ok) {
+            throw new Error('HTTP ошибка: ' + response.status);
+        }
         
-        if (url.startsWith('http')) {
-            avatarInput.value = url.trim();
-            msg.textContent = 'Аватар загружен!';
-            msg.style.color = 'green';
-            showToast('Аватар загружен!');
-            
-            const previewImg = document.querySelector('.avatar-preview img');
-            if (previewImg) {
-                previewImg.src = url.trim();
+        const data = await response.json();
+        console.log('Ответ PostImage:', data);
+        
+        if (data.status === 'success' || data.status_code === 200) {
+            const imageUrl = data.image?.url || data.url || data.image?.display_url;
+            if (imageUrl) {
+                avatarInput.value = imageUrl;
+                msg.textContent = 'Аватар загружен!';
+                msg.style.color = 'green';
+                showToast('Аватар загружен!');
+                
+                const previewImg = document.querySelector('.avatar-preview img');
+                if (previewImg) {
+                    previewImg.src = imageUrl;
+                }
+            } else {
+                throw new Error('Не удалось получить URL изображения');
             }
         } else {
-            throw new Error('Ошибка загрузки');
+            throw new Error(data.error?.message || data.message || 'Ошибка загрузки');
         }
     } catch (err) {
         msg.textContent = 'Ошибка: ' + err.message;
         msg.style.color = 'red';
         showToast('Ошибка загрузки: ' + err.message, 'fa-exclamation-circle', 4000);
+        console.error('Ошибка загрузки аватара:', err);
     } finally {
         document.getElementById('avatarFileInput').value = '';
     }
