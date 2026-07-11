@@ -1697,33 +1697,42 @@ c.querySelectorAll('.official-badge-input').forEach(input => {
     });
 });
             c.querySelectorAll('.admin-action').forEach(btn => {
-                btn.addEventListener('click', async function() {
-                    const username = this.dataset.username;
-                    const action = this.dataset.action;
-                    if (action === 'delete') {
-                        if (!confirm(`Удалить пользователя ${username}?`)) return;
-                        await deleteDoc(doc(db, COLLECTIONS.users, username));
-                        const ipSnap = await getDocs(collection(db, 'userIPs'));
-                        ipSnap.forEach(async (doc) => {
-                            if (doc.data().username === username) {
-                                await deleteDoc(doc.ref);
-                            }
-                        });
-                        showToast('Пользователь удалён');
-                        allUsersCache = [];
-                        loadAdminUsers(currentAdminPage);
-                    } else if (action === 'ban') {
-                        await updateDoc(doc(db, COLLECTIONS.users, username), { banned: true });
-                        showToast('Пользователь забанен');
-                        allUsersCache = [];
-                        loadAdminUsers(currentAdminPage);
-                    } else if (action === 'resetpass') {
-                        const newPass = Math.random().toString(36).slice(2, 10);
-                        await updateDoc(doc(db, COLLECTIONS.users, username), { password: newPass });
-                        showToast(`Новый пароль: ${newPass} (сообщите пользователю)`);
-                    }
-                });
+    btn.addEventListener('click', async function() {
+        const username = this.dataset.username;
+        const action = this.dataset.action;
+        if (action === 'delete') {
+            if (!confirm(`Удалить пользователя ${username}?`)) return;
+            await deleteDoc(doc(db, COLLECTIONS.users, username));
+            const ipSnap = await getDocs(collection(db, 'userIPs'));
+            ipSnap.forEach(async (doc) => {
+                if (doc.data().username === username) {
+                    await deleteDoc(doc.ref);
+                }
             });
+            showToast('Пользователь удалён');
+            allUsersCache = [];
+            loadAdminUsers(currentAdminPage);
+        } else if (action === 'ban') {
+            await updateDoc(doc(db, COLLECTIONS.users, username), { banned: true });
+            showToast('Пользователь забанен');
+            allUsersCache = [];
+            loadAdminUsers(currentAdminPage);
+        } else if (action === 'resetpass') {
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let newPass = '';
+            for (let i = 0; i < 10; i++) newPass += chars[Math.floor(Math.random() * chars.length)];
+            
+            const salt = crypto.randomUUID();
+            const hashedPassword = await hashPassword(newPass, salt);
+            
+            await updateDoc(doc(db, COLLECTIONS.users, username), {
+                password: hashedPassword,
+                passwordSalt: salt
+            });
+            showToast(`Новый пароль: ${newPass} (сообщите пользователю)`, 'fa-key', 8000);
+        }
+    });
+});
             document.getElementById('adminUserSearch')?.addEventListener('input', function() {
                 const q = this.value.toLowerCase();
                 const filtered = allUsersCache.filter(u =>
