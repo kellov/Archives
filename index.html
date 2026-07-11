@@ -2934,58 +2934,7 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
         }
 
         // —ОБНОВЛЕНИЕ АВАТАРКИ—
-       document.addEventListener('visibilitychange', async () => {
-    if (!currentUser) return;
-    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
-    if (document.hidden) {
-        await setDoc(doc(db, 'presence', userId), {
-            online: false,
-            lastSeen: serverTimestamp()
-        }, { merge: true });
-    } else {
-        await setDoc(doc(db, 'presence', userId), {
-            online: true,
-            lastSeen: serverTimestamp()
-        }, { merge: true });
-    }
-});
-
-window.addEventListener('beforeunload', async () => {
-    if (!currentUser) return;
-    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
-    try {
-        await setDoc(doc(db, 'presence', userId), {
-            online: false,
-            lastSeen: serverTimestamp()
-        }, { merge: true });
-    } catch (e) {
-        console.warn('Ошибка при сохранении статуса:', e);
-    }
-    if (notificationUnsubscribe) {
-        notificationUnsubscribe();
-    }
-    await endSession();
-});
-
-if (currentUser) {
-    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
-    setDoc(doc(db, 'presence', userId), {
-        online: true,
-        lastSeen: serverTimestamp(),
-        displayName: currentUser[FIELDS.displayName],
-        username: currentUser[FIELDS.username]
-    }, { merge: true }).catch(e => console.warn('Ошибка установки онлайн:', e));
-}
-
-setInterval(async () => {
-    const onlineEl = document.getElementById('onlineCount');
-    if (onlineEl && onlineEl.textContent !== '—') {
-        const online = await getOnlineCount();
-        onlineEl.textContent = online;
-    }
-}, 30000);
-
-async function refreshUserAvatar() {
+       async function refreshUserAvatar() {
     if (!currentUser) return;
     try {
         const fresh = await getUserByUsername(currentUser[FIELDS.username]);
@@ -3009,28 +2958,37 @@ async function refreshUserAvatar() {
     }
 }
 
-if (currentUser) {
-    setTimeout(refreshUserAvatar, 1000);
+        // —УСТАНОВКА ОНЛАЙН-СТАТУСА—
+        async function refreshUserAvatarNew() {
+    if (!currentUser) return;
+    try {
+        const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+        if (fresh) {
+            const newAvatar = fresh[FIELDS.profile]?.[FIELDS.avatar];
+            if (newAvatar && newAvatar !== currentUser[FIELDS.profile]?.[FIELDS.avatar]) {
+                currentUser[FIELDS.profile] = fresh[FIELDS.profile];
+                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                const avatarImg = document.querySelector('.user-info img');
+                if (avatarImg) {
+                    avatarImg.src = newAvatar;
+                }
+                if (currentPageId === 'profile') {
+                    renderPage('profile');
+                }
+                updateAuthUI();
+            }
+        }
+    } catch (e) {
+        console.warn('Ошибка обновления аватарки:', e);
+    }
+}
+async function setUserOnline() {
+    return;
 }
 
-        // —УСТАНОВКА ОНЛАЙН-СТАТУСА—
-        async function setUserOnline() {
-            if (!currentUser) return;
-            try {
-                const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
-                await setDoc(doc(db, 'presence', userId), {
-                    online: true,
-                    lastSeen: serverTimestamp(),
-                    displayName: currentUser[FIELDS.displayName],
-                    username: currentUser[FIELDS.username]
-                }, { merge: true });
-            } catch(e) { console.warn('Ошибка установки онлайн статуса:', e); }
-        }
-
-        if (currentUser) {
-            setUserOnline();
-            setTimeout(refreshUserAvatar, 500);
-        }
+if (currentUser) {
+    setTimeout(refreshUserAvatarNew, 1000);
+}
 
         // — ОБРАБОТКА URL ПАРАМЕТРОВ (после восстановления пользователя) —
         const urlParams = new URLSearchParams(window.location.search);
