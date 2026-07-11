@@ -1291,83 +1291,83 @@
                 });
             });
             document.getElementById('saveProfileBtn').addEventListener('click', async function() {
-                const displayName = document.getElementById('editDisplayName').value.trim();
-                const gender = document.getElementById('editGender').value;
-                const bio = document.getElementById('editBio').value.trim();
-                const avatar = document.getElementById('editAvatar').value.trim();
-                const isPrivate = document.getElementById('editIsPrivate').checked;
-                const socials = [];
-                const nameInputs = document.querySelectorAll('.social-name-input');
-                const urlInputs = document.querySelectorAll('.social-url-input');
-                nameInputs.forEach((nameEl, idx) => {
-                    const urlEl = urlInputs[idx];
-                    if (urlEl && nameEl) {
-                        const network = nameEl.dataset.network || '';
-                        const name = nameEl.value.trim().slice(0, 35);
-                        const handle = urlEl.value.trim();
-                        const prefix = socialPrefixes[network] || '';
-                        if (network && handle) {
-                            const fullUrl = prefix + handle;
-                            socials.push({ network, name, url: fullUrl });
-                        }
-                    }
-                });
-                try {
-                    if (displayName !== currentUser[FIELDS.displayName]) {
-                        const success = await changeDisplayName(displayName);
-                        if (!success) {
-                            document.getElementById('editProfileMessage').textContent = 'Ошибка: ник занят или недопустим';
-                            return;
-                        }
-                    }
-                    const currentProfile = currentUser[FIELDS.profile] || {};
-                    const currentSocials = currentProfile[FIELDS.socials] || [];
-                    const currentAvatar = currentProfile[FIELDS.avatar] || '';
-                    const currentBio = currentProfile[FIELDS.bio] || '';
-                    const currentPrivate = currentProfile[FIELDS.isPrivate] || false;
-                    const profileUpdate = {};
-                    profileUpdate[FIELDS.official] = currentProfile[FIELDS.official] || false;
-                    profileUpdate[FIELDS.officialBadge] = currentProfile[FIELDS.officialBadge] || '';
-                    profileUpdate[FIELDS.officialTooltip] = currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт';
-                    profileUpdate.officialColor = currentProfile.officialColor || 'blue';
-                    if (bio !== currentBio) profileUpdate[FIELDS.bio] = bio;
-                    if (avatar !== currentAvatar) profileUpdate[FIELDS.avatar] = avatar;
-                    if (isPrivate !== currentPrivate) profileUpdate[FIELDS.isPrivate] = isPrivate;
-                    const socialsChanged = JSON.stringify(socials) !== JSON.stringify(currentSocials);
-                    if (socialsChanged) profileUpdate[FIELDS.socials] = socials;
-                    if (Object.keys(profileUpdate).length > 0) {
-                        const updateData = {
-                            [FIELDS.gender]: gender,
-                            [FIELDS.profile]: profileUpdate
-                        };
-                        await updateUserProfile(currentUser[FIELDS.username], updateData);
-                    }
-                    currentUser[FIELDS.gender] = gender;
-                    const newProfile = {
-                        [FIELDS.bio]: bio || currentBio,
-                        [FIELDS.socials]: socialsChanged ? socials : currentSocials,
-                        [FIELDS.avatar]: avatar || currentAvatar,
-                        [FIELDS.isPrivate]: isPrivate,
-                        [FIELDS.official]: currentProfile[FIELDS.official] || false,
-                        [FIELDS.officialBadge]: currentProfile[FIELDS.officialBadge] || '',
-                        [FIELDS.officialTooltip]: currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт',
-                        officialColor: currentProfile.officialColor || 'blue'
-                    };
-                    currentUser[FIELDS.profile] = newProfile;
-                    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-                    closeModal(overlay);
-                    showToast('Профиль обновлён!');
-                    const fresh = await getUserByUsername(currentUser[FIELDS.username]);
-                    if (fresh) {
-                        currentUser = { ...fresh };
-                        localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-                    }
-                    renderPage('profile');
-                } catch (e) {
-                    document.getElementById('editProfileMessage').textContent = 'Ошибка: ' + e.message;
-                }
-            });
+    const displayName = document.getElementById('editDisplayName').value.trim();
+    const gender = document.getElementById('editGender').value;
+    const bio = document.getElementById('editBio').value.trim();
+    const avatar = document.getElementById('editAvatar').value.trim();
+    const isPrivate = document.getElementById('editIsPrivate').checked; 
+    const socials = [];
+    const nameInputs = document.querySelectorAll('.social-name-input');
+    const urlInputs = document.querySelectorAll('.social-url-input');
+    nameInputs.forEach((nameEl, idx) => {
+        const urlEl = urlInputs[idx];
+        if (urlEl && nameEl) {
+            const network = nameEl.dataset.network || '';
+            const name = nameEl.value.trim().slice(0, 35);
+            const handle = urlEl.value.trim();
+            const prefix = socialPrefixes[network] || '';
+            if (network && handle) {
+                const fullUrl = prefix + handle;
+                socials.push({ network, name, url: fullUrl });
+            }
         }
+    });
+
+    try {
+
+        if (displayName !== currentUser[FIELDS.displayName]) {
+            const success = await changeDisplayName(displayName);
+            if (!success) {
+                document.getElementById('editProfileMessage').textContent = 'Ошибка: ник занят или недопустим';
+                return;
+            }
+        }
+
+        const currentProfile = currentUser[FIELDS.profile] || {};
+        
+        const updatedProfile = {
+            [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
+            [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
+            [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
+            [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
+            [FIELDS.official]: currentProfile[FIELDS.official] || false,
+            [FIELDS.officialBadge]: currentProfile[FIELDS.officialBadge] || '',
+            [FIELDS.officialTooltip]: currentProfile[FIELDS.officialTooltip] || 'Официальный аккаунт',
+            officialColor: currentProfile.officialColor || 'blue',
+            [FIELDS.views]: currentProfile[FIELDS.views] || 0
+        };
+
+        if (bio !== currentProfile[FIELDS.bio]) updatedProfile[FIELDS.bio] = bio;
+        if (avatar !== currentProfile[FIELDS.avatar]) updatedProfile[FIELDS.avatar] = avatar;
+        if (isPrivate !== currentProfile[FIELDS.isPrivate]) updatedProfile[FIELDS.isPrivate] = isPrivate;
+        
+        const socialsChanged = JSON.stringify(socials) !== JSON.stringify(currentProfile[FIELDS.socials] || []);
+        if (socialsChanged) updatedProfile[FIELDS.socials] = socials;
+
+        await updateUserProfile(currentUser[FIELDS.username], {
+            [FIELDS.gender]: gender,
+            [FIELDS.profile]: updatedProfile
+        });
+
+        currentUser[FIELDS.gender] = gender;
+        currentUser[FIELDS.profile] = updatedProfile;
+        localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+
+        closeModal(overlay);
+        showToast('Профиль обновлён!');
+
+        const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+        if (fresh) {
+            currentUser = { ...fresh };
+            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+        }
+        
+        renderPage('profile');
+    } catch (e) {
+        document.getElementById('editProfileMessage').textContent = 'Ошибка: ' + e.message;
+    }
+});
+}
 
         function openSocialPickerModalWithCallback(callback) {
             const socialsList = {
