@@ -827,26 +827,62 @@
             const result = await registerUser(gender, ip);
             if (!result) return;
             msg.textContent = '';
-            overlay.innerHTML = `
-                <div class="modal-content">
-                    <h2><i class="fas fa-check-circle" style="color:#4caf50;"></i> Готово!</h2>
-                    <div class="modal-body">
-                        <p>Добро пожаловать, ${result.displayName}!</p>
-                        <p><strong>Логин:</strong> ${result.username}<br><strong>Пароль:</strong> ${result.password}</p>
-                        <p style="font-size:13px; color:#888;">Сохраните пароль, он понадобится для входа.</p>
-                        <button class="auth-btn" id="copyRegData" style="margin:10px 0;"><i class="fas fa-copy"></i> Скопировать данные</button>
-                        <button class="auth-btn" id="goToLogin" style="background:#1e3a5f; color:white; border:none;"><i class="fas fa-sign-in-alt"></i> Войти</button>
-                    </div>
-                </div>
-            `;
-            document.getElementById('copyRegData').addEventListener('click', () => {
-                navigator.clipboard.writeText(`Логин: ${result.username}\nПароль: ${result.password}`);
-                showToast('Данные скопированы');
+            
+            const username = result.username;
+            const password = result.password;
+            const displayName = result.displayName;
+            
+            await addDoc(collection(db, COLLECTIONS.notifications, username, 'userNotifs'), {
+                type: 'registration',
+                text: `✅ Добро пожаловать, ${displayName}!\n\nЛогин: ${username}\nПароль: ${password}\n\nСохраните эти данные!`,
+                timestamp: serverTimestamp(),
+                read: false,
+                link: '/profile'
             });
-            document.getElementById('goToLogin').addEventListener('click', () => {
+            
+            currentUser = await loginUser(username, password);
+            if (currentUser) {
+                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+                isAdmin = currentUser.isAdmin === true;
+                await startSession(currentUser[FIELDS.userId], currentUser[FIELDS.username]);
+                updateAuthUI();
+                renderTabs();
+                switchTab('home');
                 closeModal(overlay);
-                showLoginModal();
-            });
+                showToast(`Добро пожаловать, ${displayName}! Данные для входа отправлены в уведомления.`, 'fa-check-circle', 5000);
+                
+                setTimeout(() => {
+                    openNotificationsModal();
+                }, 1000);
+            } else {
+                overlay.innerHTML = `
+                    <div class="modal-content">
+                        <h2><i class="fas fa-check-circle" style="color:#4caf50;"></i> Аккаунт создан!</h2>
+                        <div class="modal-body">
+                            <p>Добро пожаловать, ${displayName}!</p>
+                            <div style="background:#f0f4f8; border-radius:12px; padding:12px; margin:10px 0;">
+                                <p style="margin:4px 0;"><strong>Логин:</strong> <span style="font-family:monospace; background:white; padding:2px 8px; border-radius:4px;">${username}</span></p>
+                                <p style="margin:4px 0;"><strong>Пароль:</strong> <span style="font-family:monospace; background:white; padding:2px 8px; border-radius:4px;">${password}</span></p>
+                            </div>
+                            <p style="font-size:13px; color:#888;">Данные также отправлены в уведомления.</p>
+                            <button class="auth-btn" id="goToLoginAfterReg" style="background:#1e3a5f; color:white; border:none; width:100%; justify-content:center; margin-top:10px; padding:12px;">
+                                <i class="fas fa-sign-in-alt"></i> Войти
+                            </button>
+                            <button class="auth-btn" id="copyRegDataBtn" style="background:#4caf50; color:white; border:none; width:100%; justify-content:center; margin-top:8px; padding:12px;">
+                                <i class="fas fa-copy"></i> Скопировать данные
+                            </button>
+                        </div>
+                    </div>
+                `;
+                document.getElementById('goToLoginAfterReg').addEventListener('click', () => {
+                    closeModal(overlay);
+                    showLoginModal();
+                });
+                document.getElementById('copyRegDataBtn').addEventListener('click', () => {
+                    navigator.clipboard.writeText(`Логин: ${username}\nПароль: ${password}`);
+                    showToast('Данные скопированы!', 'fa-check', 2000);
+                });
+            }
         } catch (e) {
             msg.textContent = 'Ошибка регистрации: ' + e.message;
         }
@@ -973,91 +1009,92 @@
         }
 
         function renderOwnProfile(userData) {
-            const profile = userData[FIELDS.profile] || {};
-            const avatar = profile[FIELDS.avatar] || getDefaultAvatarSvg();
-            const bio = profile[FIELDS.bio] || '';
-            const socials = profile[FIELDS.socials] || [];
-            const views = profile[FIELDS.views] || 0;
-            const isOfficial = profile[FIELDS.official] || false;
-            const officialBadge = profile[FIELDS.officialBadge] || '';
-            const officialTooltip = profile[FIELDS.officialTooltip] || 'Официальный аккаунт';
-            const officialColor = profile.officialColor || 'blue';
+    const profile = userData[FIELDS.profile] || {};
+    const avatar = profile[FIELDS.avatar] || getDefaultAvatarSvg();
+    const bio = profile[FIELDS.bio] || '';
+    const socials = profile[FIELDS.socials] || [];
+    const views = profile[FIELDS.views] || 0;
+    const isOfficial = profile[FIELDS.official] || false;
+    const officialBadge = profile[FIELDS.officialBadge] || '';
+    const officialTooltip = profile[FIELDS.officialTooltip] || 'Официальный аккаунт';
+    const officialColor = profile.officialColor || 'blue';
 
-            const now = Date.now();
-            const lastLogin = userData[FIELDS.lastLogin] ? userData[FIELDS.lastLogin].toMillis() : 0;
-            const diff = now - lastLogin;
-            const onlineStatusHtml = diff < 300000
-                ? `<span class="online-status"><span class="dot online"></span> Онлайн сейчас</span>`
-                : `<span class="online-status"><span class="dot offline"></span> Был(а) ${new Date(lastLogin).toLocaleString()}</span>`;
+    const now = Date.now();
+    const lastLogin = userData[FIELDS.lastLogin] ? userData[FIELDS.lastLogin].toMillis() : 0;
+    const diff = now - lastLogin;
+    const onlineStatusHtml = diff < 300000
+        ? `<span class="online-status"><span class="dot online"></span> Онлайн сейчас</span>`
+        : `<span class="online-status"><span class="dot offline"></span> Был(а) ${new Date(lastLogin).toLocaleString()}</span>`;
 
-            const profileUrl = window.location.origin + window.location.pathname + '?u=' + userData[FIELDS.username];
-            const badgeSvg = isOfficial ? getBadgeSVG(officialColor) : '';
+    const profileUrl = window.location.origin + window.location.pathname + '?u=' + userData[FIELDS.username];
+    const badgeSvg = isOfficial ? getBadgeSVG(officialColor) : '';
 
-            let passwordHtml = '';
-            if (userData[FIELDS.password]) {
-                passwordHtml = `
-                    <div style="margin:12px 0; background:rgba(255,255,255,0.2); border-radius:16px; padding:16px;">
-                        <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
-                            <div style="display:flex; align-items:center; gap:10px;">
-                                <i class="fas fa-key" style="color:#1e3a5f; font-size:18px;"></i>
-                                <span style="font-weight:600;">Пароль:</span>
-                                <span style="font-family:monospace; font-size:16px; background:rgba(255,255,255,0.5); padding:4px 12px; border-radius:8px;">••••••••</span>
-                            </div>
-                            <button class="auth-btn" id="resetPasswordBtn" style="background:#f39c12; color:white; border:none; padding:6px 16px; border-radius:20px; cursor:pointer;">
-                                <i class="fas fa-sync-alt"></i> Сбросить
-                            </button>
-                        </div>
+    let passwordHtml = '';
+    if (userData[FIELDS.password]) {
+        passwordHtml = `
+            <div style="margin:12px 0; background:rgba(255,255,255,0.2); border-radius:16px; padding:16px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <i class="fas fa-key" style="color:#1e3a5f; font-size:18px;"></i>
+                        <span style="font-weight:600;">Пароль:</span>
+                        <span style="font-family:monospace; font-size:16px; background:rgba(255,255,255,0.5); padding:4px 12px; border-radius:8px;">••••••••</span>
                     </div>
-                `;
-            }
-
-            const settings = userData.settings || {};
-            let viewsHtml = '';
-            if (!settings.hideViews) {
-                viewsHtml = `<div class="profile-views-bottom"><i class="fas fa-eye"></i> ${views} просмотров</div>`;
-            }
-
-            return `
-                <h2><i class="fas fa-user-circle"></i> Мой профиль</h2>
-                <div class="profile-header">
-                    <img src="${avatar}" class="profile-avatar" loading="lazy">
-                    <div class="profile-info">
-                        <div class="display-name">
-                            <span>${userData[FIELDS.displayName] || 'Без имени'}</span>
-                            ${isOfficial ? `<span class="badge-tooltip">${badgeSvg}<span class="tooltip-text">${officialTooltip}</span></span>` : ''}
-                        </div>
-                        ${officialBadge ? `<div class="status-text">${officialBadge}</div>` : ''}
-                        <div class="online-status">${onlineStatusHtml}</div>
-                        <div class="gender-text">Пол: ${userData[FIELDS.gender] === 'male' ? 'Мужской' : userData[FIELDS.gender] === 'female' ? 'Женский' : 'Не указан'}</div>
-                    </div>
-                </div>
-                <div class="profile-bio">
-                    <strong><i class="fas fa-pencil-alt"></i> О себе:</strong>
-                    <p>${bio || 'Не заполнено'}</p>
-                </div>
-                <div class="profile-socials">
-                    <strong><i class="fas fa-share-alt"></i> Соцсети:</strong>
-                    ${renderSocials(socials)}
-                </div>
-                <div style="margin:10px 0;">
-                    <strong><i class="fas fa-lock"></i> Приватный аккаунт:</strong> ${profile[FIELDS.isPrivate] ? 'Включён' : 'Выключен'}
-                </div>
-                <div class="profile-link-block">
-                    <span class="link">
-                        <i class="fas fa-link"></i> ${profileUrl}
-                    </span>
-                    <button class="copy-btn" onclick="copyToClipboard('${profileUrl}')">
-                        <i class="fas fa-copy"></i> Копировать
+                    <button class="auth-btn" id="resetPasswordBtn" style="background:#f39c12; color:white; border:none; padding:6px 16px; border-radius:20px; cursor:pointer;">
+                        <i class="fas fa-sync-alt"></i> Сбросить
                     </button>
                 </div>
-                ${passwordHtml}
-                ${viewsHtml}
-                <div class="profile-actions">
-                    <button class="auth-btn edit" id="editProfileBtn"><i class="fas fa-edit"></i> Редактировать профиль</button>
-                    <button class="auth-btn logout" id="logoutBtnProfile"><i class="fas fa-sign-out-alt"></i> Выйти</button>
+            </div>
+        `;
+    }
+
+    const settings = userData.settings || {};
+    let viewsHtml = '';
+    if (!settings.hideViews) {
+        viewsHtml = `<div class="profile-views-bottom"><i class="fas fa-eye"></i> ${views} просмотров</div>`;
+    }
+
+    return `
+        <h2><i class="fas fa-user-circle"></i> Мой профиль</h2>
+        <div class="profile-header">
+            <img src="${avatar}" class="profile-avatar" loading="lazy">
+            <div class="profile-info">
+                <div class="display-name">
+                    <span>${userData[FIELDS.displayName] || 'Без имени'}</span>
+                    ${isOfficial ? `<span class="badge-tooltip">${badgeSvg}<span class="tooltip-text">${officialTooltip}</span></span>` : ''}
                 </div>
-            `;
-        }
+                ${officialBadge ? `<div class="status-text">${officialBadge}</div>` : ''}
+                <div class="online-status">${onlineStatusHtml}</div>
+                <div class="gender-text">Пол: ${userData[FIELDS.gender] === 'male' ? 'Мужской' : userData[FIELDS.gender] === 'female' ? 'Женский' : 'Не указан'}</div>
+            </div>
+        </div>
+        <div class="profile-bio">
+            <strong><i class="fas fa-pencil-alt"></i> О себе:</strong>
+            <p>${bio || 'Не заполнено'}</p>
+        </div>
+        <div class="profile-socials">
+            <strong><i class="fas fa-share-alt"></i> Соцсети:</strong>
+            ${renderSocials(socials)}
+        </div>
+        <div style="margin:10px 0;">
+            <strong><i class="fas fa-lock"></i> Приватный аккаунт:</strong> ${profile[FIELDS.isPrivate] ? 'Включён' : 'Выключен'}
+        </div>
+        <div class="profile-link-block">
+            <span class="link">
+                <i class="fas fa-link"></i> ${profileUrl}
+            </span>
+            <button class="copy-btn" onclick="copyToClipboard('${profileUrl}')">
+                <i class="fas fa-copy"></i> Копировать
+            </button>
+        </div>
+        ${passwordHtml}
+        ${viewsHtml}
+        <div class="profile-actions">
+            <button class="auth-btn edit" id="editProfileBtn"><i class="fas fa-edit"></i> Редактировать профиль</button>
+            <button class="auth-btn logout" id="logoutBtnProfile"><i class="fas fa-sign-out-alt"></i> Выйти</button>
+            <button class="auth-btn" id="deleteProfileBtn" style="background:#e74c3c; color:white; border:none;"><i class="fas fa-trash"></i> Удалить аккаунт</button>
+        </div>
+    `;
+}
 
         async function renderProfileContent(targetUsername) {
             if (!targetUsername) {
@@ -1093,6 +1130,7 @@
             }
             return renderOwnProfile(userData);
         }
+        
 
         async function recordProfileView(targetUsername) {
             if (!targetUsername) return;
@@ -1601,20 +1639,14 @@ return true;
                 const userData = userSnap.data();
                 const currentProfile = userData[FIELDS.profile] || {};
                 
-                const updatedProfile = {
-                    [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
-                    [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
-                    [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
-                    [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
-                    [FIELDS.views]: currentProfile[FIELDS.views] || 0,
-                    [FIELDS.official]: isChecked,
-                    [FIELDS.officialBadge]: badge,
-                    [FIELDS.officialTooltip]: tooltip,
-                    officialColor: color
-                };
+                const profileUpdate = {};
+                profileUpdate[FIELDS.official] = isChecked;
+                profileUpdate[FIELDS.officialBadge] = badge;
+                profileUpdate[FIELDS.officialTooltip] = tooltip;
+                profileUpdate.officialColor = color;
                 
                 await updateDoc(userRef, {
-                    [FIELDS.profile]: updatedProfile
+                    [FIELDS.profile]: profileUpdate
                 });
             }
             showToast('Статус обновлён', 'fa-check-circle', 2000);
@@ -1633,7 +1665,8 @@ return true;
         }
     });
 });
-            c.querySelectorAll('.official-color-select').forEach(select => {
+
+c.querySelectorAll('.official-color-select').forEach(select => {
     select.addEventListener('change', async function() {
         const username = this.dataset.username;
         const color = this.value;
@@ -1650,20 +1683,14 @@ return true;
                 const userData = userSnap.data();
                 const currentProfile = userData[FIELDS.profile] || {};
                 
-                const updatedProfile = {
-                    [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
-                    [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
-                    [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
-                    [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
-                    [FIELDS.views]: currentProfile[FIELDS.views] || 0,
-                    [FIELDS.official]: isChecked,
-                    [FIELDS.officialBadge]: badge,
-                    [FIELDS.officialTooltip]: tooltip,
-                    officialColor: color
-                };
+                const profileUpdate = {};
+                profileUpdate[FIELDS.official] = isChecked;
+                profileUpdate[FIELDS.officialBadge] = badge;
+                profileUpdate[FIELDS.officialTooltip] = tooltip;
+                profileUpdate.officialColor = color;
                 
                 await updateDoc(userRef, {
-                    [FIELDS.profile]: updatedProfile
+                    [FIELDS.profile]: profileUpdate
                 });
             }
             showToast('Цвет галочки обновлён', 'fa-check-circle', 2000);
@@ -1691,20 +1718,14 @@ c.querySelectorAll('.official-tooltip-input').forEach(input => {
                 const userData = userSnap.data();
                 const currentProfile = userData[FIELDS.profile] || {};
                 
-                const updatedProfile = {
-                    [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
-                    [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
-                    [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
-                    [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
-                    [FIELDS.views]: currentProfile[FIELDS.views] || 0,
-                    [FIELDS.official]: isChecked,
-                    [FIELDS.officialBadge]: badge,
-                    [FIELDS.officialTooltip]: tooltip,
-                    officialColor: color
-                };
+                const profileUpdate = {};
+                profileUpdate[FIELDS.official] = isChecked;
+                profileUpdate[FIELDS.officialBadge] = badge;
+                profileUpdate[FIELDS.officialTooltip] = tooltip;
+                profileUpdate.officialColor = color;
                 
                 await updateDoc(userRef, {
-                    [FIELDS.profile]: updatedProfile
+                    [FIELDS.profile]: profileUpdate
                 });
             }
             showToast('Подпись к галочке обновлена', 'fa-check-circle', 2000);
@@ -1732,20 +1753,14 @@ c.querySelectorAll('.official-badge-input').forEach(input => {
                 const userData = userSnap.data();
                 const currentProfile = userData[FIELDS.profile] || {};
                 
-                const updatedProfile = {
-                    [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
-                    [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
-                    [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
-                    [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
-                    [FIELDS.views]: currentProfile[FIELDS.views] || 0,
-                    [FIELDS.official]: isChecked,
-                    [FIELDS.officialBadge]: badge,
-                    [FIELDS.officialTooltip]: tooltip,
-                    officialColor: color
-                };
+                const profileUpdate = {};
+                profileUpdate[FIELDS.official] = isChecked;
+                profileUpdate[FIELDS.officialBadge] = badge;
+                profileUpdate[FIELDS.officialTooltip] = tooltip;
+                profileUpdate.officialColor = color;
                 
                 await updateDoc(userRef, {
-                    [FIELDS.profile]: updatedProfile
+                    [FIELDS.profile]: profileUpdate
                 });
             }
             showToast('Статус под ником обновлён', 'fa-check-circle', 2000);
@@ -1760,36 +1775,63 @@ c.querySelectorAll('.official-badge-input').forEach(input => {
         const username = this.dataset.username;
         const action = this.dataset.action;
         if (action === 'delete') {
-            if (!confirm(`Удалить пользователя ${username}?`)) return;
-            await deleteDoc(doc(db, COLLECTIONS.users, username));
-            const ipSnap = await getDocs(collection(db, 'userIPs'));
-            ipSnap.forEach(async (doc) => {
-                if (doc.data().username === username) {
-                    await deleteDoc(doc.ref);
+            if (!confirm(`Удалить пользователя ${username}? Это действие необратимо!`)) return;
+            
+            try {
+                const userRef = doc(db, COLLECTIONS.users, username);
+                const userSnap = await getDoc(userRef);
+                let userId = null;
+                if (userSnap.exists()) {
+                    userId = userSnap.data().userId;
                 }
-            });
-            showToast('Пользователь удалён');
-            allUsersCache = [];
-            loadAdminUsers(currentAdminPage);
+                
+                await deleteDoc(userRef);
+                
+                const ipSnap = await getDocs(collection(db, 'userIPs'));
+                ipSnap.forEach(async (doc) => {
+                    if (doc.data().username === username) {
+                        await deleteDoc(doc.ref);
+                    }
+                });
+                
+                if (userId) {
+                    const statsRef = doc(db, COLLECTIONS.stats, 'userCount');
+                    const statsSnap = await getDoc(statsRef);
+                    if (statsSnap.exists()) {
+                        const currentCount = statsSnap.data().count || 0;
+                        if (currentCount > 0) {
+                            await updateDoc(statsRef, {
+                                count: currentCount - 1
+                            });
+                        }
+                    }
+                }
+                
+                showToast(`Пользователь ${username} удалён!`, 'fa-trash', 3000);
+                allUsersCache = [];
+                loadAdminUsers(currentAdminPage);
+            } catch (e) {
+                showToast('Ошибка удаления: ' + e.message, 'fa-exclamation-circle', 3000);
+            }
         } else if (action === 'ban') {
             await updateDoc(doc(db, COLLECTIONS.users, username), { banned: true });
-            showToast('Пользователь забанен');
+            showToast('Пользователь забанен', 'fa-ban', 3000);
             allUsersCache = [];
             loadAdminUsers(currentAdminPage);
         } else if (action === 'resetpass') {
-    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
-    let newPass = '';
-    for (let i = 0; i < 12; i++) newPass += chars[Math.floor(Math.random() * chars.length)];
-    
-    const salt = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 15);
-    const hashedPassword = await hashPassword(newPass, salt);
-    
-    await updateDoc(doc(db, COLLECTIONS.users, username), {
-        password: hashedPassword,
-        passwordSalt: salt
-    });
-    showToast(`Новый пароль: ${newPass}`, 'fa-key', 10000);
-}
+            const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let newPass = '';
+            for (let i = 0; i < 10; i++) newPass += chars[Math.floor(Math.random() * chars.length)];
+            
+            const salt = crypto.randomUUID();
+            const hashedPassword = await hashPassword(newPass, salt);
+            
+            await updateDoc(doc(db, COLLECTIONS.users, username), {
+                password: hashedPassword,
+                passwordSalt: salt
+            });
+            showToast(`Новый пароль: ${newPass}`, 'fa-key', 10000);
+        }
     });
 });
             document.getElementById('adminUserSearch')?.addEventListener('input', function() {
@@ -1919,6 +1961,143 @@ c.querySelectorAll('.official-badge-input').forEach(input => {
                     newMenu.classList.remove('show');
                     if (action === 'settings') {
                         openSettingsModal();
+                        function openSettingsModal() {
+    if (!currentUser) { showToast('Войдите, чтобы открыть настройки', 'fa-exclamation-circle', 3000); return; }
+    const settings = currentUser.settings || { notifyViews: true, notifyStatus: true, hideViews: false };
+    const overlay = document.createElement('div');
+    overlay.className = 'modal-overlay';
+    overlay.innerHTML = `
+        <div class="modal-content" style="max-width:450px; text-align:left;">
+            <h2 style="text-align:center;"><i class="fas fa-cog"></i> Настройки профиля</h2>
+            <div class="modal-body">
+                <div style="margin:12px 0;">
+                    <strong><i class="fas fa-bell"></i> Уведомления</strong>
+                    <div style="margin:8px 0;">
+                        <label style="display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" id="notifyViews" ${settings.notifyViews ? 'checked' : ''}> Уведомления о просмотрах профиля
+                        </label>
+                        <label style="display:flex; align-items:center; gap:8px; margin-top:6px;">
+                            <input type="checkbox" id="notifyStatus" ${settings.notifyStatus ? 'checked' : ''}> Уведомления о статусе (официальный)
+                        </label>
+                    </div>
+                </div>
+                <div style="margin:12px 0;">
+                    <strong><i class="fas fa-eye"></i> Приватность</strong>
+                    <div style="margin:8px 0;">
+                        <label style="display:flex; align-items:center; gap:8px;">
+                            <input type="checkbox" id="hideViews" ${settings.hideViews ? 'checked' : ''}> Скрыть просмотры профиля для других
+                        </label>
+                    </div>
+                </div>
+                
+                <div style="margin-top:20px; padding-top:16px; border-top:2px solid #ff4444;">
+                    <strong style="color:#ff4444;"><i class="fas fa-exclamation-triangle"></i> Опасная зона</strong>
+                    <button class="auth-btn" id="deleteAccountBtn" style="width:100%; justify-content:center; background:#e74c3c; color:white; border:none; margin-top:8px; padding:12px;">
+                        <i class="fas fa-trash"></i> Удалить аккаунт
+                    </button>
+                    <p style="font-size:12px; color:#888; margin-top:4px;">Это действие необратимо! Все данные будут удалены.</p>
+                </div>
+                
+                <button class="auth-btn" id="saveSettingsBtn" style="width:100%; justify-content:center; background:#1e3a5f; color:white; border:none; margin-top:16px;"><i class="fas fa-save"></i> Сохранить настройки</button>
+                <div id="settingsMessage" style="margin-top:10px; font-size:13px; text-align:center;"></div>
+            </div>
+            <div class="modal-footer" style="text-align:center;">
+                <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Закрыть</button>
+            </div>
+        </div>
+    `;
+    openModal(overlay);
+
+    document.getElementById('saveSettingsBtn').addEventListener('click', async () => {
+        const notifyViews = document.getElementById('notifyViews').checked;
+        const notifyStatus = document.getElementById('notifyStatus').checked;
+        const hideViews = document.getElementById('hideViews').checked;
+        try {
+            await updateUserProfile(currentUser[FIELDS.username], {
+                settings: { notifyViews, notifyStatus, hideViews }
+            });
+            currentUser.settings = { notifyViews, notifyStatus, hideViews };
+            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+            showToast('Настройки сохранены', 'fa-check-circle', 2000);
+            closeModal(overlay);
+        } catch (e) {
+            document.getElementById('settingsMessage').textContent = 'Ошибка: ' + e.message;
+            document.getElementById('settingsMessage').style.color = 'red';
+        }
+    });
+
+    document.getElementById('deleteAccountBtn').addEventListener('click', function() {
+        if (!confirm('ВЫ УВЕРЕНЫ? Это действие НЕОБРАТИМО! Ваш аккаунт и все данные будут удалены навсегда.')) return;
+        if (!confirm('ПОСЛЕДНЕЕ ПРЕДУПРЕЖДЕНИЕ! Введите свой логин для подтверждения.')) return;
+        
+        const overlay2 = document.createElement('div');
+        overlay2.className = 'modal-overlay';
+        overlay2.innerHTML = `
+            <div class="modal-content" style="max-width:400px;">
+                <h2 style="color:#e74c3c;"><i class="fas fa-exclamation-triangle"></i> Подтверждение удаления</h2>
+                <div class="modal-body">
+                    <p>Введите ваш логин <strong>${currentUser[FIELDS.username]}</strong> для подтверждения:</p>
+                    <input type="text" id="confirmDeleteInput" placeholder="Введите логин" style="width:100%; padding:10px; border-radius:12px; border:2px solid #e74c3c; margin:10px 0;">
+                    <button class="auth-btn" id="confirmDeleteBtn" style="width:100%; justify-content:center; background:#e74c3c; color:white; border:none; padding:12px;">
+                        <i class="fas fa-trash"></i> Удалить навсегда
+                    </button>
+                    <div id="deleteError" style="color:red; font-size:13px; margin-top:8px;"></div>
+                </div>
+                <div class="modal-footer">
+                    <button class="auth-btn" onclick="closeModal(this.closest('.modal-overlay'))">Отмена</button>
+                </div>
+            </div>
+        `;
+        openModal(overlay2);
+
+        document.getElementById('confirmDeleteBtn').addEventListener('click', async function() {
+            const input = document.getElementById('confirmDeleteInput').value.trim();
+            const error = document.getElementById('deleteError');
+            
+            if (input !== currentUser[FIELDS.username]) {
+                error.textContent = 'Логин не совпадает!';
+                return;
+            }
+            
+            try {
+                const username = currentUser[FIELDS.username];
+                const userId = currentUser[FIELDS.userId];
+                
+                await deleteDoc(doc(db, COLLECTIONS.users, username));
+                
+                const ipSnap = await getDocs(collection(db, 'userIPs'));
+                ipSnap.forEach(async (doc) => {
+                    if (doc.data().username === username) {
+                        await deleteDoc(doc.ref);
+                    }
+                });
+                
+                if (userId) {
+                    const statsRef = doc(db, COLLECTIONS.stats, 'userCount');
+                    const statsSnap = await getDoc(statsRef);
+                    if (statsSnap.exists()) {
+                        const currentCount = statsSnap.data().count || 0;
+                        if (currentCount > 0) {
+                            await updateDoc(statsRef, {
+                                count: currentCount - 1
+                            });
+                        }
+                    }
+                }
+                
+                closeModal(overlay2);
+                closeModal(overlay);
+                
+                showToast('Аккаунт удалён!', 'fa-trash', 3000);
+                
+                await logoutUser();
+                
+            } catch (e) {
+                error.textContent = 'Ошибка удаления: ' + e.message;
+            }
+        });
+    });
+}
                     } else if (action === 'sitemap') {
                         const overlay = document.createElement('div');
                         overlay.className = 'modal-overlay';
@@ -3137,6 +3316,17 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             const logoutBtn = document.getElementById('logoutBtnProfile');
             const loginBtn = document.getElementById('profileLoginBtn');
             const resetBtn = document.getElementById('resetPasswordBtn');
+            const deleteProfileBtn = document.getElementById('deleteProfileBtn');
+if (deleteProfileBtn) {
+    deleteProfileBtn.addEventListener('click', function(e) {
+        e.preventDefault();
+        openSettingsModal();
+        setTimeout(() => {
+            const delBtn = document.getElementById('deleteAccountBtn');
+            if (delBtn) delBtn.click();
+        }, 500);
+    });
+}
 
             if (editBtn) {
                 editBtn.addEventListener('click', function(e) {
