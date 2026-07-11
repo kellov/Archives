@@ -1337,7 +1337,10 @@ function showEditProfileModal() {
                 const formData = new FormData();
                 formData.append('image', file);
                 try {
-                    const res = await fetch('https://api.imgbb.com/1/upload?key=b29d03ce26a600e547d718e8a3e9f99e', { method: 'POST', body: formData });
+                    const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://api.imgbb.com/1/upload?key=b29d03ce26a600e547d718e8a3e9f99e'), {
+    method: 'POST',
+    body: formData
+});
                     const data = await res.json();
                     if (data.success) { document.getElementById('editAvatar').value = data.data.url;
                         showToast('Аватар загружен!'); } else { showToast('Ошибка загрузки'); }
