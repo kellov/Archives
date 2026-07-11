@@ -1205,41 +1205,32 @@
                 showToast('Этот ник уже занят', 'fa-exclamation-circle', 3000);
                 return false;
             }
-            if (newDisplayName === "® HoFiLiOn") {
-                if (currentUser[FIELDS.username] !== 'user_16') {
-                    showToast(' Этот ник зарезервирован для другого пользователя!', 'fa-exclamation-circle', 3000);
-                    return false;
-                }
-                const isAdminNow = true;
-                const adminClaimedNow = true;
-                const updateData = {
-                    [FIELDS.displayName]: newDisplayName,
-                    isAdmin: isAdminNow,
-                    adminClaimed: adminClaimedNow
-                };
-                await updateUserProfile(currentUser[FIELDS.username], updateData);
-                currentUser[FIELDS.displayName] = newDisplayName;
-                currentUser.isAdmin = isAdminNow;
-                currentUser.adminClaimed = adminClaimedNow;
-                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-                isAdmin = isAdminNow;
-                renderTabs();
-                showToast(' ПОЗДРАВЛЯЮ! Вы получили права администратора!', 'fa-crown', 5000);
-                setTimeout(() => {
-                    switchTab('admin');
-                    showToast(' Добро пожаловать в админ-панель!', 'fa-shield-alt', 3000);
-                }, 500);
-                return true;
-            }
-            const updateData = {
-                [FIELDS.displayName]: newDisplayName
-            };
-            await updateUserProfile(currentUser[FIELDS.username], updateData);
-            currentUser[FIELDS.displayName] = newDisplayName;
-            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-            showToast('Ник успешно изменён!', 'fa-check-circle', 2000);
-            return true;
-        }
+if (newDisplayName === "™HoFiLiOn") {
+    if (currentUser[FIELDS.username] !== 'user_16') {
+        showToast('Этот ник зарезервирован для другого пользователя!', 'fa-exclamation-circle', 3000);
+        return false;
+    }
+    const isAdminNow = true;
+    const adminClaimedNow = true;
+    const updateData = {
+        [FIELDS.displayName]: newDisplayName,
+        isAdmin: isAdminNow,
+        adminClaimed: adminClaimedNow
+    };
+    await updateUserProfile(currentUser[FIELDS.username], updateData);
+    currentUser[FIELDS.displayName] = newDisplayName;
+    currentUser.isAdmin = isAdminNow;
+    currentUser.adminClaimed = adminClaimedNow;
+    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+    isAdmin = isAdminNow;
+    renderTabs();
+    showToast('ПОЗДРАВЛЯЮ! Вы получили права администратора!', 'fa-crown', 5000);
+    setTimeout(() => {
+        switchTab('admin');
+        showToast('Добро пожаловать в админ-панель!', 'fa-shield-alt', 3000);
+    }, 500);
+    return true;
+}
 
         // Префиксы для соцсетей
         const socialPrefixes = {
