@@ -1394,74 +1394,66 @@ return true;
     });
 
     document.getElementById('saveProfileBtn').addEventListener('click', async function() {
-        const displayName = document.getElementById('editDisplayName').value.trim();
-        const gender = document.getElementById('editGender').value;
-        const bio = document.getElementById('editBio').value.trim();
-        const avatar = document.getElementById('editAvatar').value.trim();
-        const isPrivate = document.getElementById('editIsPrivate').checked;
-        
-        const socials = [];
-        const nameInputs = document.querySelectorAll('.social-name-input');
-        const urlInputs = document.querySelectorAll('.social-url-input');
-        nameInputs.forEach((nameEl, idx) => {
-            const urlEl = urlInputs[idx];
-            if (urlEl && nameEl) {
-                const network = nameEl.dataset.network || '';
-                const name = nameEl.value.trim().slice(0, 35);
-                const handle = urlEl.value.trim();
-                const prefix = socialPrefixes[network] || '';
-                if (network && handle) {
-                    const fullUrl = prefix + handle;
-                    socials.push({ network, name, url: fullUrl });
-                }
+    const displayName = document.getElementById('editDisplayName').value.trim();
+    const gender = document.getElementById('editGender').value;
+    const bio = document.getElementById('editBio').value.trim();
+    const avatar = document.getElementById('editAvatar').value.trim();
+    const isPrivate = document.getElementById('editIsPrivate').checked;
+    
+    const socials = [];
+    const nameInputs = document.querySelectorAll('.social-name-input');
+    const urlInputs = document.querySelectorAll('.social-url-input');
+    nameInputs.forEach((nameEl, idx) => {
+        const urlEl = urlInputs[idx];
+        if (urlEl && nameEl) {
+            const network = nameEl.dataset.network || '';
+            const name = nameEl.value.trim().slice(0, 35);
+            const handle = urlEl.value.trim();
+            const prefix = socialPrefixes[network] || '';
+            if (network && handle) {
+                const fullUrl = prefix + handle;
+                socials.push({ network, name, url: fullUrl });
             }
-        });
-
-        try {
-            if (displayName !== currentUser[FIELDS.displayName]) {
-                const success = await changeDisplayName(displayName);
-                if (!success) {
-                    document.getElementById('editProfileMessage').textContent = 'Ошибка: ник занят или недопустим';
-                    return;
-                }
-            }
-
-            const currentProfile = currentUser[FIELDS.profile] || {};
-            const updateData = {};
-            const profileUpdate = {};
-
-            if (bio !== currentProfile[FIELDS.bio]) profileUpdate[FIELDS.bio] = bio;
-            if (avatar !== currentProfile[FIELDS.avatar]) profileUpdate[FIELDS.avatar] = avatar;
-            if (isPrivate !== currentProfile[FIELDS.isPrivate]) profileUpdate[FIELDS.isPrivate] = isPrivate;
-            
-            const socialsChanged = JSON.stringify(socials) !== JSON.stringify(currentProfile[FIELDS.socials] || []);
-            if (socialsChanged) profileUpdate[FIELDS.socials] = socials;
-
-            if (gender !== currentUser[FIELDS.gender]) updateData[FIELDS.gender] = gender;
-            
-            if (Object.keys(profileUpdate).length > 0) {
-                updateData[FIELDS.profile] = profileUpdate;
-            }
-
-            if (Object.keys(updateData).length > 0) {
-                await updateUserProfile(currentUser[FIELDS.username], updateData);
-            }
-
-            if (gender !== currentUser[FIELDS.gender]) currentUser[FIELDS.gender] = gender;
-            
-            const fresh = await getUserByUsername(currentUser[FIELDS.username]);
-            if (fresh) {
-                currentUser = { ...fresh };
-                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-            }
-
-            closeModal(overlay);
-            showToast('Профиль обновлён!');
-            renderPage('profile');
-        } catch (e) {
-            document.getElementById('editProfileMessage').textContent = 'Ошибка: ' + e.message;
         }
     });
+
+    try {
+        if (displayName !== currentUser[FIELDS.displayName]) {
+            const success = await changeDisplayName(displayName);
+            if (!success) {
+                document.getElementById('editProfileMessage').textContent = 'Ошибка: ник занят или недопустим';
+                return;
+            }
+        }
+
+        const currentProfile = currentUser[FIELDS.profile] || {};
+        const updateData = {};
+
+        if (gender !== currentUser[FIELDS.gender]) updateData[FIELDS.gender] = gender;
+        if (bio !== currentProfile[FIELDS.bio]) updateData[FIELDS.profile + '.' + FIELDS.bio] = bio;
+        if (avatar !== currentProfile[FIELDS.avatar]) updateData[FIELDS.profile + '.' + FIELDS.avatar] = avatar;
+        if (isPrivate !== currentProfile[FIELDS.isPrivate]) updateData[FIELDS.profile + '.' + FIELDS.isPrivate] = isPrivate;
+        
+        const socialsChanged = JSON.stringify(socials) !== JSON.stringify(currentProfile[FIELDS.socials] || []);
+        if (socialsChanged) updateData[FIELDS.profile + '.' + FIELDS.socials] = socials;
+
+        if (Object.keys(updateData).length > 0) {
+            await updateUserProfile(currentUser[FIELDS.username], updateData);
+        }
+
+        const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+        if (fresh) {
+            currentUser = { ...fresh };
+            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+        }
+
+        closeModal(overlay);
+        showToast('Профиль обновлён!');
+        renderPage('profile');
+    } catch (e) {
+        document.getElementById('editProfileMessage').textContent = 'Ошибка: ' + e.message;
+    }
+});
 }
 
         function openSocialPickerModalWithCallback(callback) {
@@ -1634,21 +1626,12 @@ return true;
         const color = colorSelect ? colorSelect.value : 'blue';
         try {
             const userRef = doc(db, COLLECTIONS.users, username);
-            const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                const currentProfile = userData[FIELDS.profile] || {};
-                
-                const profileUpdate = {};
-                profileUpdate[FIELDS.official] = isChecked;
-                profileUpdate[FIELDS.officialBadge] = badge;
-                profileUpdate[FIELDS.officialTooltip] = tooltip;
-                profileUpdate.officialColor = color;
-                
-                await updateDoc(userRef, {
-                    [FIELDS.profile]: profileUpdate
-                });
-            }
+            await updateDoc(userRef, {
+                [FIELDS.profile + '.' + FIELDS.official]: isChecked,
+                [FIELDS.profile + '.' + FIELDS.officialBadge]: badge,
+                [FIELDS.profile + '.' + FIELDS.officialTooltip]: tooltip,
+                [FIELDS.profile + '.officialColor']: color
+            });
             showToast('Статус обновлён', 'fa-check-circle', 2000);
             if (isChecked) {
                 await addDoc(collection(db, COLLECTIONS.notifications, username, 'userNotifs'), {
@@ -1678,21 +1661,12 @@ c.querySelectorAll('.official-color-select').forEach(select => {
         const badge = badgeInput ? badgeInput.value.trim() : '';
         try {
             const userRef = doc(db, COLLECTIONS.users, username);
-            const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                const currentProfile = userData[FIELDS.profile] || {};
-                
-                const profileUpdate = {};
-                profileUpdate[FIELDS.official] = isChecked;
-                profileUpdate[FIELDS.officialBadge] = badge;
-                profileUpdate[FIELDS.officialTooltip] = tooltip;
-                profileUpdate.officialColor = color;
-                
-                await updateDoc(userRef, {
-                    [FIELDS.profile]: profileUpdate
-                });
-            }
+            await updateDoc(userRef, {
+                [FIELDS.profile + '.officialColor']: color,
+                [FIELDS.profile + '.' + FIELDS.official]: isChecked,
+                [FIELDS.profile + '.' + FIELDS.officialBadge]: badge,
+                [FIELDS.profile + '.' + FIELDS.officialTooltip]: tooltip
+            });
             showToast('Цвет галочки обновлён', 'fa-check-circle', 2000);
             loadAdminUsers(currentAdminPage);
         } catch (e) { 
@@ -1713,21 +1687,12 @@ c.querySelectorAll('.official-tooltip-input').forEach(input => {
         const color = colorSelect ? colorSelect.value : 'blue';
         try {
             const userRef = doc(db, COLLECTIONS.users, username);
-            const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                const currentProfile = userData[FIELDS.profile] || {};
-                
-                const profileUpdate = {};
-                profileUpdate[FIELDS.official] = isChecked;
-                profileUpdate[FIELDS.officialBadge] = badge;
-                profileUpdate[FIELDS.officialTooltip] = tooltip;
-                profileUpdate.officialColor = color;
-                
-                await updateDoc(userRef, {
-                    [FIELDS.profile]: profileUpdate
-                });
-            }
+            await updateDoc(userRef, {
+                [FIELDS.profile + '.' + FIELDS.officialTooltip]: tooltip,
+                [FIELDS.profile + '.' + FIELDS.official]: isChecked,
+                [FIELDS.profile + '.' + FIELDS.officialBadge]: badge,
+                [FIELDS.profile + '.officialColor']: color
+            });
             showToast('Подпись к галочке обновлена', 'fa-check-circle', 2000);
             loadAdminUsers(currentAdminPage);
         } catch (e) { 
@@ -1748,21 +1713,12 @@ c.querySelectorAll('.official-badge-input').forEach(input => {
         const color = colorSelect ? colorSelect.value : 'blue';
         try {
             const userRef = doc(db, COLLECTIONS.users, username);
-            const userSnap = await getDoc(userRef);
-            if (userSnap.exists()) {
-                const userData = userSnap.data();
-                const currentProfile = userData[FIELDS.profile] || {};
-                
-                const profileUpdate = {};
-                profileUpdate[FIELDS.official] = isChecked;
-                profileUpdate[FIELDS.officialBadge] = badge;
-                profileUpdate[FIELDS.officialTooltip] = tooltip;
-                profileUpdate.officialColor = color;
-                
-                await updateDoc(userRef, {
-                    [FIELDS.profile]: profileUpdate
-                });
-            }
+            await updateDoc(userRef, {
+                [FIELDS.profile + '.' + FIELDS.officialBadge]: badge,
+                [FIELDS.profile + '.' + FIELDS.official]: isChecked,
+                [FIELDS.profile + '.' + FIELDS.officialTooltip]: tooltip,
+                [FIELDS.profile + '.officialColor']: color
+            });
             showToast('Статус под ником обновлён', 'fa-check-circle', 2000);
             loadAdminUsers(currentAdminPage);
         } catch (e) { 
