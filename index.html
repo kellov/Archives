@@ -3042,22 +3042,31 @@ const urlParams = new URLSearchParams(window.location.search);
 const pageParam = urlParams.get('page');
 const targetUser = urlParams.get('u');
 
-if (targetUser) {
-    currentPageId = 'profile';
-    // Убираем параметры из URL, чтобы при обновлении не терялся профиль
-    window.history.replaceState({}, '', window.location.pathname + '?u=' + targetUser);
-    switchTab('profile');
-} 
+async function loadInitialContent() {
+    if (targetUser) {
+        currentPageId = 'profile';
+        window.history.replaceState({}, '', window.location.pathname + '?u=' + targetUser);
 
-else if (pageParam) {
-    currentPageId = pageParam;
-    switchTab(pageParam);
-} 
+        await renderPage('profile');
 
-else {
-    renderPage('home');
-    incrementPageView('home');
+        const page = document.getElementById('page-profile');
+        if (page) page.classList.add('active-page');
+    } else if (pageParam) {
+        currentPageId = pageParam;
+        await renderPage(pageParam);
+        const page = document.getElementById(`page-${pageParam}`);
+        if (page) page.classList.add('active-page');
+    } else {
+        await renderPage('home');
+        incrementPageView('home');
+    }
+    renderTabs();
 }
+
+// Вызываем после инициализации
+setTimeout(() => {
+    loadInitialContent();
+}, 100);
 
 // Восстановление пользователя
 const savedUser = localStorage.getItem('ssb2_user');
