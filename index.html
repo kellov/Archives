@@ -1330,38 +1330,39 @@ function showEditProfileModal() {
         </div>
     `;
     openModal(overlay);
-    document.getElementById('uploadAvatarBtn').addEventListener('click', () => { document.getElementById('avatarFileInput').click(); });
-    document.getElementById('avatarFileInput').addEventListener('change', async (e) => {
-                const file = e.target.files[0];
-                if (!file) return;
-                const formData = new FormData();
-                formData.append('image', file);
-                try {
-                    const res = await fetch('https://corsproxy.io/?' + encodeURIComponent('https://api.imgbb.com/1/upload?key=b29d03ce26a600e547d718e8a3e9f99e'), {
-    method: 'POST',
-    body: formData
+    document.getElementById('uploadAvatarBtn').addEventListener('click', () => {
+    document.getElementById('avatarFileInput').click();
 });
-                    const data = await res.json();
-                    if (data.success) { document.getElementById('editAvatar').value = data.data.url;
-                        showToast('Аватар загружен!'); } else { showToast('Ошибка загрузки'); }
-                } catch (err) { showToast('Ошибка загрузки'); }
-            });
-            document.querySelectorAll('.remove-social-item').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const index = parseInt(this.dataset.index);
-                    if (!isNaN(index)) {
-                        const container = document.getElementById('socialFieldsContainer');
-                        const items = container.querySelectorAll('div');
-                        if (items[index]) items[index].remove();
-                        document.querySelectorAll('.social-name-input, .social-url-input').forEach((el, i) => {
-                            el.dataset.index = i;
-                        });
-                        document.querySelectorAll('.remove-social-item').forEach((el, i) => {
-                            el.dataset.index = i;
-                        });
-                    }
-                });
-            });
+
+document.getElementById('avatarFileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    // Проверка размера (макс. 5 МБ)
+    if (file.size > 5 * 1024 * 1024) {
+        showToast('Файл слишком большой! Максимум 5 МБ', 'fa-exclamation-circle', 3000);
+        document.getElementById('avatarFileInput').value = '';
+        return;
+    }
+
+    // Проверка типа файла
+    if (!file.type.startsWith('image/')) {
+        showToast('Можно загружать только изображения!', 'fa-exclamation-circle', 3000);
+        document.getElementById('avatarFileInput').value = '';
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(ev) {
+        const base64 = ev.target.result;
+        document.getElementById('editAvatar').value = base64;
+        showToast('Аватар загружен! ✅', 'fa-check-circle', 2000);
+    };
+    reader.onerror = function() {
+        showToast('Ошибка чтения файла', 'fa-exclamation-circle', 3000);
+    };
+    reader.readAsDataURL(file);
+});
 
     document.getElementById('addSocialBtn').addEventListener('click', function() {
         openSocialPickerModalWithCallback((network) => {
