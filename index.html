@@ -1343,13 +1343,9 @@ function showEditProfileModal() {
         return;
     }
     
-    if (!file.type.startsWith('image/')) {
-        showToast('Пожалуйста, выберите изображение', 'fa-exclamation-circle', 3000);
-        return;
-    }
-    
     const formData = new FormData();
-    formData.append('source', file);
+    formData.append('fileToUpload', file);
+    formData.append('reqtype', 'fileupload');
     
     const msg = document.getElementById('editProfileMessage');
     const avatarInput = document.getElementById('editAvatar');
@@ -1375,35 +1371,30 @@ function showEditProfileModal() {
     reader.readAsDataURL(file);
     
     try {
-        const response = await fetch('https://freeimage.host/api/1/upload?key=6d207e02198a847aa8d0a2a8f27a6b4b', {
+        const response = await fetch('https://catbox.moe/user/api.php', {
             method: 'POST',
             body: formData
         });
         
-        if (!response.ok) {
-            throw new Error('HTTP ошибка: ' + response.status);
-        }
+        const url = await response.text();
         
-        const data = await response.json();
-        
-        if (data.status_code === 200) {
-            avatarInput.value = data.image.url;
+        if (url.startsWith('http')) {
+            avatarInput.value = url.trim();
             msg.textContent = 'Аватар загружен!';
             msg.style.color = 'green';
             showToast('Аватар загружен!');
             
             const previewImg = document.querySelector('.avatar-preview img');
             if (previewImg) {
-                previewImg.src = data.image.url;
+                previewImg.src = url.trim();
             }
         } else {
-            throw new Error(data.status_txt || 'Ошибка загрузки');
+            throw new Error(url || 'Ошибка загрузки');
         }
     } catch (err) {
         msg.textContent = 'Ошибка: ' + err.message;
         msg.style.color = 'red';
         showToast('Ошибка загрузки: ' + err.message, 'fa-exclamation-circle', 4000);
-        console.error('Ошибка загрузки аватара:', err);
     } finally {
         document.getElementById('avatarFileInput').value = '';
     }
