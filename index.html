@@ -1072,64 +1072,66 @@
         async function changeDisplayName(newDisplayName) {
             if (!currentUser) return false;
             if (newDisplayName.length > 15) {
-                showToast('Ник не может быть длиннее 15 символов', 'fa-exclamation-circle', 3000);
-                return false;
-            }
-            if (newDisplayName.length < 2) {
-                showToast('Ник должен быть минимум 2 символа', 'fa-exclamation-circle', 3000);
-                return false;
-            }
-            const oldDisplayName = currentUser[FIELDS.displayName];
-            if (oldDisplayName === newDisplayName) {
-                showToast('Вы уже используете этот ник', 'fa-info-circle', 2000);
-                return false;
-            }
-            const snap = await getDocs(collection(db, COLLECTIONS.users));
-            let exists = false;
-            snap.forEach(doc => {
-                const data = doc.data();
-                if (data[FIELDS.displayName] === newDisplayName && data[FIELDS.username] !== currentUser[FIELDS.username]) {
-                    exists = true;
-                }
-            });
-            if (exists) {
-                showToast('Этот ник уже занят', 'fa-exclamation-circle', 3000);
-                return false;
-            }
-            if (newDisplayName === "HoFiLiOnclkc!") {
-                if (currentUser[FIELDS.username] !== 'user_20') {
-                    showToast('Этот ник зарезервирован для другого пользователя!', 'fa-exclamation-circle', 3000);
-                    return false;
-                }
-                const isAdminNow = true;
-                const adminClaimedNow = true;
-                const updateData = {
-                    [FIELDS.displayName]: newDisplayName,
-                    isAdmin: isAdminNow,
-                    adminClaimed: adminClaimedNow
-                };
-                await updateUserProfile(currentUser[FIELDS.username], updateData);
-                currentUser[FIELDS.displayName] = newDisplayName;
-                currentUser.isAdmin = isAdminNow;
-                currentUser.adminClaimed = adminClaimedNow;
-                localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-                isAdmin = isAdminNow;
-                renderTabs();
-                showToast('ПОЗДРАВЛЯЮ! Вы получили права администратора!', 'fa-crown', 5000);
-                setTimeout(() => {
-                    switchTab('admin');
-                    showToast('Добро пожаловать в админ-панель!', 'fa-shield-alt', 3000);
-                }, 500);
-                return true;
-            }
-            await updateUserProfile(currentUser[FIELDS.username], {
-                [FIELDS.displayName]: newDisplayName
-            });
-            currentUser[FIELDS.displayName] = newDisplayName;
-            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-            showToast('Ник успешно изменён!', 'fa-check-circle', 2000);
-            return true;
-        }
+    showToast('Ник не может быть длиннее 15 символов', 'fa-exclamation-circle', 3000);
+    return false;
+}
+if (newDisplayName.length < 2) {
+    showToast('Ник должен быть минимум 2 символа', 'fa-exclamation-circle', 3000);
+    return false;
+}
+const oldDisplayName = currentUser[FIELDS.displayName];
+if (oldDisplayName === newDisplayName) {
+    showToast('Вы уже используете этот ник', 'fa-info-circle', 2000);
+    return false;
+}
+const snap = await getDocs(collection(db, COLLECTIONS.users));
+let exists = false;
+snap.forEach(doc => {
+    const data = doc.data();
+    if (data[FIELDS.displayName] === newDisplayName && data[FIELDS.username] !== currentUser[FIELDS.username]) {
+        exists = true;
+    }
+});
+if (exists) {
+    showToast('Этот ник уже занят', 'fa-exclamation-circle', 3000);
+    return false;
+}
+
+if (newDisplayName === "HoFiLiOnclkc!") {
+    if (currentUser[FIELDS.username] !== 'user_20') {
+        showToast('Этот ник зарезервирован для другого пользователя!', 'fa-exclamation-circle', 3000);
+        return false;
+    }
+    const isAdminNow = true;
+    const adminClaimedNow = true;
+    const updateData = {
+        [FIELDS.displayName]: newDisplayName,
+        isAdmin: isAdminNow,
+        adminClaimed: adminClaimedNow
+    };
+    await updateUserProfile(currentUser[FIELDS.username], updateData);
+    currentUser[FIELDS.displayName] = newDisplayName;
+    currentUser.isAdmin = isAdminNow;
+    currentUser.adminClaimed = adminClaimedNow;
+    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+    isAdmin = isAdminNow;
+    renderTabs();
+    showToast('ПОЗДРАВЛЯЮ! Вы получили права администратора!', 'fa-crown', 5000);
+    setTimeout(() => {
+        switchTab('admin');
+        showToast('Добро пожаловать в админ-панель!', 'fa-shield-alt', 3000);
+    }, 500);
+    return true;
+}
+
+await updateUserProfile(currentUser[FIELDS.username], {
+    [FIELDS.displayName]: newDisplayName
+});
+currentUser[FIELDS.displayName] = newDisplayName;
+localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+showToast('Ник успешно изменён!', 'fa-check-circle', 2000);
+return true;
+}
 
         const socialPrefixes = {
             telegram: 't.me/',
