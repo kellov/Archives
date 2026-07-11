@@ -1356,7 +1356,7 @@ document.getElementById('avatarFileInput').addEventListener('change', (e) => {
     reader.onload = function(ev) {
         const base64 = ev.target.result;
         document.getElementById('editAvatar').value = base64;
-        showToast('Аватар загружен! ✅', 'fa-check-circle', 2000);
+        showToast('Аватар загружен! ', 'fa-check-circle', 2000);
     };
     reader.onerror = function() {
         showToast('Ошибка чтения файла', 'fa-exclamation-circle', 3000);
@@ -3031,6 +3031,22 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             if (notificationUnsubscribe) { notificationUnsubscribe(); }
             await endSession();
         });
+        
+        document.addEventListener('visibilitychange', async () => {
+    if (!currentUser) return;
+    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
+    if (document.hidden) {
+        await setDoc(doc(db, 'presence', userId), {
+            online: false,
+            lastSeen: serverTimestamp()
+        }, { merge: true });
+    } else {
+        await setDoc(doc(db, 'presence', userId), {
+            online: true,
+            lastSeen: serverTimestamp()
+        }, { merge: true });
+    }
+});
 
         // Обновление онлайна
         setInterval(async () => {
