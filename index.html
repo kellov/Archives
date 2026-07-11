@@ -1524,78 +1524,176 @@
             c.innerHTML = html;
 
             c.querySelectorAll('.official-toggle').forEach(checkbox => {
-                checkbox.addEventListener('change', async function() {
-                    const username = this.dataset.username;
-                    const isChecked = this.checked;
-                    const tooltipInput = c.querySelector(`.official-tooltip-input[data-username="${username}"]`);
-                    const tooltip = tooltipInput ? tooltipInput.value.trim() : 'Официальный аккаунт';
-                    const badgeInput = c.querySelector(`.official-badge-input[data-username="${username}"]`);
-                    const badge = badgeInput ? badgeInput.value.trim() : '';
-                    const colorSelect = c.querySelector(`.official-color-select[data-username="${username}"]`);
-                    const color = colorSelect ? colorSelect.value : 'blue';
-                    try {
-                        await updateUserProfile(username, { [FIELDS.profile]: { [FIELDS.official]: isChecked, [FIELDS.officialTooltip]: tooltip, [FIELDS.officialBadge]: badge, officialColor: color } });
-                        showToast('Статус обновлён', 'fa-check-circle', 2000);
-                        if (isChecked) {
-                            await addDoc(collection(db, COLLECTIONS.notifications, username, 'userNotifs'), {
-                                type: 'official',
-                                text: 'Ваш профиль получил официальный статус!' + (badge ? ' Подпись: ' + badge : ''),
-                                timestamp: serverTimestamp(),
-                                read: false,
-                                link: '/u/' + username
-                            });
-                        }
-                    } catch (e) { showToast('Ошибка: ' + e.message, 'fa-exclamation-circle', 3000); }
+    checkbox.addEventListener('change', async function() {
+        const username = this.dataset.username;
+        const isChecked = this.checked;
+        const tooltipInput = c.querySelector(`.official-tooltip-input[data-username="${username}"]`);
+        const tooltip = tooltipInput ? tooltipInput.value.trim() : 'Официальный аккаунт';
+        const badgeInput = c.querySelector(`.official-badge-input[data-username="${username}"]`);
+        const badge = badgeInput ? badgeInput.value.trim() : '';
+        const colorSelect = c.querySelector(`.official-color-select[data-username="${username}"]`);
+        const color = colorSelect ? colorSelect.value : 'blue';
+        try {
+            const userRef = doc(db, COLLECTIONS.users, username);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                const currentProfile = userData[FIELDS.profile] || {};
+                
+                const updatedProfile = {
+                    [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
+                    [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
+                    [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
+                    [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
+                    [FIELDS.views]: currentProfile[FIELDS.views] || 0,
+                    [FIELDS.official]: isChecked,
+                    [FIELDS.officialBadge]: badge,
+                    [FIELDS.officialTooltip]: tooltip,
+                    officialColor: color
+                };
+                
+                await updateDoc(userRef, {
+                    [FIELDS.profile]: updatedProfile
                 });
-            });
+            }
+            showToast('Статус обновлён', 'fa-check-circle', 2000);
+            if (isChecked) {
+                await addDoc(collection(db, COLLECTIONS.notifications, username, 'userNotifs'), {
+                    type: 'official',
+                    text: 'Ваш профиль получил официальный статус!' + (badge ? ' Подпись: ' + badge : ''),
+                    timestamp: serverTimestamp(),
+                    read: false,
+                    link: '/u/' + username
+                });
+            }
+            loadAdminUsers(currentAdminPage);
+        } catch (e) { 
+            showToast('Ошибка: ' + e.message, 'fa-exclamation-circle', 3000); 
+        }
+    });
+});
             c.querySelectorAll('.official-color-select').forEach(select => {
-                select.addEventListener('change', async function() {
-                    const username = this.dataset.username;
-                    const color = this.value;
-                    const checkbox = c.querySelector(`.official-toggle[data-username="${username}"]`);
-                    const isChecked = checkbox ? checkbox.checked : false;
-                    const tooltipInput = c.querySelector(`.official-tooltip-input[data-username="${username}"]`);
-                    const tooltip = tooltipInput ? tooltipInput.value.trim() : 'Официальный аккаунт';
-                    const badgeInput = c.querySelector(`.official-badge-input[data-username="${username}"]`);
-                    const badge = badgeInput ? badgeInput.value.trim() : '';
-                    try {
-                        await updateUserProfile(username, { [FIELDS.profile]: { [FIELDS.official]: isChecked, [FIELDS.officialTooltip]: tooltip, [FIELDS.officialBadge]: badge, officialColor: color } });
-                        showToast('Цвет галочки обновлён', 'fa-check-circle', 2000);
-                    } catch (e) { showToast('Ошибка: ' + e.message, 'fa-exclamation-circle', 3000); }
+    select.addEventListener('change', async function() {
+        const username = this.dataset.username;
+        const color = this.value;
+        const checkbox = c.querySelector(`.official-toggle[data-username="${username}"]`);
+        const isChecked = checkbox ? checkbox.checked : false;
+        const tooltipInput = c.querySelector(`.official-tooltip-input[data-username="${username}"]`);
+        const tooltip = tooltipInput ? tooltipInput.value.trim() : 'Официальный аккаунт';
+        const badgeInput = c.querySelector(`.official-badge-input[data-username="${username}"]`);
+        const badge = badgeInput ? badgeInput.value.trim() : '';
+        try {
+            const userRef = doc(db, COLLECTIONS.users, username);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                const currentProfile = userData[FIELDS.profile] || {};
+                
+                const updatedProfile = {
+                    [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
+                    [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
+                    [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
+                    [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
+                    [FIELDS.views]: currentProfile[FIELDS.views] || 0,
+                    [FIELDS.official]: isChecked,
+                    [FIELDS.officialBadge]: badge,
+                    [FIELDS.officialTooltip]: tooltip,
+                    officialColor: color
+                };
+                
+                await updateDoc(userRef, {
+                    [FIELDS.profile]: updatedProfile
                 });
-            });
-            c.querySelectorAll('.official-tooltip-input').forEach(input => {
-                input.addEventListener('change', async function() {
-                    const username = this.dataset.username;
-                    const tooltip = this.value.trim();
-                    const checkbox = c.querySelector(`.official-toggle[data-username="${username}"]`);
-                    const isChecked = checkbox ? checkbox.checked : false;
-                    const badgeInput = c.querySelector(`.official-badge-input[data-username="${username}"]`);
-                    const badge = badgeInput ? badgeInput.value.trim() : '';
-                    const colorSelect = c.querySelector(`.official-color-select[data-username="${username}"]`);
-                    const color = colorSelect ? colorSelect.value : 'blue';
-                    try {
-                        await updateUserProfile(username, { [FIELDS.profile]: { [FIELDS.official]: isChecked, [FIELDS.officialTooltip]: tooltip, [FIELDS.officialBadge]: badge, officialColor: color } });
-                        showToast('Подпись к галочке обновлена', 'fa-check-circle', 2000);
-                    } catch (e) { showToast('Ошибка: ' + e.message, 'fa-exclamation-circle', 3000); }
+            }
+            showToast('Цвет галочки обновлён', 'fa-check-circle', 2000);
+            loadAdminUsers(currentAdminPage);
+        } catch (e) { 
+            showToast('Ошибка: ' + e.message, 'fa-exclamation-circle', 3000); 
+        }
+    });
+});
+
+c.querySelectorAll('.official-tooltip-input').forEach(input => {
+    input.addEventListener('change', async function() {
+        const username = this.dataset.username;
+        const tooltip = this.value.trim();
+        const checkbox = c.querySelector(`.official-toggle[data-username="${username}"]`);
+        const isChecked = checkbox ? checkbox.checked : false;
+        const badgeInput = c.querySelector(`.official-badge-input[data-username="${username}"]`);
+        const badge = badgeInput ? badgeInput.value.trim() : '';
+        const colorSelect = c.querySelector(`.official-color-select[data-username="${username}"]`);
+        const color = colorSelect ? colorSelect.value : 'blue';
+        try {
+            const userRef = doc(db, COLLECTIONS.users, username);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                const currentProfile = userData[FIELDS.profile] || {};
+                
+                const updatedProfile = {
+                    [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
+                    [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
+                    [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
+                    [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
+                    [FIELDS.views]: currentProfile[FIELDS.views] || 0,
+                    [FIELDS.official]: isChecked,
+                    [FIELDS.officialBadge]: badge,
+                    [FIELDS.officialTooltip]: tooltip,
+                    officialColor: color
+                };
+                
+                await updateDoc(userRef, {
+                    [FIELDS.profile]: updatedProfile
                 });
-            });
-            c.querySelectorAll('.official-badge-input').forEach(input => {
-                input.addEventListener('change', async function() {
-                    const username = this.dataset.username;
-                    const badge = this.value.trim();
-                    const checkbox = c.querySelector(`.official-toggle[data-username="${username}"]`);
-                    const isChecked = checkbox ? checkbox.checked : false;
-                    const tooltipInput = c.querySelector(`.official-tooltip-input[data-username="${username}"]`);
-                    const tooltip = tooltipInput ? tooltipInput.value.trim() : 'Официальный аккаунт';
-                    const colorSelect = c.querySelector(`.official-color-select[data-username="${username}"]`);
-                    const color = colorSelect ? colorSelect.value : 'blue';
-                    try {
-                        await updateUserProfile(username, { [FIELDS.profile]: { [FIELDS.official]: isChecked, [FIELDS.officialTooltip]: tooltip, [FIELDS.officialBadge]: badge, officialColor: color } });
-                        showToast('Статус под ником обновлён', 'fa-check-circle', 2000);
-                    } catch (e) { showToast('Ошибка: ' + e.message, 'fa-exclamation-circle', 3000); }
+            }
+            showToast('Подпись к галочке обновлена', 'fa-check-circle', 2000);
+            loadAdminUsers(currentAdminPage);
+        } catch (e) { 
+            showToast('Ошибка: ' + e.message, 'fa-exclamation-circle', 3000); 
+        }
+    });
+});
+
+c.querySelectorAll('.official-badge-input').forEach(input => {
+    input.addEventListener('change', async function() {
+        const username = this.dataset.username;
+        const badge = this.value.trim();
+        const checkbox = c.querySelector(`.official-toggle[data-username="${username}"]`);
+        const isChecked = checkbox ? checkbox.checked : false;
+        const tooltipInput = c.querySelector(`.official-tooltip-input[data-username="${username}"]`);
+        const tooltip = tooltipInput ? tooltipInput.value.trim() : 'Официальный аккаунт';
+        const colorSelect = c.querySelector(`.official-color-select[data-username="${username}"]`);
+        const color = colorSelect ? colorSelect.value : 'blue';
+        try {
+            const userRef = doc(db, COLLECTIONS.users, username);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                const currentProfile = userData[FIELDS.profile] || {};
+                
+                const updatedProfile = {
+                    [FIELDS.bio]: currentProfile[FIELDS.bio] || '',
+                    [FIELDS.socials]: currentProfile[FIELDS.socials] || [],
+                    [FIELDS.avatar]: currentProfile[FIELDS.avatar] || '',
+                    [FIELDS.isPrivate]: currentProfile[FIELDS.isPrivate] || false,
+                    [FIELDS.views]: currentProfile[FIELDS.views] || 0,
+                    [FIELDS.official]: isChecked,
+                    [FIELDS.officialBadge]: badge,
+                    [FIELDS.officialTooltip]: tooltip,
+                    officialColor: color
+                };
+                
+                await updateDoc(userRef, {
+                    [FIELDS.profile]: updatedProfile
                 });
-            });
+            }
+            showToast('Статус под ником обновлён', 'fa-check-circle', 2000);
+            loadAdminUsers(currentAdminPage);
+        } catch (e) { 
+            showToast('Ошибка: ' + e.message, 'fa-exclamation-circle', 3000); 
+        }
+    });
+});
             c.querySelectorAll('.admin-action').forEach(btn => {
                 btn.addEventListener('click', async function() {
                     const username = this.dataset.username;
