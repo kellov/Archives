@@ -1493,11 +1493,16 @@
                     localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
 
                     closeModal(overlay);
-                    showToast('Профиль обновлён!');
-                    await refreshUserAvatar();
-                    renderPage('profile');
-                } catch (e) {
-                    document.getElementById('editProfileMessage').textContent = 'Ошибка: ' + e.message;
+showToast('Профиль обновлён!');
+
+const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+if (fresh) {
+    currentUser = { ...fresh };
+    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+}
+
+await refreshUserAvatar();
+renderPage('profile');
                 }
             });
         }
@@ -2944,16 +2949,31 @@
 
         // —ОБНОВЛЕНИЕ АВАТАРКИ—
         async function refreshUserAvatar() {
-            if (!currentUser) return;
-            try {
-                const fresh = await getUserByUsername(currentUser[FIELDS.username]);
-                if (fresh) {
-                    currentUser = { ...fresh };
-                    localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
-                    updateAuthUI();
-                }
-            } catch(e) { console.warn('Ошибка обновления аватарки:', e); }
+    if (!currentUser) return;
+    try {
+        const fresh = await getUserByUsername(currentUser[FIELDS.username]);
+        if (fresh) {
+            const oldAvatar = currentUser[FIELDS.profile]?.[FIELDS.avatar];
+            const newAvatar = fresh[FIELDS.profile]?.[FIELDS.avatar];
+            
+            currentUser = { ...fresh };
+            localStorage.setItem('ssb2_user', JSON.stringify(currentUser));
+            
+            const avatarImg = document.querySelector('.user-info img');
+            if (avatarImg && newAvatar) {
+                avatarImg.src = newAvatar;
+            }
+            
+            if (currentPageId === 'profile') {
+                renderPage('profile');
+            }
+            
+            updateAuthUI();
         }
+    } catch(e) {
+        console.warn('Ошибка обновления аватарки:', e);
+    }
+}
 
         // —УСТАНОВКА ОНЛАЙН-СТАТУСА—
         async function setUserOnline() {
