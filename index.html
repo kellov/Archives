@@ -533,23 +533,6 @@
         }
     });
     if (!found) return null;
-    
-    if (!found[FIELDS.passwordSalt]) {
-        const salt = crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2, 15);
-        const hashedPassword = await hashPassword(found[FIELDS.password], salt);
-        await updateDoc(doc(db, COLLECTIONS.users, found[FIELDS.username]), {
-            password: hashedPassword,
-            passwordSalt: salt
-        });
-        found[FIELDS.password] = hashedPassword;
-        found[FIELDS.passwordSalt] = salt;
-    }
-    
-    const hashedInput = await hashPassword(password, found[FIELDS.passwordSalt]);
-    if (found[FIELDS.password] !== hashedInput) {
-        return null;
-    }
-    
     return found;
 }
 
