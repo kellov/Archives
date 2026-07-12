@@ -2894,18 +2894,6 @@ files/Save Maps/</code>. <span style="opacity:0.6;">#Android</span>
             }
             if (tabId === 'profile') setTimeout(() => bindProfileEvents(), 100);
             }
-            if (currentUser) {
-    const userId = currentUser[FIELDS.userId] || currentUser[FIELDS.username];
-    await setDoc(doc(db, 'presence', userId), {
-        online: true,
-        lastSeen: serverTimestamp()
-    }, { merge: true });
-    
-    await updateDoc(doc(db, COLLECTIONS.users, currentUser[FIELDS.username]), {
-        [FIELDS.lastLogin]: serverTimestamp()
-    });
-}
-        }
         
 
         async function updateHomeStats() {
