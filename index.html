@@ -897,44 +897,70 @@
 }
 
         function renderSocials(socials) {
-            if (!socials || !Array.isArray(socials) || socials.length === 0) return '<div>Нет добавленных соцсетей</div>';
-            const iconMap = {
-                telegram: 'fab fa-telegram',
-                youtube: 'fab fa-youtube',
-                github: 'fab fa-github',
-                vk: 'fab fa-vk',
-                discord: 'fab fa-discord',
-                twitter: 'fab fa-twitter',
-                instagram: 'fab fa-instagram',
-                tiktok: 'fab fa-tiktok',
-                twitch: 'fab fa-twitch'
-            };
-            const colorMap = {
-                telegram: '#26A5E4',
-                youtube: '#FF0000',
-                github: '#181717',
-                vk: '#4680C2',
-                discord: '#5865F2',
-                twitter: '#000000',
-                instagram: '#E4405F',
-                tiktok: '#010101',
-                twitch: '#9146FF'
-            };
-            let html = '<div class="social-scroll">';
-            const limited = socials.slice(0, 25);
-            limited.forEach(item => {
-                if (!item.url) return;
-                const icon = iconMap[item.network] || 'fas fa-link';
-                const color = colorMap[item.network] || '#1e3a5f';
-                const name = item.name && item.name.length > 0 ? item.name : item.network;
-                html += `<a href="${item.url}" target="_blank" class="social-link" style="color:${color};"><i class="${icon}"></i> ${name}</a>`;
-            });
-            if (socials.length > 25) {
-                html += `<span style="font-size:12px; color:#888; white-space:nowrap;">+${socials.length - 25} ещё</span>`;
+    if (!socials || !Array.isArray(socials) || socials.length === 0) return '<div>Нет добавленных соцсетей</div>';
+    const iconMap = {
+        telegram: 'fab fa-telegram',
+        youtube: 'fab fa-youtube',
+        github: 'fab fa-github',
+        vk: 'fab fa-vk',
+        discord: 'fab fa-discord',
+        twitter: 'fab fa-twitter',
+        instagram: 'fab fa-instagram',
+        tiktok: 'fab fa-tiktok',
+        twitch: 'fab fa-twitch'
+    };
+    const colorMap = {
+        telegram: '#26A5E4',
+        youtube: '#FF0000',
+        github: '#181717',
+        vk: '#4680C2',
+        discord: '#5865F2',
+        twitter: '#000000',
+        instagram: '#E4405F',
+        tiktok: '#010101',
+        twitch: '#9146FF'
+    };
+    let html = '<div class="social-scroll">';
+    const limited = socials.slice(0, 25);
+    limited.forEach(item => {
+        if (!item.url) return;
+        let url = item.url;
+        
+        if (!url.startsWith('http://') && !url.startsWith('https://')) {
+            if (item.network === 'telegram') {
+                url = 'https://t.me/' + url.replace('@', '').replace('t.me/', '');
+            } else if (item.network === 'github') {
+                url = 'https://github.com/' + url.replace('github.com/', '').replace(/^@/, '');
+            } else if (item.network === 'youtube') {
+                url = 'https://youtube.com/' + url.replace('youtube.com/', '');
+            } else if (item.network === 'vk') {
+                url = 'https://vk.com/' + url.replace('vk.com/', '');
+            } else if (item.network === 'discord') {
+                url = 'https://discord.gg/' + url.replace('discord.gg/', '');
+            } else if (item.network === 'twitter' || item.network === 'x') {
+                url = 'https://x.com/' + url.replace('x.com/', '').replace('twitter.com/', '');
+            } else if (item.network === 'instagram') {
+                url = 'https://instagram.com/' + url.replace('instagram.com/', '');
+            } else if (item.network === 'tiktok') {
+                url = 'https://tiktok.com/@' + url.replace('tiktok.com/@', '').replace(/^@/, '');
+            } else if (item.network === 'twitch') {
+                url = 'https://twitch.tv/' + url.replace('twitch.tv/', '');
+            } else {
+                url = 'https://' + url;
             }
-            html += '</div>';
-            return html;
         }
+        
+        const icon = iconMap[item.network] || 'fas fa-link';
+        const color = colorMap[item.network] || '#1e3a5f';
+        const name = item.name && item.name.length > 0 ? item.name : item.network;
+        html += `<a href="${url}" target="_blank" rel="noopener noreferrer" class="social-link" style="color:${color};"><i class="${icon}"></i> ${name}</a>`;
+    });
+    if (socials.length > 25) {
+        html += `<span style="font-size:12px; color:#888; white-space:nowrap;">+${socials.length - 25} ещё</span>`;
+    }
+    html += '</div>';
+    return html;
+}
 
         function copyToClipboard(text) {
             navigator.clipboard.writeText(text).then(() => {
@@ -1405,18 +1431,32 @@ return true;
     const nameInputs = document.querySelectorAll('.social-name-input');
     const urlInputs = document.querySelectorAll('.social-url-input');
     nameInputs.forEach((nameEl, idx) => {
-        const urlEl = urlInputs[idx];
-        if (urlEl && nameEl) {
-            const network = nameEl.dataset.network || '';
-            const name = nameEl.value.trim().slice(0, 35);
-            const handle = urlEl.value.trim();
-            const prefix = socialPrefixes[network] || '';
-            if (network && handle) {
-                const fullUrl = prefix + handle;
-                socials.push({ network, name, url: fullUrl });
-            }
+    const urlEl = urlInputs[idx];
+    if (urlEl && nameEl) {
+        const network = nameEl.dataset.network || '';
+        const name = nameEl.value.trim().slice(0, 35);
+        let handle = urlEl.value.trim();
+        const prefix = socialPrefixes[network] || '';
+        
+        handle = handle.replace(/^@/, '').replace(/^https?:\/\//, '').replace(/^t\.me\//, '');
+        
+        if (network && handle) {
+            let fullUrl = handle;
+            if (network === 'telegram') fullUrl = 'https://t.me/' + handle;
+            else if (network === 'github') fullUrl = 'https://github.com/' + handle;
+            else if (network === 'youtube') fullUrl = 'https://youtube.com/' + handle;
+            else if (network === 'vk') fullUrl = 'https://vk.com/' + handle;
+            else if (network === 'discord') fullUrl = 'https://discord.gg/' + handle;
+            else if (network === 'twitter' || network === 'x') fullUrl = 'https://x.com/' + handle;
+            else if (network === 'instagram') fullUrl = 'https://instagram.com/' + handle;
+            else if (network === 'tiktok') fullUrl = 'https://tiktok.com/@' + handle;
+            else if (network === 'twitch') fullUrl = 'https://twitch.tv/' + handle;
+            else fullUrl = 'https://' + handle;
+            
+            socials.push({ network, name, url: fullUrl });
         }
-    });
+    }
+});
 
     try {
         if (displayName !== currentUser[FIELDS.displayName]) {
