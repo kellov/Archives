@@ -300,6 +300,56 @@
     </div>
 
     <script type="module">
+
+    function getUrlParam(name) {
+        const urlParams = new URLSearchParams(window.location.search);
+        return urlParams.get(name);
+    }
+
+    document.addEventListener('DOMContentLoaded', async function() {
+        const username = getUrlParam('u');
+        if (!username) return;
+
+        try {
+            // Загружаем данные пользователя через Firestore
+            const { getFirestore, doc, getDoc } = await import('https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js');
+            const db = getFirestore();
+            const userRef = doc(db, 'users', username);
+            const userSnap = await getDoc(userRef);
+
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                const profile = userData.profile || {};
+                const displayName = userData.displayName || 'Пользователь';
+                const bio = profile.bio || 'Участник Simple Sandbox 2 Archives';
+                const avatar = profile.avatar || 'https://s10.iimage.su/s/16/g1UK3smxWK5EDnSVtZzw6nQXG48Mj6RIhmNtg03qe.jpg';
+                const views = profile.views || 0;
+                const isOfficial = profile.official || false;
+                const officialBadge = profile.officialBadge || '';
+                const officialTooltip = profile.officialTooltip || 'Официальный аккаунт';
+
+                // Обновляем OG-теги
+                const title = `${displayName} — профиль SSB2 Archives`;
+                const description = bio + (officialBadge ? ` | ${officialBadge}` : '') + ` | 👁️ ${views} просмотров`;
+                const image = avatar;
+
+                document.querySelector('meta[property="og:title"]').setAttribute('content', title);
+                document.querySelector('meta[property="og:description"]').setAttribute('content', description);
+                document.querySelector('meta[property="og:image"]').setAttribute('content', image);
+                document.querySelector('meta[name="twitter:title"]').setAttribute('content', title);
+                document.querySelector('meta[name="twitter:description"]').setAttribute('content', description);
+                document.querySelector('meta[name="twitter:image"]').setAttribute('content', image);
+
+                // Обновляем title страницы
+                document.title = title;
+
+                console.log('✅ OG-теги обновлены для пользователя:', username);
+            }
+        } catch (e) {
+            console.warn('Ошибка загрузки профиля для OG-тегов:', e);
+        }
+    });
+
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, getDoc, setDoc, doc, updateDoc, query, orderBy, limit, serverTimestamp, increment, where, runTransaction, deleteDoc, onSnapshot, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
