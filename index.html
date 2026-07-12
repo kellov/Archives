@@ -2390,6 +2390,32 @@ c.querySelectorAll('.official-badge-input').forEach(input => {
             `;
             container.appendChild(dv);
         }
+        
+if (window.location.pathname === '/api/users') {
+    (async function() {
+        const users = [];
+        const snap = await getDocs(collection(db, COLLECTIONS.users));
+        snap.forEach(doc => {
+            const data = doc.data();
+            users.push({
+                username: doc.id,
+                displayName: data.displayName || doc.id,
+                bio: data.profile?.bio || '',
+                views: data.profile?.views || 0,
+                official: data.profile?.official || false,
+                officialBadge: data.profile?.officialBadge || '',
+                officialTooltip: data.profile?.officialTooltip || 'Официальный аккаунт',
+                socials: data.profile?.socials || [],
+                gender: data.gender || '',
+                registeredAt: data.registeredAt?.toMillis?.() || null
+            });
+        });
+        
+        document.body.innerHTML = JSON.stringify(users);
+        document.body.style.whiteSpace = 'pre-wrap';
+        document.body.style.fontFamily = 'monospace';
+    })();
+}
 
         const baseThemes = [
             { id: 'home', label: 'Главная' }, { id: 'about_game', label: 'Об игре' }, { id: 'about', label: 'О нас' },
