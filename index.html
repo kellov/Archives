@@ -1679,12 +1679,35 @@ return true;
         const color = colorSelect ? colorSelect.value : 'blue';
         try {
             const userRef = doc(db, COLLECTIONS.users, username);
-            await updateDoc(userRef, {
-                [FIELDS.profile + '.' + FIELDS.official]: isChecked,
-                [FIELDS.profile + '.' + FIELDS.officialBadge]: badge,
-                [FIELDS.profile + '.' + FIELDS.officialTooltip]: tooltip,
-                [FIELDS.profile + '.officialColor']: color
-            });
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                let profile = userData[FIELDS.profile] || {};
+                
+                if (Object.keys(profile).length === 0) {
+                    profile = {
+                        [FIELDS.bio]: '',
+                        [FIELDS.socials]: [],
+                        [FIELDS.avatar]: '',
+                        [FIELDS.isPrivate]: false,
+                        [FIELDS.views]: 0,
+                        [FIELDS.official]: false,
+                        [FIELDS.officialBadge]: '',
+                        [FIELDS.officialTooltip]: 'Официальный аккаунт',
+                        officialColor: 'blue'
+                    };
+                }
+                
+                profile[FIELDS.official] = isChecked;
+                profile[FIELDS.officialBadge] = badge;
+                profile[FIELDS.officialTooltip] = tooltip;
+                profile.officialColor = color;
+                
+                await updateDoc(userRef, {
+                    [FIELDS.profile]: profile
+                });
+            }
             showToast('Статус обновлён', 'fa-check-circle', 2000);
             if (isChecked) {
                 await addDoc(collection(db, COLLECTIONS.notifications, username, 'userNotifs'), {
@@ -1714,12 +1737,35 @@ c.querySelectorAll('.official-color-select').forEach(select => {
         const badge = badgeInput ? badgeInput.value.trim() : '';
         try {
             const userRef = doc(db, COLLECTIONS.users, username);
-            await updateDoc(userRef, {
-                [FIELDS.profile + '.officialColor']: color,
-                [FIELDS.profile + '.' + FIELDS.official]: isChecked,
-                [FIELDS.profile + '.' + FIELDS.officialBadge]: badge,
-                [FIELDS.profile + '.' + FIELDS.officialTooltip]: tooltip
-            });
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                let profile = userData[FIELDS.profile] || {};
+                
+                if (Object.keys(profile).length === 0) {
+                    profile = {
+                        [FIELDS.bio]: '',
+                        [FIELDS.socials]: [],
+                        [FIELDS.avatar]: '',
+                        [FIELDS.isPrivate]: false,
+                        [FIELDS.views]: 0,
+                        [FIELDS.official]: false,
+                        [FIELDS.officialBadge]: '',
+                        [FIELDS.officialTooltip]: 'Официальный аккаунт',
+                        officialColor: 'blue'
+                    };
+                }
+                
+                profile.officialColor = color;
+                profile[FIELDS.official] = isChecked;
+                profile[FIELDS.officialBadge] = badge;
+                profile[FIELDS.officialTooltip] = tooltip;
+                
+                await updateDoc(userRef, {
+                    [FIELDS.profile]: profile
+                });
+            }
             showToast('Цвет галочки обновлён', 'fa-check-circle', 2000);
             loadAdminUsers(currentAdminPage);
         } catch (e) { 
@@ -1740,12 +1786,35 @@ c.querySelectorAll('.official-tooltip-input').forEach(input => {
         const color = colorSelect ? colorSelect.value : 'blue';
         try {
             const userRef = doc(db, COLLECTIONS.users, username);
-            await updateDoc(userRef, {
-                [FIELDS.profile + '.' + FIELDS.officialTooltip]: tooltip,
-                [FIELDS.profile + '.' + FIELDS.official]: isChecked,
-                [FIELDS.profile + '.' + FIELDS.officialBadge]: badge,
-                [FIELDS.profile + '.officialColor']: color
-            });
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                let profile = userData[FIELDS.profile] || {};
+                
+                if (Object.keys(profile).length === 0) {
+                    profile = {
+                        [FIELDS.bio]: '',
+                        [FIELDS.socials]: [],
+                        [FIELDS.avatar]: '',
+                        [FIELDS.isPrivate]: false,
+                        [FIELDS.views]: 0,
+                        [FIELDS.official]: false,
+                        [FIELDS.officialBadge]: '',
+                        [FIELDS.officialTooltip]: 'Официальный аккаунт',
+                        officialColor: 'blue'
+                    };
+                }
+                
+                profile[FIELDS.officialTooltip] = tooltip;
+                profile[FIELDS.official] = isChecked;
+                profile[FIELDS.officialBadge] = badge;
+                profile.officialColor = color;
+                
+                await updateDoc(userRef, {
+                    [FIELDS.profile]: profile
+                });
+            }
             showToast('Подпись к галочке обновлена', 'fa-check-circle', 2000);
             loadAdminUsers(currentAdminPage);
         } catch (e) { 
@@ -1766,12 +1835,35 @@ c.querySelectorAll('.official-badge-input').forEach(input => {
         const color = colorSelect ? colorSelect.value : 'blue';
         try {
             const userRef = doc(db, COLLECTIONS.users, username);
-            await updateDoc(userRef, {
-                [FIELDS.profile + '.' + FIELDS.officialBadge]: badge,
-                [FIELDS.profile + '.' + FIELDS.official]: isChecked,
-                [FIELDS.profile + '.' + FIELDS.officialTooltip]: tooltip,
-                [FIELDS.profile + '.officialColor']: color
-            });
+            const userSnap = await getDoc(userRef);
+            
+            if (userSnap.exists()) {
+                const userData = userSnap.data();
+                let profile = userData[FIELDS.profile] || {};
+                
+                if (Object.keys(profile).length === 0) {
+                    profile = {
+                        [FIELDS.bio]: '',
+                        [FIELDS.socials]: [],
+                        [FIELDS.avatar]: '',
+                        [FIELDS.isPrivate]: false,
+                        [FIELDS.views]: 0,
+                        [FIELDS.official]: false,
+                        [FIELDS.officialBadge]: '',
+                        [FIELDS.officialTooltip]: 'Официальный аккаунт',
+                        officialColor: 'blue'
+                    };
+                }
+                
+                profile[FIELDS.officialBadge] = badge;
+                profile[FIELDS.official] = isChecked;
+                profile[FIELDS.officialTooltip] = tooltip;
+                profile.officialColor = color;
+                
+                await updateDoc(userRef, {
+                    [FIELDS.profile]: profile
+                });
+            }
             showToast('Статус под ником обновлён', 'fa-check-circle', 2000);
             loadAdminUsers(currentAdminPage);
         } catch (e) { 
